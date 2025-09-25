@@ -444,8 +444,8 @@ def spa(path):
         resp = make_response(send_from_directory(app.static_folder or "static", path))
 
         # Optimal caching: hashed assets get long-term cache, others no-cache
-        if path.startswith('assets/') and ('-' in path):
-            # Hashed assets (e.g., index-CckwNrXN.css) - cache for 1 year
+        if ('assets/' in path) and ('-' in path) and (path.endswith('.js') or path.endswith('.css')):
+            # Hashed assets (e.g., static/assets/index-CckwNrXN.css) - cache for 1 year
             resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         elif path.endswith(('.css', '.js')):
             # Non-hashed CSS/JS - no cache
