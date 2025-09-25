@@ -167,32 +167,32 @@ def get_receipt(receipt_id: int):
 <style>
   body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: black; color: white; }}
   .header {{ text-align:center; margin-bottom:30px; border-bottom:2px solid #0891b2; padding-bottom:20px; }}
-  .logo {{ color:#06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
-  .company {{ color:#a5b4fc; font-size:14px; }}
+  .logo {{ color: #06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
+  .company {{ color: #a5b4fc; font-size:14px; }}
   .receipt-info {{ display:flex; justify-content:space-between; margin:20px 0; }}
-  .receipt-info div {{ color:#a5b4fc; }}
-  .receipt-info strong {{ color:#fff; display:block; }}
+  .receipt-info div {{ color: #a5b4fc; }}
+  .receipt-info strong {{ color: #fff; display:block; }}
   .items {{ border:1px solid #374151; border-radius:8px; margin:20px 0; }}
-  .item-header {{ background:#1e293b; padding:12px; border-bottom:1px solid #374151; font-weight:bold; }}
+  .item-header {{ background: #1e293b; padding:12px; border-bottom:1px solid #374151; font-weight:bold; }}
   .item {{ padding:12px; border-bottom:1px solid #374151; }}
   .item:last-child {{ border-bottom:none; }}
-  .item-name {{ font-weight:600; color:#06b6d4; }}
-  .item-desc {{ color:#a5b4fc; font-size:14px; margin:4px 0; }}
+  .item-name {{ font-weight:600; color: #06b6d4; }}
+  .item-desc {{ color: #a5b4fc; font-size:14px; margin:4px 0; }}
   .item-price {{ float:right; font-weight:bold; }}
   .total {{ text-align:right; margin:20px 0; font-size:18px; }}
-  .total-label {{ color:#a5b4fc; }}
-  .total-amount {{ font-weight:bold; color:#06b6d4; }}
-  .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color:#6b7280; font-size:12px; }}
+  .total-label {{ color: #a5b4fc; }}
+  .total-amount {{ font-weight:bold; color: #06b6d4; }}
+  .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color: #6b7280; font-size:12px; }}
   @media print {{
     body {{ background: white; color: black; }}
-    .header {{ border-bottom-color:#0891b2; }}
-    .logo {{ color:#0891b2; }}
-    .company,.receipt-info div,.item-desc {{ color:#666; }}
-    .items {{ border-color:#ddd; }}
-    .item-header {{ background:#f8f9fa; border-bottom-color:#ddd; }}
-    .item {{ border-bottom-color:#ddd; }}
-    .item-name,.total-amount {{ color:#0891b2; }}
-    .footer {{ border-top-color:#ddd; color:#666; }}
+    .header {{ border-bottom-color: #0891b2; }}
+    .logo {{ color: #0891b2; }}
+    .company,.receipt-info div,.item-desc {{ color: #666; }}
+    .items {{ border-color: #ddd; }}
+    .item-header {{ background: #f8f9fa; border-bottom-color: #ddd; }}
+    .item {{ border-bottom-color: #ddd; }}
+    .item-name,.total-amount {{ color: #0891b2; }}
+    .footer {{ border-top-color: #ddd; color: #666; }}
   }}
 </style>
 </head>
@@ -421,32 +421,32 @@ def get_receipt(receipt_id: int):
 <style>
   body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: black; color: white; }}
   .header {{ text-align:center; margin-bottom:30px; border-bottom:2px solid #0891b2; padding-bottom:20px; }}
-  .logo {{ color:#06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
-  .company {{ color:#a5b4fc; font-size:14px; }}
+  .logo {{ color: #06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
+  .company {{ color: #a5b4fc; font-size:14px; }}
   .receipt-info {{ display:flex; justify-content:space-between; margin:20px 0; }}
-  .receipt-info div {{ color:#a5b4fc; }}
-  .receipt-info strong {{ color:#fff; display:block; }}
+  .receipt-info div {{ color: #a5b4fc; }}
+  .receipt-info strong {{ color: #fff; display:block; }}
   .items {{ border:1px solid #374151; border-radius:8px; margin:20px 0; }}
-  .item-header {{ background:#1e293b; padding:12px; border-bottom:1px solid #374151; font-weight:bold; }}
+  .item-header {{ background: #1e293b; padding:12px; border-bottom:1px solid #374151; font-weight:bold; }}
   .item {{ padding:12px; border-bottom:1px solid #374151; }}
   .item:last-child {{ border-bottom:none; }}
-  .item-name {{ font-weight:600; color:#06b6d4; }}
-  .item-desc {{ color:#a5b4fc; font-size:14px; margin:4px 0; }}
+  .item-name {{ font-weight:600; color: #06b6d4; }}
+  .item-desc {{ color: #a5b4fc; font-size:14px; margin:4px 0; }}
   .item-price {{ float:right; font-weight:bold; }}
   .total {{ text-align:right; margin:20px 0; font-size:18px; }}
-  .total-label {{ color:#a5b4fc; }}
-  .total-amount {{ font-weight:bold; color:#06b6d4; }}
-  .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color:#6b7280; font-size:12px; }}
+  .total-label {{ color: #a5b4fc; }}
+  .total-amount {{ font-weight:bold; color: #06b6d4; }}
+  .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color: #6b7280; font-size:12px; }}
   @media print {{
     body {{ background: white; color: black; }}
-    .header {{ border-bottom-color:#0891b2; }}
-    .logo {{ color:#0891b2; }}
-    .company,.receipt-info div,.item-desc {{ color:#666; }}
-    .items {{ border-color:#ddd; }}
-    .item-header {{ background:#f8f9fa; border-bottom-color:#ddd; }}
-    .item {{ border-bottom-color:#ddd; }}
-    .item-name,.total-amount {{ color:#0891b2; }}
-    .footer {{ border-top-color:#ddd; color:#666; }}
+    .header {{ border-bottom-color: #0891b2; }}
+    .logo {{ color: #0891b2; }}
+    .company,.receipt-info div,.item-desc {{ color: #666; }}
+    .items {{ border-color: #ddd; }}
+    .item-header {{ background: #f8f9fa; border-bottom-color: #ddd; }}
+    .item {{ border-bottom-color: #ddd; }}
+    .item-name,.total-amount {{ color: #0891b2; }}
+    .footer {{ border-top-color: #ddd; color: #666; }}
   }}
 </style>
 </head>
