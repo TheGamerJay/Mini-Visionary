@@ -165,7 +165,7 @@ def get_receipt(receipt_id: int):
 <meta charset="utf-8">
 <title>Receipt #{receipt.id} - Mini Dream Poster</title>
 <style>
-  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #000; color: #fff; }}
+  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: black; color: white; }}
   .header {{ text-align:center; margin-bottom:30px; border-bottom:2px solid #0891b2; padding-bottom:20px; }}
   .logo {{ color:#06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
   .company {{ color:#a5b4fc; font-size:14px; }}
@@ -184,7 +184,7 @@ def get_receipt(receipt_id: int):
   .total-amount {{ font-weight:bold; color:#06b6d4; }}
   .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color:#6b7280; font-size:12px; }}
   @media print {{
-    body {{ background: #fff; color: #000; }}
+    body {{ background: white; color: black; }}
     .header {{ border-bottom-color:#0891b2; }}
     .logo {{ color:#0891b2; }}
     .company,.receipt-info div,.item-desc {{ color:#666; }}
@@ -419,7 +419,7 @@ def get_receipt(receipt_id: int):
 <meta charset="utf-8">
 <title>Receipt #{receipt.id} - Mini Visionary</title>
 <style>
-  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #000; color: #fff; }}
+  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: black; color: white; }}
   .header {{ text-align:center; margin-bottom:30px; border-bottom:2px solid #0891b2; padding-bottom:20px; }}
   .logo {{ color:#06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
   .company {{ color:#a5b4fc; font-size:14px; }}
@@ -438,7 +438,7 @@ def get_receipt(receipt_id: int):
   .total-amount {{ font-weight:bold; color:#06b6d4; }}
   .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color:#6b7280; font-size:12px; }}
   @media print {{
-    body {{ background: #fff; color: #000; }}
+    body {{ background: white; color: black; }}
     .header {{ border-bottom-color:#0891b2; }}
     .logo {{ color:#0891b2; }}
     .company,.receipt-info div,.item-desc {{ color:#666; }}
