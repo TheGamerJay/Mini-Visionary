@@ -1,0 +1,36 @@
+# Core web framework
+flask==3.0.3
+flask-cors==4.0.1
+
+# Authentication
+flask-bcrypt>=1.0.1
+pyjwt>=2.8.0
+
+# Database + ORM
+sqlalchemy==2.0.32
+psycopg2-binary==2.9.9
+
+# Password hashing & security
+werkzeug==3.0.3
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Image handling for poster overlays
+pillow==10.4.0
+
+# HTTP requests
+requests>=2.32.3
+
+# OpenAI for poster generation
+openai>=1.40.0
+
+# Production server
+gunicorn>=21.2.0
+gevent>=23.0.0
+
+# Payment processing
+stripe>=12.0.0
+
+# File storage
+boto3>=1.40.0

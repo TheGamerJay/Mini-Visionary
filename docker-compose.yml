@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: mdp-backend
+    restart: unless-stopped
+    environment:
+      # --- Required/optional envs for your app ---
+      # Flask defaults
+      - PORT=8000
+      - RAILWAY_ENVIRONMENT=local
+      # OpenAI/Resend/etc. (fill in or use .env)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - MAIL_FROM=${MAIL_FROM:-support@soulbridgeai.com}
+      # Database (Neon/Supabase/Local)
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///local.db}
+    ports:
+      - "8000:8000"
+    working_dir: /app
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: mdp-frontend
+    restart: unless-stopped
+    environment:
+      # If you need the frontend to call a different backend in prod,
+      # set VITE_API_BASE at build time and rebuild the image.
+      - VITE_API_BASE=/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+# Optional shared network (docker-compose creates one by default)
+# networks:
+#   default:
+#     name: mini-dream-poster-net
