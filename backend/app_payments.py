@@ -184,7 +184,7 @@ def get_receipt(receipt_id: int):
   .total-amount {{ font-weight:bold; color:#06b6d4; }}
   .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color:#6b7280; font-size:12px; }}
   @media print {{
-    body {{ background:#fff; color:#000; }}
+    body {{ background: #fff; color: #000; }}
     .header {{ border-bottom-color:#0891b2; }}
     .logo {{ color:#0891b2; }}
     .company,.receipt-info div,.item-desc {{ color:#666; }}
@@ -438,7 +438,7 @@ def get_receipt(receipt_id: int):
   .total-amount {{ font-weight:bold; color:#06b6d4; }}
   .footer {{ margin-top:40px; padding-top:20px; border-top:1px solid #374151; text-align:center; color:#6b7280; font-size:12px; }}
   @media print {{
-    body {{ background:#fff; color:#000; }}
+    body {{ background: #fff; color: #000; }}
     .header {{ border-bottom-color:#0891b2; }}
     .logo {{ color:#0891b2; }}
     .company,.receipt-info div,.item-desc {{ color:#666; }}
