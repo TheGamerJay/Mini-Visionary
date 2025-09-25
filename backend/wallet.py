@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import select
-from sqlalchemy.orm import with_for_update
 
 from models import get_session, User, CreditLedger, CreditEventType
 
