@@ -12,7 +12,7 @@ RUN npm ci || npm i
 
 # Copy source and build
 COPY frontend/ .
-RUN npm run build  # outputs /fe/dist
+RUN npm run build  # outputs to /backend/static/ via vite.config.js
 
 # Stage 2: Backend runtime (Flask + Gunicorn)
 FROM python:3.11-slim AS be
@@ -40,7 +40,7 @@ COPY backend/ /app/
 
 # Embed built frontend into Flask static/
 RUN rm -rf /app/static && mkdir -p /app/static
-COPY --from=fe /fe/dist /app/static/
+COPY --from=fe /backend/static/ /app/static/
 
 # Run on 8080 (Railway is set to 8080)
 EXPOSE 8080
