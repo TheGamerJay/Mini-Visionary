@@ -1,4 +1,4 @@
-﻿import os
+import os
 from flask import send_from_directory, abort
 from app import app as flask_app  # this imports your real API app
 
@@ -8,9 +8,9 @@ app.static_folder = "static"
 app.static_url_path = "/static"
 
 # SPA fallback: only for non-API paths
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def spa(path):
+@app.route("/", defaults={"path": ""}, endpoint="spa_frontend")
+@app.route("/<path:path>", endpoint="spa_frontend")
+def spa_frontend(path):
     # Let real API routes handle /api/*
     if path.startswith("api/"):
         abort(404)
