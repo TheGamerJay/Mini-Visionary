@@ -131,7 +131,7 @@ def wallet():
                 "notes": notes,
             })
 
-        wallet_data = {{
+        wallet_data = {
         "credits": credits,
             "updated_at": user.updated_at.isoformat() if user and user.updated_at else None
         }
@@ -472,7 +472,7 @@ def wallet():
                 "notes": notes,
             })
 
-        wallet_data = {{
+        wallet_data = {
         "credits": credits,
             "updated_at": user.updated_at.isoformat() if user and user.updated_at else None
         }
