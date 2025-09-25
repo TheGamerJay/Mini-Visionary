@@ -13,3 +13,6 @@ def spa(path):
 
 if __name__ == "__main__":
     app.run()
+@app.get("/healthz")
+def healthz():
+    return {"ok": True}, 200
