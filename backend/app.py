@@ -133,26 +133,29 @@ def _init_json_logging(app_name: str = "mini-visionary"):
 def _init_sentry(flask_app):
     """Initialize Sentry if DSN is provided."""
     dsn = os.getenv("SENTRY_DSN", "").strip()
-    if not dsn or sentry_sdk is None:
-        logging.info("sentry_not_configured")
+    if not dsn or len(dsn) == 0 or not dsn.startswith("https://") or sentry_sdk is None:
+        logging.info("sentry_not_configured", extra={"dsn_length": len(dsn), "sentry_sdk_available": sentry_sdk is not None})
         return
 
-    sentry_sdk.init(
-        dsn=dsn,
-        integrations=[
-            FlaskIntegration(),                       # captures unhandled errors
-            LoggingIntegration(                       # turn ERROR logs into Sentry events
-                level=logging.INFO,
-                event_level=logging.ERROR,
-            ),
-        ],
-        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),   # APM
-        profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.0")),# profiling (optional)
-        environment=os.getenv("ENVIRONMENT", "production"),
-        release=os.getenv("GIT_SHA", "dev"),
-        send_default_pii=False,
-    )
-    logging.info("sentry_initialized")
+    try:
+        sentry_sdk.init(
+            dsn=dsn,
+            integrations=[
+                FlaskIntegration(),                       # captures unhandled errors
+                LoggingIntegration(                       # turn ERROR logs into Sentry events
+                    level=logging.INFO,
+                    event_level=logging.ERROR,
+                ),
+            ],
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),   # APM
+            profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.0")),# profiling (optional)
+            environment=os.getenv("ENVIRONMENT", "production"),
+            release=os.getenv("GIT_SHA", "dev"),
+            send_default_pii=False,
+        )
+        logging.info("sentry_initialized")
+    except Exception as e:
+        logging.error("sentry_initialization_failed", extra={"error": str(e), "dsn_provided": bool(dsn)})
 
 def _request_id():
     """Get or create a request id for correlation across services."""
