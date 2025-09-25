@@ -486,7 +486,7 @@ def spa(path):
                "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com; "
                "style-src 'self' 'unsafe-inline'; "
                "img-src 'self' data: https: blob:; "
-               "connect-src 'self' https://pagead2.googlesyndication.com; "
+               "connect-src 'self' https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
                "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.google.com; "
                "object-src 'none'; base-uri 'self'")
         resp.headers["Content-Security-Policy"] = csp
