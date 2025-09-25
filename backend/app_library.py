@@ -9,12 +9,12 @@ from models import (
     get_session, Poster, Asset, PosterJob, CreditLedger,
     PosterStyle, User
 )
-from app_auth import require_auth
+from auth import auth_required
 
 library_bp = Blueprint("library", __name__, url_prefix="/api")
 
 @library_bp.get("/library")
-@require_auth()
+@auth_required
 def get_library():
     """
     Get user's poster library with filtering and pagination
@@ -83,7 +83,7 @@ def get_library():
         })
 
 @library_bp.get("/posters/<int:poster_id>")
-@require_auth()
+@auth_required
 def get_poster(poster_id):
     """Get single poster details"""
     with get_session() as s:
@@ -125,7 +125,7 @@ def get_poster(poster_id):
         })
 
 @library_bp.put("/posters/<int:poster_id>")
-@require_auth()
+@auth_required
 def update_poster(poster_id):
     """
     Update poster metadata
@@ -172,7 +172,7 @@ def update_poster(poster_id):
         })
 
 @library_bp.delete("/posters/<int:poster_id>")
-@require_auth()
+@auth_required
 def delete_poster(poster_id):
     """Soft delete poster"""
     with get_session() as s:
@@ -192,7 +192,7 @@ def delete_poster(poster_id):
         return jsonify({"ok": True, "message": "Poster deleted"})
 
 @library_bp.get("/profile")
-@require_auth()
+@auth_required
 def get_profile():
     """Get user profile with stats"""
     with get_session() as s:
@@ -234,7 +234,7 @@ def get_profile():
         })
 
 @library_bp.put("/profile")
-@require_auth()
+@auth_required
 def update_profile():
     """
     Update user profile

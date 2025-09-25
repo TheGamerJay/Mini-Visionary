@@ -28,6 +28,13 @@ class PosterStyle(PyEnum):
     DRAMA = "drama"
     ACTION = "action"
 
+class CreditEventType(PyEnum):
+    GRANT = "grant"
+    PURCHASE = "purchase"
+    SPEND = "spend"
+    BONUS = "bonus"
+    REFUND = "refund"
+
 class Poster(Base):
     """
     Final poster entity (library item). Tied to a job + output asset.
@@ -72,6 +79,7 @@ class User(Base):
     password_hash: Mapped[Optional[str]] = mapped_column(String(255))
     display_name: Mapped[Optional[str]] = mapped_column(String(100))
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
+    credits: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
@@ -110,6 +118,22 @@ class Asset(Base):
     storage_key: Mapped[str] = mapped_column(String(500))  # S3/R2 key or local path
     public_url: Mapped[Optional[str]] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+
+class CreditLedger(Base):
+    """Credit transaction history."""
+    __tablename__ = "credit_ledger"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    event_type: Mapped[CreditEventType] = mapped_column(Enum(CreditEventType))
+    amount: Mapped[int] = mapped_column(Integer)  # positive for credit, negative for debit
+    balance_after: Mapped[int] = mapped_column(Integer)  # user balance after this transaction
+    reference: Mapped[Optional[str]] = mapped_column(String(255))  # external ref (invoice, etc)
+    notes: Mapped[Optional[str]] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    user: Mapped["User"] = relationship()
 
 
 # Database setup

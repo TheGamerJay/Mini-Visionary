@@ -23,9 +23,8 @@ def grant_credits(
 
     with get_session() as s:
         # Lock the row to avoid race conditions
-        user = s.execute(
-            select(User).where(User.id == user_id).with_for_update()
-        ).scalar_one_or_none()
+        stmt = select(User).where(User.id == user_id).with_for_update()
+        user = s.execute(stmt).scalar_one_or_none()
         if not user:
             return False
 
@@ -56,9 +55,8 @@ def spend_credits(
         return False
 
     with get_session() as s:
-        user = s.execute(
-            select(User).where(User.id == user_id).with_for_update()
-        ).scalar_one_or_none()
+        stmt = select(User).where(User.id == user_id).with_for_update()
+        user = s.execute(stmt).scalar_one_or_none()
         if not user:
             return False
 
@@ -92,9 +90,8 @@ def refund_credits(
         return False
 
     with get_session() as s:
-        user = s.execute(
-            select(User).where(User.id == user_id).with_for_update()
-        ).scalar_one_or_none()
+        stmt = select(User).where(User.id == user_id).with_for_update()
+        user = s.execute(stmt).scalar_one_or_none()
         if not user:
             return False
 

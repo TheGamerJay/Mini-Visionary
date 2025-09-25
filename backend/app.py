@@ -13,20 +13,25 @@ from dotenv import load_dotenv
 
 # --- Database models ---
 from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterMode, PosterStatus, PosterStyle
+# Temporarily disabled - needs wallet fixes:
 # from poster import bp as poster_bp
-# from app_auth import auth_bp
-# from app_library import library_bp
-# from app_legal import legal_bp
-# from mailer import send_email_post, MailError
-# from auth import bp as new_auth_bp, bcrypt
-# from app_payments import payments_bp
-# from storage import bp as storage_bp
-# from ads import bp as ads_bp
-# from ads_portal import bp as ads_portal_bp
-# from me import bp as me_bp
+
+# Essential blueprints:
+from app_library import library_bp
+from app_legal import legal_bp
+from mailer import send_email_post, MailError
+from me import bp as me_bp
 from me_alias import bp as auth_alias_bp
-# from webhooks import bp as webhooks_bp
-# from app_chat import bp as chat_bp
+
+# Advanced blueprints that need proper setup:
+# from app_auth import auth_bp          # Needs JWT configuration
+# from auth import bp as new_auth_bp, bcrypt  # Needs bcrypt setup
+# from app_payments import payments_bp  # Needs Stripe configuration
+# from storage import bp as storage_bp  # Needs S3/R2 configuration
+# from ads import bp as ads_bp          # Needs subscription logic
+# from ads_portal import bp as ads_portal_bp  # Needs Stripe portal
+# from webhooks import bp as webhooks_bp  # Needs Stripe webhooks
+# from app_chat import bp as chat_bp    # Needs OpenAI configuration
 
 # --- Optional OpenAI (auto-disabled if key missing) ---
 OPENAI_AVAILABLE = False
@@ -210,19 +215,19 @@ def _after(response):
 # Initialize bcrypt - temporarily disabled
 # bcrypt.init_app(app)
 
-# Register blueprints
-# app.register_blueprint(new_auth_bp)     # Temporarily disabled - needs JWT setup
-# app.register_blueprint(poster_bp)       # Temporarily disabled - needs wallet fixes
-# app.register_blueprint(library_bp)      # Temporarily disabled
-# app.register_blueprint(legal_bp)        # Temporarily disabled
-# app.register_blueprint(payments_bp)     # Temporarily disabled
-# app.register_blueprint(storage_bp)      # Temporarily disabled
-# app.register_blueprint(ads_bp)          # Temporarily disabled
-# app.register_blueprint(ads_portal_bp)   # Temporarily disabled
-# app.register_blueprint(me_bp)           # Temporarily disabled
-app.register_blueprint(auth_alias_bp)     # Essential for /api/auth/whoami
-# app.register_blueprint(webhooks_bp)     # Temporarily disabled
-# app.register_blueprint(chat_bp)         # Temporarily disabled
+# Register blueprints - Enable essential core functionality
+# app.register_blueprint(new_auth_bp)     # Disabled - needs JWT setup
+# app.register_blueprint(poster_bp)       # Disabled - needs OpenAI configuration
+app.register_blueprint(library_bp)        # Essential - poster library and gallery
+app.register_blueprint(legal_bp)          # Essential - privacy policy, terms of service
+# app.register_blueprint(payments_bp)     # Disabled - needs Stripe configuration
+# app.register_blueprint(storage_bp)      # Disabled - needs S3/R2 configuration
+# app.register_blueprint(ads_bp)          # Disabled - needs subscription logic
+# app.register_blueprint(ads_portal_bp)   # Disabled - needs Stripe portal
+app.register_blueprint(me_bp)             # Essential - user profile and account management
+app.register_blueprint(auth_alias_bp)     # Essential - /api/auth/whoami endpoint
+# app.register_blueprint(webhooks_bp)     # Disabled - needs Stripe webhooks
+# app.register_blueprint(chat_bp)         # Disabled - needs OpenAI configuration
 
 # OpenAI client (only if key + lib present)
 oai_client: Optional["OpenAI"] = None

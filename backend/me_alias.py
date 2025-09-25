@@ -1,5 +1,4 @@
-from flask import Blueprint, jsonify
-from app_auth import get_current_user
+from flask import Blueprint, jsonify, g
 
 bp = Blueprint("auth_alias", __name__, url_prefix="/api/auth")
 
@@ -9,7 +8,7 @@ def whoami():
     Get current user session state for SPA.
     Auth is optional: if no user, return null JSON.
     """
-    user = get_current_user()
+    user = getattr(g, 'user', None)
     if not user:
         return jsonify({"ok": True, "user": None}), 200
 
