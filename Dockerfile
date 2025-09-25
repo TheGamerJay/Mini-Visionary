@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
 # copy built frontend into Flask static
-COPY --from=frontend /frontend/dist /app/static
+COPY --from=frontend /frontend/dist /app/backend/static
 
 # Railway target port is 8080
 EXPOSE 8080
