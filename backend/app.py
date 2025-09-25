@@ -433,13 +433,19 @@ def add_text_to_poster():
     except Exception as e:
         return {"ok": False, "error": str(e)}, 500
 
+# ---------------------- STATIC FILE ROUTE ----------------------
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    """Custom static file handler to ensure proper serving"""
+    return send_from_directory(app.static_folder, filename)
+
 # ---------------------- SPA ROUTES ----------------------
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def spa(path):
     """Serve React SPA with proper fallback to index.html"""
-    # Don't intercept API routes
-    if path.startswith("api/") or path.startswith("uploads/") or path.startswith("storage/"):
+    # Don't intercept API routes or static files
+    if path.startswith("api/") or path.startswith("uploads/") or path.startswith("storage/") or path.startswith("static/"):
         abort(404)
 
     # If path exists as static file, serve it directly (CSS, JS, assets)
@@ -475,13 +481,14 @@ def spa(path):
         resp.headers["X-Frame-Options"] = "DENY"
         resp.headers["X-XSS-Protection"] = "1; mode=block"
 
-        # Basic CSP allowing AdSense and self-hosted assets
+        # Basic CSP for now (AdSense disabled until approval)
         csp = ("default-src 'self'; "
-               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
+               "script-src 'self' 'unsafe-inline'; "
                "style-src 'self' 'unsafe-inline'; "
-               "img-src 'self' data: https:; "
-               "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://tpc.googlesyndication.com; "
-               "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com")
+               "img-src 'self' data: https: blob:; "
+               "connect-src 'self'; "
+               "frame-src 'self'; "
+               "object-src 'none'; base-uri 'self'")
         resp.headers["Content-Security-Policy"] = csp
 
         return resp
