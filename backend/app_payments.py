@@ -17,21 +17,21 @@ payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
 
 # ---- PRODUCT CATALOG (server authority) ----
 PRODUCTS = {
-"starter": {{
+"starter": {
     "name": "Starter Pack",
         "desc": "60 poster credits (6 posters)",
         "credits": 60,
         "amount_cents": 900,  # $9
         "stripe_price": os.getenv("STORE_PRICE_STARTER"),
     },
-    "standard": {{
+    "standard": {
     "name": "Standard Pack",
         "desc": "100 poster credits (10 posters)",
         "credits": 100,
         "amount_cents": 1500,  # $15
         "stripe_price": os.getenv("STORE_PRICE_STANDARD"),
     },
-    "studio": {{
+    "studio": {
     "name": "Studio Pack",
         "desc": "400 poster credits (40 posters)",
         "credits": 400,
@@ -359,21 +359,21 @@ payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
 
 # ---- PRODUCT CATALOG (server authority) ----
 PRODUCTS = {
-"starter": {{
+"starter": {
     "name": "Starter Pack",
         "desc": "60 poster credits (6 posters)",
         "credits": 60,
         "amount_cents": 900,  # $9
         "stripe_price": os.getenv("STORE_PRICE_STARTER"),
     },
-    "standard": {{
+    "standard": {
     "name": "Standard Pack",
         "desc": "100 poster credits (10 posters)",
         "credits": 100,
         "amount_cents": 1500,  # $15
         "stripe_price": os.getenv("STORE_PRICE_STANDARD"),
     },
-    "studio": {{
+    "studio": {
     "name": "Studio Pack",
         "desc": "400 poster credits (40 posters)",
         "credits": 400,
