@@ -5,14 +5,18 @@ import smtplib
 from email.message import EmailMessage
 from typing import Optional, Sequence
 
-# ---- BRAND/SENDER ----
+# ---- BRAND/SENDER (Mini Visionary) ----
+BRAND_NAME = "Mini Visionary"
+BRAND_TAGLINE = "If you can dream it, we can poster it."
+SUPPORT_EMAIL = "support@minivisionary.com"
+
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")           # set in Railway
-FROM_EMAIL = os.getenv("FROM_EMAIL", "support@minidreamposter.com")
+FROM_EMAIL = os.getenv("FROM_EMAIL", SUPPORT_EMAIL)
 
 class MailError(Exception):
     pass
 
-def send_email_post(to: str, subject: str, html: str, cc=None, bcc=None, reply_to=None):
+def send_email_post(to: str | Sequence[str], subject: str, html: str, cc=None, bcc=None, reply_to=None):
     """
     Sends email via Resend POST /emails
     Docs: https://resend.com/docs/api-reference/emails/send-email
@@ -21,8 +25,8 @@ def send_email_post(to: str, subject: str, html: str, cc=None, bcc=None, reply_t
         raise MailError("Missing RESEND_API_KEY")
 
     payload = {
-        "from": f"Mini Dream Poster <{FROM_EMAIL}>",
-        "to": [to] if isinstance(to, str) else to,
+        "from": f"{BRAND_NAME} <{FROM_EMAIL}>",
+        "to": [to] if isinstance(to, str) else list(to),
         "subject": subject,
         "html": html,
     }
@@ -45,8 +49,8 @@ def send_email_post(to: str, subject: str, html: str, cc=None, bcc=None, reply_t
 
 # ---- LEGACY FUNCTIONS (keep for compatibility) ----
 # Preferred: use RESEND_FROM (domain sender). Fallback: FROM_EMAIL (Gmail/SMTP).
-RESEND_FROM = os.getenv("RESEND_FROM")  # e.g., noreply@minidreamposter.com
-FROM_NAME = os.getenv("FROM_NAME", "Mini Dream Poster")
+RESEND_FROM = os.getenv("RESEND_FROM")  # e.g., noreply@minivisionary.com
+FROM_NAME = os.getenv("FROM_NAME", BRAND_NAME)
 
 def _fmt_sender() -> str:
     email = RESEND_FROM or FROM_EMAIL
@@ -161,28 +165,28 @@ def send_email(
     except Exception as e:
         raise MailError(str(e)) from e
 
-# ---- Convenience templates ----
+# ---- Convenience templates (Mini Visionary) ----
 def poster_ready_email(user_email: str, poster_url: str, dashboard_url: Optional[str] = None) -> None:
-    subject = "🎨 Your Mini Dream Poster is ready!"
+    subject = f"🎨 Your {BRAND_NAME} poster is ready!"
     dash = dashboard_url or poster_url
     html = f"""
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial;">
-      <h2>Mini Dream Poster</h2>
+      <h2>{BRAND_NAME}</h2>
       <p>Your poster has finished rendering.</p>
       <p><a href="{poster_url}" target="_blank" style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:8px;">View Poster</a></p>
       <p>Manage all your posters here: <a href="{dash}" target="_blank">{dash}</a></p>
       <hr/>
-      <p style="color:#64748b;font-size:12px;">If you can dream it, we can poster it.</p>
+      <p style="color:#64748b;font-size:12px;">{BRAND_TAGLINE}</p>
     </div>
     """
     text = f"Your poster is ready: {poster_url}\nDashboard: {dash}"
     send_email(user_email, subject, html=html, text=text, tags={"event": "poster_ready"})
 
 def poster_failed_email(user_email: str, error_message: str) -> None:
-    subject = "⚠️ Mini Dream Poster failed"
+    subject = f"⚠️ {BRAND_NAME} failed"
     html = f"""
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial;">
-      <h2>Mini Dream Poster</h2>
+      <h2>{BRAND_NAME}</h2>
       <p>We couldn't complete your poster job.</p>
       <pre style="background:#0f172a;color:#e2e8f0;padding:12px;border-radius:6px;white-space:pre-wrap">{error_message}</pre>
       <p>Please try again. If this keeps happening, reply to this email.</p>
@@ -192,34 +196,34 @@ def poster_failed_email(user_email: str, error_message: str) -> None:
     send_email(user_email, subject, html=html, text=text, tags={"event": "poster_failed"})
 
 def welcome_email(user_email: str, display_name: Optional[str] = None) -> None:
-    subject = "Welcome to Mini Dream Poster 🌟"
+    subject = f"Welcome to {BRAND_NAME} 🌟"
     name = display_name or "there"
     html = f"""
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial;">
       <h2>Welcome, {name}!</h2>
-      <p>Thanks for joining <strong>Mini Dream Poster</strong>.</p>
+      <p>Thanks for joining <strong>{BRAND_NAME}</strong>.</p>
       <ul>
         <li>Text → Poster (describe it)</li>
         <li>Image → Poster (upload and enhance)</li>
         <li>Auto titles, taglines, and borders</li>
       </ul>
-      <p style="color:#64748b;font-size:12px;">If you can dream it, we can poster it.</p>
+      <p style="color:#64748b;font-size:12px;">{BRAND_TAGLINE}</p>
     </div>
     """
-    text = f"Welcome {name}! Mini Dream Poster is ready for you."
+    text = f"Welcome {name}! {BRAND_NAME} is ready for you."
     send_email(user_email, subject, html=html, text=text, tags={"event": "welcome"})
 
 def send_reset_email(user_email: str, reset_url: str) -> None:
-    subject = "Reset your Mini Dream Poster password"
+    subject = f"Reset your {BRAND_NAME} password"
     html = f"""
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial;">
       <h2>Password Reset</h2>
-      <p>You requested to reset your password for Mini Dream Poster.</p>
+      <p>You requested to reset your password for {BRAND_NAME}.</p>
       <p><a href="{reset_url}" target="_blank" style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:8px;">Reset Password</a></p>
       <p>This link will expire in 24 hours.</p>
       <p>If you didn't request this, you can safely ignore this email.</p>
       <hr/>
-      <p style="color:#64748b;font-size:12px;">If you can dream it, we can poster it.</p>
+      <p style="color:#64748b;font-size:12px;">{BRAND_TAGLINE}</p>
     </div>
     """
     text = f"Reset your password: {reset_url}\n\nThis link expires in 24 hours."

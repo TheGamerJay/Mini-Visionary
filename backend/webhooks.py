@@ -1,129 +1,160 @@
-import os, json, stripe
+# webhooks.py
+import os
+import stripe
 from flask import Blueprint, request, jsonify
-from models import get_session, User
+from models import get_session, User, CreditEventType
+from wallet import grant_credits
 
 bp = Blueprint("webhooks", __name__, url_prefix="/api")
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-WH_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+# --- Stripe config ---
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "").strip()
+WH_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
 
-PRICE_STARTER  = os.getenv("STORE_PRICE_STARTER")   # 60 credits
-PRICE_STANDARD = os.getenv("STORE_PRICE_STANDARD")  # 100 credits
-PRICE_STUDIO   = os.getenv("STORE_PRICE_STUDIO")    # 400 credits
-PRICE_ADFREE   = os.getenv("STORE_PRICE_ADFREE")    # subscription
+# Price IDs from env (Stripe Dashboard) -> map to credits
+PRICE_STARTER  = (os.getenv("STORE_PRICE_STARTER")  or "").strip()  # 60 credits
+PRICE_STANDARD = (os.getenv("STORE_PRICE_STANDARD") or "").strip()  # 100 credits
+PRICE_STUDIO   = (os.getenv("STORE_PRICE_STUDIO")   or "").strip()  # 400 credits
+PRICE_ADFREE   = (os.getenv("STORE_PRICE_ADFREE")   or "").strip()  # subscription price
 
 CREDIT_MAP = {
-    PRICE_STARTER: 60,
+    PRICE_STARTER:  60,
     PRICE_STANDARD: 100,
-    PRICE_STUDIO: 400,
+    PRICE_STUDIO:   400,
 }
 
-# Simple in-memory set for event idempotency (in production, use database)
-_processed_events = set()
+# ---- Simple in-memory idempotency (for prod, store in DB) ----
+_PROCESSED: set[str] = set()
+_MAX_IDS = 2000  # rotate to avoid unbounded growth
 
-def _already_processed(event_id: str) -> bool:
-    """Check if event has already been processed (idempotency)"""
-    if event_id in _processed_events:
+def _mark_processed(eid: str) -> bool:
+    """True if already processed; otherwise mark and return False."""
+    global _PROCESSED
+    if not eid:
+        return False
+    if eid in _PROCESSED:
         return True
-    _processed_events.add(event_id)
+    if len(_PROCESSED) >= _MAX_IDS:
+        # crude rotation
+        _PROCESSED.clear()
+    _PROCESSED.add(eid)
     return False
 
-def _add_credits(user_id: int, amount: int):
-    """Add credits to user's balance"""
+def _set_adfree_by_user_id(user_id: int, active: bool, customer_id: str | None = None):
     with get_session() as s:
         user = s.query(User).filter_by(id=user_id).first()
-        if user:
-            user.credits = (user.credits or 0) + amount
-            s.commit()
+        if not user:
+            return
+        user.ad_free = bool(active)
+        if customer_id:
+            user.stripe_customer_id = customer_id
+        s.commit()
 
-def _set_adfree(user_id: int, flag: bool, customer_id: str = None):
-    """Set user's ad_free status and optionally save customer_id"""
+def _set_adfree_by_customer(customer_id: str, active: bool):
+    if not customer_id:
+        return
     with get_session() as s:
-        user = s.query(User).filter_by(id=user_id).first()
-        if user:
-            user.ad_free = flag
-            if customer_id:
-                user.stripe_customer_id = customer_id
-            s.commit()
+        user = s.query(User).filter_by(stripe_customer_id=customer_id).first()
+        if not user:
+            return
+        user.ad_free = bool(active)
+        s.commit()
+
+def _resolve_user_id_from_session(sess: dict) -> int | None:
+    """
+    Prefer client_reference_id; fallback to metadata.user_id (both set in your checkout step).
+    """
+    raw = sess.get("client_reference_id") or (sess.get("metadata") or {}).get("user_id")
+    try:
+        return int(raw) if raw is not None else None
+    except Exception:
+        return None
 
 @bp.post("/stripe-webhook")
 def stripe_webhook():
-    """Complete Stripe webhook handler for credits and ad-free subscriptions"""
+    """Stripe webhook handler: credits purchases + ad-free subscriptions."""
+    if not WH_SECRET:
+        # Fail fast if the webhook secret isn't set
+        return jsonify(ok=False, error="webhook_secret_not_configured"), 500
+
     payload = request.data
     sig = request.headers.get("Stripe-Signature", "")
 
     try:
         event = stripe.Webhook.construct_event(payload=payload, sig_header=sig, secret=WH_SECRET)
-    except Exception as e:
+    except stripe.error.SignatureVerificationError as e:
         return jsonify(ok=False, error=f"signature_error: {e}"), 400
+    except Exception as e:
+        return jsonify(ok=False, error=f"webhook_parse_error: {e}"), 400
 
-    # Idempotency check
+    # Idempotency
     ev_id = event.get("id")
-    if not ev_id or _already_processed(ev_id):
+    if _mark_processed(ev_id):
         return ("", 200)
 
-    event_type = event.get("type", "")
-    obj = event.get("data", {}).get("object", {})
+    etype = event.get("type", "")
+    obj = event.get("data", {}).get("object", {}) or {}
 
-    # 1) Checkout completed (one-off OR subscription)
-    if event_type == "checkout.session.completed":
+    # --- 1) Checkout session completed (one-off or subscription) ---
+    if etype == "checkout.session.completed":
         mode = obj.get("mode")
-        user_id = obj.get("client_reference_id")
-        try:
-            user_id = int(user_id)
-        except Exception:
-            user_id = None
+        user_id = _resolve_user_id_from_session(obj)
 
         if mode == "subscription":
-            # Ad-Free monthly subscription
+            # Activate Ad-Free on start
             if user_id is not None:
-                customer_id = obj.get("customer")
-                _set_adfree(user_id, True, customer_id)
-                print(f"✅ Activated Ad-Free subscription for user {user_id}")
+                _set_adfree_by_user_id(user_id, True, customer_id=obj.get("customer"))
             return ("", 200)
 
-        # One-off credit purchase
         if mode == "payment" and user_id is not None:
-            # Get line items to determine which credit pack was purchased
-            line_items = obj.get("line_items")
-            if not line_items:
-                try:
-                    sess = stripe.checkout.Session.retrieve(obj["id"], expand=["line_items.data.price"])
-                    line_items = sess.get("line_items", {}).get("data", [])
-                except Exception:
-                    line_items = []
+            # Need expanded line items to get price IDs reliably
+            try:
+                sess = stripe.checkout.Session.retrieve(
+                    obj["id"],
+                    expand=["line_items.data.price"]
+                )
+                items = (sess.get("line_items") or {}).get("data", [])
+            except Exception:
+                items = []
 
             total_credits = 0
-            for li in line_items or []:
-                price_obj = li.get("price")
-                if isinstance(price_obj, dict):
-                    price_id = price_obj.get("id")
-                else:
-                    price_id = price_obj
-
+            for li in items:
+                price = (li.get("price") or {})
+                price_id = price.get("id") or li.get("price")  # fallback
                 qty = int(li.get("quantity") or 1)
                 if price_id in CREDIT_MAP:
                     total_credits += CREDIT_MAP[price_id] * qty
 
             if total_credits > 0:
-                _add_credits(user_id, total_credits)
-                print(f"✅ Added {total_credits} credits to user {user_id}")
+                grant_credits(
+                    user_id=user_id,
+                    amount=total_credits,
+                    event=CreditEventType.PURCHASE,
+                    ref=f"stripe:{obj.get('id')}",
+                    notes=f"checkout purchase {total_credits} credits"
+                )
+            return ("", 200)
+
         return ("", 200)
 
-    # 2) Subscription canceled/inactive → remove ad_free
-    if event_type in ("customer.subscription.deleted", "customer.subscription.updated"):
+    # --- 2) Invoice paid (subscription renewals) ---
+    # This also fires on the first invoice for some subscription flows.
+    if etype == "invoice.paid":
+        # If you only have one subscription type (Ad-Free), simply mark active
+        customer_id = obj.get("customer")
+        # Optional: you can check each line to verify it's for PRICE_ADFREE
+        _set_adfree_by_customer(customer_id, True)
+        return ("", 200)
+
+    # --- 3) Subscription lifecycle updates that disable Ad-Free ---
+    if etype in ("customer.subscription.deleted", "customer.subscription.updated"):
         status = obj.get("status")
         customer = obj.get("customer")
-
-        # Find user by customer ID and update ad_free status
-        with get_session() as s:
-            user = s.query(User).filter_by(stripe_customer_id=customer).first()
-            if user:
-                if event_type == "customer.subscription.deleted" or status in ("canceled", "unpaid", "incomplete_expired", "past_due"):
-                    user.ad_free = False
-                    s.commit()
-                    print(f"✅ Deactivated Ad-Free subscription for user {user.id}")
+        if etype == "customer.subscription.deleted" or status in (
+            "canceled", "unpaid", "incomplete_expired", "past_due"
+        ):
+            _set_adfree_by_customer(customer, False)
         return ("", 200)
 
-    # 3) Other events - no action needed
+    # --- 4) Other events: acknowledge ---
     return ("", 200)

@@ -37,6 +37,11 @@ except Exception:
 
 load_dotenv()
 
+# ---------------------- BRAND ----------------------
+BRAND_NAME = "Mini Visionary"
+BRAND_TAGLINE = "AI-Powered Poster Generation"
+SUPPORT_EMAIL = "support@minivisionary.com"
+
 # ---------------------- ENV / CONFIG ----------------------
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
@@ -63,23 +68,25 @@ app.config.update(
 )
 
 # CORS configuration - strict for production
-cors_origins_env = os.getenv("CORS_ORIGINS", "https://minidreamposter.soulbridgeai.com")
-cors_origins = cors_origins_env.split(",") + ["http://localhost:5173"]  # prod + dev
+# You can override with CORS_ORIGINS env (comma-separated)
+default_cors = "https://minivisionary.com,https://minivisionary.soulbridgeai.com"
+cors_origins_env = os.getenv("CORS_ORIGINS", default_cors)
+cors_origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()] + ["http://localhost:5173"]
 CORS(app, supports_credentials=True, origins=cors_origins)
 
 # Initialize bcrypt
 bcrypt.init_app(app)
 
 # Register blueprints
-app.register_blueprint(new_auth_bp)  # Use new JWT auth
+app.register_blueprint(new_auth_bp)   # Use new JWT auth
 app.register_blueprint(poster_bp)
 app.register_blueprint(library_bp)
 app.register_blueprint(legal_bp)
-app.register_blueprint(payments_bp)  # Stripe payments
-app.register_blueprint(storage_bp)   # S3/R2 storage
-app.register_blueprint(ads_bp)       # Ad-free subscriptions
+app.register_blueprint(payments_bp)   # Stripe payments
+app.register_blueprint(storage_bp)    # S3/R2 storage
+app.register_blueprint(ads_bp)        # Ad-free subscriptions
 app.register_blueprint(ads_portal_bp) # Customer portal
-app.register_blueprint(me_bp)        # User info endpoint
+app.register_blueprint(me_bp)         # User info endpoint
 app.register_blueprint(auth_alias_bp) # /api/auth/whoami alias
 app.register_blueprint(webhooks_bp)   # Stripe webhooks
 app.register_blueprint(chat_bp)       # OpenAI chat
@@ -135,8 +142,6 @@ def overlay_text_cinematic(poster_path: str, title: str = "", tagline: str = "")
     draw = ImageDraw.Draw(img)
 
     # Try to use a nicer font if present, else default
-    font_title = None
-    font_tag = None
     try:
         font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", size=max(48, W // 16))
     except Exception:
@@ -159,7 +164,6 @@ def overlay_text_cinematic(poster_path: str, title: str = "", tagline: str = "")
     # Draw title
     if title:
         tw, th = draw.textlength(title, font=font_title), font_title.size
-        # textlength may not give height; estimate with font metrics
         try:
             bbox = draw.textbbox((0, 0), title, font=font_title)
             th = bbox[3] - bbox[1]
@@ -171,7 +175,7 @@ def overlay_text_cinematic(poster_path: str, title: str = "", tagline: str = "")
         y = H - th - max(20, H // 18)
 
         # subtle glow
-        for r in range(6):
+        for _ in range(6):
             draw.text((x, y), title, font=font_title, fill=(255, 255, 255, 80))
         draw.text((x, y), title, font=font_title, fill=(255, 255, 255, 230))
 
@@ -227,7 +231,7 @@ def version():
         "git": os.getenv("GIT_SHA", "dev"),
         "railway_sha": os.getenv("RAILWAY_GIT_COMMIT_SHA"),
         "github_sha": os.getenv("GITHUB_SHA"),
-        "service": "mini-dream-poster",
+        "service": "mini-visionary",
         "timestamp": datetime.utcnow().isoformat(),
         "static_files": static_files,
         "openai": bool(oai_client)
@@ -240,8 +244,8 @@ def api_email_send():
     """Send email via Resend API"""
     data = request.get_json(silent=True) or {}
     to = data.get("to")
-    subject = data.get("subject", "Hello from Mini Dream Poster")
-    html = data.get("html", "<p>Test email.</p>")
+    subject = data.get("subject", f"Hello from {BRAND_NAME}")
+    html = data.get("html", f"<p>Test email from {BRAND_NAME}.</p>")
 
     if not to:
         return jsonify({"ok": False, "error": "Missing 'to'"}), 400
@@ -262,7 +266,6 @@ def storage(key: str):
 @app.get("/uploads/<path:filename>")
 def serve_upload(filename):
     return send_from_directory(UPLOAD_DIR, filename, as_attachment=False)
-
 
 @app.post("/api/poster/add-text")
 def add_text_to_poster():
@@ -292,7 +295,6 @@ def add_text_to_poster():
     except Exception as e:
         return {"ok": False, "error": str(e)}, 500
 
-
 # ---------------------- SPA ROUTES ----------------------
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -306,11 +308,20 @@ def spa(path):
     static_path = os.path.join(app.static_folder or "static", path)
     if path and os.path.exists(static_path) and not path.endswith('.html'):
         resp = make_response(send_from_directory(app.static_folder or "static", path))
-        # Add cache-busting headers for CSS/JS files to force reload
-        if path.endswith(('.css', '.js')):
+
+        # Optimal caching: hashed assets get long-term cache, others no-cache
+        if path.startswith('assets/') and ('-' in path):
+            # Hashed assets (e.g., index-CckwNrXN.css) - cache for 1 year
+            resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif path.endswith(('.css', '.js')):
+            # Non-hashed CSS/JS - no cache
             resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             resp.headers["Pragma"] = "no-cache"
             resp.headers["Expires"] = "0"
+        else:
+            # Other static files (favicon, images) - moderate cache
+            resp.headers["Cache-Control"] = "public, max-age=86400"  # 1 day
+
         return resp
 
     # Always serve index.html with no-cache headers for SPA routing
@@ -320,6 +331,21 @@ def spa(path):
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         resp.headers["Pragma"] = "no-cache"
         resp.headers["Expires"] = "0"
+
+        # Basic security headers
+        resp.headers["X-Content-Type-Options"] = "nosniff"
+        resp.headers["X-Frame-Options"] = "DENY"
+        resp.headers["X-XSS-Protection"] = "1; mode=block"
+
+        # Basic CSP allowing AdSense and self-hosted assets
+        csp = ("default-src 'self'; "
+               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; "
+               "style-src 'self' 'unsafe-inline'; "
+               "img-src 'self' data: https:; "
+               "connect-src 'self' https://pagead2.googlesyndication.com; "
+               "frame-src https://googleads.g.doubleclick.net")
+        resp.headers["Content-Security-Policy"] = csp
+
         return resp
     else:
         return "<h1>React app not found</h1><p>Make sure the frontend is built and copied to static/</p>", 404
@@ -332,5 +358,5 @@ def healthz():
 if __name__ == "__main__":
     # Initialize database
     init_db()
-    port = int(os.getenv("PORT", "8000"))
+    port = int(os.getenv("PORT", "8080"))  # fallback is 8080 now
     app.run(host="0.0.0.0", port=port)

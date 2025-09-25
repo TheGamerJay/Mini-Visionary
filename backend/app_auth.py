@@ -1,285 +1,60 @@
-# app_auth.py
-from __future__ import annotations
 import os
-import secrets
-from datetime import datetime, timedelta
-from typing import Optional
+import stripe
+from flask import Blueprint, jsonify, g, current_app
+from auth import auth_required
+from models import get_session, User  # <- to read/update stripe_customer_id
 
-from flask import Blueprint, request, jsonify, session, g
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
+bp = Blueprint("ads", __name__, url_prefix="/api/ads")
 
-from models import (
-    get_session, User, PasswordReset, CreditLedger,
-    CreditEventType
-)
-from mailer import send_reset_email
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+PRICE_ADFREE = os.getenv("STRIPE_ADFREE_PRICE")  # price_XXX from Stripe
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
-# Configuration
-SIGNUP_BONUS_CREDITS = 20
-RESET_TOKEN_HOURS = 24
+@bp.post("/checkout")
+@auth_required
+def adfree_checkout():
+    """Create Ad-Free subscription Checkout session."""
+    if not stripe.api_key:
+        return jsonify(ok=False, error="stripe_api_key_missing"), 500
+    if not PRICE_ADFREE:
+        return jsonify(ok=False, error="price_not_configured"), 500
 
-def get_current_user() -> Optional[User]:
-    """Get current user from session"""
-    user_id = session.get("user_id")
-    if not user_id:
-        return None
-
+    # Fetch minimal user fields, close session immediately
     with get_session() as s:
-        return s.query(User).filter_by(id=user_id, is_deleted=False).first()
+        u = s.query(User.id, User.email, User.stripe_customer_id).filter_by(id=g.user_id).first()
 
-@auth_bp.post("/register")
-def register():
-    """
-    Register new user
-    Body: {email, password, display_name, accept_terms}
-    """
-    data = request.get_json()
-    if not data:
-        return {"ok": False, "error": "JSON body required"}, 400
+    if not u:
+        return jsonify(ok=False, error="user_not_found"), 404
 
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
-    display_name = data.get("display_name", "").strip()
-    accept_terms = data.get("accept_terms", False)
+    try:
+        customer_id = u.stripe_customer_id
 
-    # Validation
-    if not email or not password or not display_name:
-        return {"ok": False, "error": "email, password, and display_name required"}, 400
+        # Create a Stripe customer if we don't have one yet
+        if not customer_id:
+            cust = stripe.Customer.create(email=u.email, metadata={"user_id": str(u.id)})
+            customer_id = cust.id
+            # persist on our side
+            with get_session() as s:
+                s.query(User).filter_by(id=u.id).update({"stripe_customer_id": customer_id})
+                s.commit()
 
-    if not accept_terms:
-        return {"ok": False, "error": "You must accept Terms and Privacy Policy"}, 400
-
-    if len(password) < 8:
-        return {"ok": False, "error": "Password must be at least 8 characters"}, 400
-
-    with get_session() as s:
-        # Check if user exists
-        existing = s.query(User).filter_by(email=email).first()
-        if existing:
-            return {"ok": False, "error": "Email already registered"}, 409
-
-        # Create user
-        user = User(
-            email=email,
-            password_hash=generate_password_hash(password),
-            display_name=display_name,
-            credits=SIGNUP_BONUS_CREDITS,
-            accept_terms=bool(accept_terms)
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            customer=customer_id,
+            line_items=[{"price": PRICE_ADFREE, "quantity": 1}],
+            client_reference_id=str(u.id),
+            metadata={"user_id": str(u.id), "product": "ad_free_subscription"},
+            success_url=f"{FRONTEND_ORIGIN}/settings?adfree=success&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{FRONTEND_ORIGIN}/settings?adfree=cancel",
+            allow_promotion_codes=False,
+            billing_address_collection="auto",
+            customer_update={"address": "auto", "name": "auto"},
+            automatic_tax={"enabled": True},
         )
-        s.add(user)
-        s.flush()  # Ensures user.id is available
 
-        # Add signup bonus to ledger
-        s.add(CreditLedger(
-            user_id=user.id,
-            event=CreditEventType.GRANT,
-            amount=SIGNUP_BONUS_CREDITS,
-            ref="signup_bonus",
-            notes="Welcome bonus"
-        ))
-        s.commit()
+        return jsonify(ok=True, url=session.url), 200
 
-        # Auto-login
-        session["user_id"] = user.id
-
-        return {
-            "ok": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "display_name": user.display_name,
-                "credits": user.credits,
-                "avatar_url": user.avatar_url
-            }
-        }
-
-@auth_bp.post("/login")
-def login():
-    """
-    Login user
-    Body: {email, password}
-    """
-    data = request.get_json()
-    if not data:
-        return {"ok": False, "error": "JSON body required"}, 400
-
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
-
-    if not email or not password:
-        return {"ok": False, "error": "email and password required"}, 400
-
-    with get_session() as s:
-        user = s.query(User).filter_by(email=email, is_deleted=False).first()
-        if not user or not check_password_hash(user.password_hash, password):
-            return {"ok": False, "error": "Invalid email or password"}, 401
-
-        session["user_id"] = user.id
-
-        return {
-            "ok": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "display_name": user.display_name,
-                "credits": user.credits,
-                "avatar_url": user.avatar_url
-            }
-        }
-
-@auth_bp.post("/logout")
-def logout():
-    """Logout user"""
-    session.clear()
-    return {"ok": True}
-
-@auth_bp.post("/forgot")
-def forgot_password():
-    """
-    Send password reset email
-    Body: {email}
-    """
-    data = request.get_json()
-    if not data:
-        return {"ok": False, "error": "JSON body required"}, 400
-
-    email = data.get("email", "").strip().lower()
-    if not email:
-        return {"ok": False, "error": "email required"}, 400
-
-    with get_session() as s:
-        user = s.query(User).filter_by(email=email, is_deleted=False).first()
-        if not user:
-            # Don't reveal if email exists or not
-            return {"ok": True, "message": "If that email is registered, you'll receive a reset link"}
-
-        # Generate reset token
-        token = secrets.token_urlsafe(32)
-        expires_at = datetime.utcnow() + timedelta(hours=RESET_TOKEN_HOURS)
-
-        reset = PasswordReset(
-            user_id=user.id,
-            token=token,
-            expires_at=expires_at
-        )
-        s.add(reset)
-        s.commit()
-
-        # Send email
-        base_url = request.headers.get("Origin") or os.getenv("PUBLIC_APP_URL", "http://localhost:5173")
-        reset_url = f"{base_url}/reset?token={token}"
-
-        try:
-            send_reset_email(user.email, reset_url)
-        except Exception as e:
-            print(f"Failed to send reset email: {e}")
-            # Still return success to not reveal if email exists
-
-        return {"ok": True, "message": "If that email is registered, you'll receive a reset link"}
-
-@auth_bp.post("/reset")
-def reset_password():
-    """
-    Reset password with token
-    Body: {token, password}
-    """
-    data = request.get_json()
-    if not data:
-        return {"ok": False, "error": "JSON body required"}, 400
-
-    token = data.get("token", "").strip()
-    password = data.get("password", "")
-
-    if not token or not password:
-        return {"ok": False, "error": "token and password required"}, 400
-
-    if len(password) < 8:
-        return {"ok": False, "error": "Password must be at least 8 characters"}, 400
-
-    with get_session() as s:
-        from sqlalchemy import and_
-        reset = s.query(PasswordReset).filter(
-            and_(
-                PasswordReset.token == token,
-                PasswordReset.used == False,
-                PasswordReset.expires_at > datetime.utcnow()
-            )
-        ).first()
-
-        if not reset:
-            return {"ok": False, "error": "Invalid or expired reset token"}, 400
-
-        # Update user password
-        user = s.query(User).filter_by(id=reset.user_id).first()
-        if not user:
-            return {"ok": False, "error": "User not found"}, 404
-
-        user.password_hash = generate_password_hash(password)
-        reset.used = True
-        s.commit()
-
-        # Auto-login
-        session["user_id"] = user.id
-
-        return {
-            "ok": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "display_name": user.display_name,
-                "credits": user.credits,
-                "avatar_url": user.avatar_url
-            }
-        }
-
-@auth_bp.get("/whoami")
-def whoami():
-    """Get current user session state for SPA"""
-    user = get_current_user()
-    if not user:
-        return jsonify(None), 200
-
-    # Return only what the UI needs
-    return jsonify({
-        "id": user.id,
-        "email": user.email,
-        "display_name": getattr(user, "display_name", None),
-        "avatar_url": getattr(user, "avatar_url", None),
-    }), 200
-
-@auth_bp.get("/me")
-def get_me():
-    """Get current user profile"""
-    user = get_current_user()
-    if not user:
-        return {"ok": False, "error": "Not authenticated"}, 401
-
-    return {
-        "ok": True,
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "display_name": user.display_name,
-            "credits": user.credits,
-            "avatar_url": user.avatar_url,
-            "plan": user.plan,
-            "created_at": user.created_at.isoformat()
-        }
-    }
-
-# Auth middleware function
-def require_auth():
-    """Decorator to require authentication and attach g.user"""
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            user = get_current_user()
-            if not user:
-                return {"ok": False, "error": "Authentication required"}, 401
-            g.user = user
-            return f(*args, **kwargs)
-        return wrapper
-    return decorator
+    except stripe.error.StripeError as e:
+        current_app.logger.exception("Stripe Checkout error")
+        return jsonify(ok=False, error="stripe_error"), 502

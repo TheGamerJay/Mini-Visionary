@@ -11,13 +11,20 @@ bcrypt = Bcrypt()
 bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 SECRET = os.getenv("SECRET_KEY", "dev-secret")
-TTL = int(os.getenv("JWT_EXPIRES_MIN", "43200")) * 60  # 30 days default
+# Default: 30 days in minutes -> seconds
+TTL = int(os.getenv("JWT_EXPIRES_MIN", "43200")) * 60
 
-def get_user_by_email(email):
+# Brand-aware defaults
+PUBLIC_APP_URL = os.getenv("PUBLIC_APP_URL", "https://app.minivisionary.com")
+
+def get_user_by_email(email: str):
+    email = (email or "").lower().strip()
+    if not email:
+        return None
     with get_session() as s:
-        return s.query(User).filter_by(email=email.lower().strip()).first()
+        return s.query(User).filter_by(email=email).first()
 
-def create_user(display_name, email, password_hash):
+def create_user(display_name: str, email: str, password_hash: str):
     with get_session() as s:
         user = User(
             display_name=display_name,
@@ -36,16 +43,26 @@ def create_user(display_name, email, password_hash):
             "credits": user.credits
         }
 
-def verify_password(hashed, plain):
-    return bcrypt.check_password_hash(hashed, plain)
+def verify_password(hashed: str, plain: str) -> bool:
+    if not hashed or not plain:
+        return False
+    try:
+        return bcrypt.check_password_hash(hashed, plain)
+    except Exception:
+        return False
 
-def sign_jwt(user_id, email):
+def sign_jwt(user_id, email: str) -> str:
     now = int(time.time())
-    return jwt.encode(
-        {"sub": user_id, "email": email, "iat": now, "exp": now + TTL},
-        SECRET,
-        algorithm="HS256",
-    )
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "iat": now,
+        "exp": now + TTL,
+        # Optional: issuer/audience if you want
+        # "iss": "mini-visionary",
+        # "aud": "mini-visionary-web",
+    }
+    return jwt.encode(payload, SECRET, algorithm="HS256")
 
 def auth_required(fn):
     @wraps(fn)
@@ -53,15 +70,17 @@ def auth_required(fn):
         hdr = request.headers.get("Authorization", "")
         if not hdr.startswith("Bearer "):
             raise Unauthorized("Missing bearer token")
-        token = hdr.split(" ", 1)[1]
+        token = hdr.split(" ", 1)[1].strip()
         try:
             payload = jwt.decode(token, SECRET, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            raise Unauthorized("Token expired")
         except Exception:
             raise Unauthorized("Invalid token")
 
-        # Store user info in g for use in route handlers
+        # Load and attach current user
         with get_session() as s:
-            user = s.query(User).filter_by(id=payload["sub"]).first()
+            user = s.query(User).filter_by(id=payload.get("sub")).first()
             if not user:
                 raise Unauthorized("User not found")
             g.user_id = user.id
@@ -74,16 +93,15 @@ def auth_required(fn):
 @bp.post("/signup")
 def signup():
     data = request.get_json() or {}
-    display_name = data.get("display_name", "").strip()
-    email = data.get("email", "").lower().strip()
-    password = data.get("password", "")
+    display_name = (data.get("display_name") or "").strip()
+    email = (data.get("email") or "").lower().strip()
+    password = data.get("password") or ""
 
     if not (display_name and email and password and len(password) >= 8):
         return jsonify(ok=False, error="invalid_input"), 400
 
     # Check if user already exists
-    existing_user = get_user_by_email(email)
-    if existing_user:
+    if get_user_by_email(email):
         return jsonify(ok=False, error="email_exists"), 400
 
     hashed = bcrypt.generate_password_hash(password).decode()
@@ -95,8 +113,8 @@ def signup():
 @bp.post("/login")
 def login():
     data = request.get_json() or {}
-    email = data.get("email", "").lower().strip()
-    password = data.get("password", "")
+    email = (data.get("email") or "").lower().strip()
+    password = data.get("password") or ""
 
     user = get_user_by_email(email)
     if not user or not verify_password(user.password_hash, password):
@@ -123,22 +141,18 @@ def me():
 
 @bp.post("/forgot")
 def forgot():
-    import os
     from mailer import send_reset_email, MailError
 
     data = request.get_json() or {}
-    email = data.get("email", "").lower().strip()
+    email = (data.get("email") or "").lower().strip()
 
     if not email:
         return jsonify(ok=False, error="email_required"), 400
 
-    # Check if user exists (but don't reveal this in response)
     user = get_user_by_email(email)
 
     if user:
         try:
-            # Generate password reset token (24hr expiry)
-            import time
             now = int(time.time())
             reset_payload = {
                 "sub": user.id,
@@ -149,32 +163,28 @@ def forgot():
             }
             reset_token = jwt.encode(reset_payload, SECRET, algorithm="HS256")
 
-            # Build reset URL
-            frontend_url = os.getenv("PUBLIC_APP_URL", "https://app.minidreamposter.com")
-            reset_url = f"{frontend_url}/reset-password?token={reset_token}"
+            # Build reset URL (brand-aware default)
+            reset_url = f"{PUBLIC_APP_URL}/reset-password?token={reset_token}"
 
-            # Send email
             send_reset_email(user.email, reset_url)
-
         except MailError:
-            # Log the error but don't reveal it to user
+            # Log internally if you like; don't leak to client
             pass
 
-    # For security, always return success even if user doesn't exist
+    # Always return success to prevent user enumeration
     return jsonify(ok=True, message="reset_email_sent")
 
 @bp.post("/reset-password")
 def reset_password():
     """Reset password using token from email"""
     data = request.get_json() or {}
-    token = data.get("token", "").strip()
-    new_password = data.get("password", "")
+    token = (data.get("token") or "").strip()
+    new_password = data.get("password") or ""
 
-    if not token or not new_password or len(new_password) < 8:
+    if not token or len(new_password) < 8:
         return jsonify(ok=False, error="invalid_input"), 400
 
     try:
-        # Verify reset token
         payload = jwt.decode(token, SECRET, algorithms=["HS256"])
         if payload.get("type") != "password_reset":
             raise jwt.InvalidTokenError("Invalid token type")
@@ -182,18 +192,16 @@ def reset_password():
         user_id = payload["sub"]
         email = payload["email"]
 
-        # Find user and update password
         with get_session() as s:
             user = s.query(User).filter_by(id=user_id, email=email).first()
             if not user:
                 return jsonify(ok=False, error="user_not_found"), 404
 
-            # Hash new password and update
             hashed = bcrypt.generate_password_hash(new_password).decode()
             user.password_hash = hashed
             s.commit()
 
-            return jsonify(ok=True, message="password_reset_success")
+        return jsonify(ok=True, message="password_reset_success")
 
     except jwt.ExpiredSignatureError:
         return jsonify(ok=False, error="token_expired"), 400
@@ -207,22 +215,21 @@ def wallet():
     from models import CreditLedger, CreditEventType
 
     with get_session() as s:
-        # Get recent purchase receipts
-        receipts_query = s.query(CreditLedger).filter_by(
-            user_id=g.user_id,
-            event=CreditEventType.PURCHASE
-        ).order_by(CreditLedger.created_at.desc()).limit(10)
+        receipts_q = (s.query(CreditLedger)
+                        .filter_by(user_id=g.user_id, event=CreditEventType.PURCHASE)
+                        .order_by(CreditLedger.created_at.desc())
+                        .limit(10))
 
-        receipts = []
-        for receipt in receipts_query:
-            receipts.append({
-                "id": receipt.id,
-                "amount": receipt.amount,
-                "date": receipt.created_at.isoformat(),
-                "reference": receipt.ref,
-                "notes": receipt.notes
-            })
+        receipts = [{
+            "id": r.id,
+            "amount": r.amount,
+            "date": r.created_at.isoformat(),
+            "reference": r.ref,
+            "notes": r.notes
+        } for r in receipts_q]
 
-    return jsonify(ok=True,
-                  credits_remaining=g.user.credits or 0,
-                  receipts=receipts)
+    return jsonify(
+        ok=True,
+        credits_remaining=g.user.credits or 0,
+        receipts=receipts
+    )

@@ -1,16 +1,15 @@
 # app_library.py
 from __future__ import annotations
 from datetime import datetime
-from typing import Optional
 
 from flask import Blueprint, request, jsonify, g
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from models import (
     get_session, Poster, Asset, PosterJob, CreditLedger,
-    PosterStyle
+    PosterStyle, User
 )
-from app_auth import get_current_user, require_auth
+from app_auth import require_auth
 
 library_bp = Blueprint("library", __name__, url_prefix="/api")
 
@@ -39,9 +38,12 @@ def get_library():
             query = query.filter_by(style=PosterStyle(style_filter))
 
         if search:
+            like = f"%{search}%"
             query = query.filter(
-                func.lower(Poster.title).contains(search.lower()) |
-                func.lower(Poster.tagline).contains(search.lower())
+                or_(
+                    Poster.title.ilike(like),
+                    Poster.tagline.ilike(like)
+                )
             )
 
         # Get total count
@@ -55,14 +57,12 @@ def get_library():
         # Format response
         poster_list = []
         for poster in posters:
-            # Get associated asset
             asset = s.query(Asset).filter_by(id=poster.output_asset_id).first()
-
             poster_list.append({
                 "id": poster.id,
                 "title": poster.title,
                 "tagline": poster.tagline,
-                "style": poster.style.value,
+                "style": poster.style.value if poster.style else None,
                 "url": asset.public_url if asset else None,
                 "width": poster.width,
                 "height": poster.height,
@@ -71,7 +71,7 @@ def get_library():
                 "job_id": poster.job_id
             })
 
-        return {
+        return jsonify({
             "ok": True,
             "posters": poster_list,
             "pagination": {
@@ -80,7 +80,7 @@ def get_library():
                 "total": total,
                 "pages": (total + limit - 1) // limit
             }
-        }
+        })
 
 @library_bp.get("/posters/<int:poster_id>")
 @require_auth()
@@ -94,32 +94,35 @@ def get_poster(poster_id):
         ).first()
 
         if not poster:
-            return {"ok": False, "error": "Poster not found"}, 404
+            return jsonify({"ok": False, "error": "Poster not found"}), 404
 
-        # Get associated data
         asset = s.query(Asset).filter_by(id=poster.output_asset_id).first()
         job = s.query(PosterJob).filter_by(id=poster.job_id).first()
 
-        return {
+        job_payload = None
+        if job:
+            job_payload = {
+                "id": job.id,
+                "mode": job.mode.value if getattr(job, "mode", None) else None,
+                "prompt": job.prompt,
+                "status": job.status.value if getattr(job, "status", None) else None
+            }
+
+        return jsonify({
             "ok": True,
             "poster": {
                 "id": poster.id,
                 "title": poster.title,
                 "tagline": poster.tagline,
-                "style": poster.style.value,
+                "style": poster.style.value if poster.style else None,
                 "url": asset.public_url if asset else None,
                 "width": poster.width,
                 "height": poster.height,
                 "is_private": poster.is_private,
                 "created_at": poster.created_at.isoformat(),
-                "job": {
-                    "id": job.id,
-                    "mode": job.mode.value,
-                    "prompt": job.prompt,
-                    "status": job.status.value
-                } if job else None
+                "job": job_payload
             }
-        }
+        })
 
 @library_bp.put("/posters/<int:poster_id>")
 @require_auth()
@@ -130,7 +133,7 @@ def update_poster(poster_id):
     """
     data = request.get_json()
     if not data:
-        return {"ok": False, "error": "JSON body required"}, 400
+        return jsonify({"ok": False, "error": "JSON body required"}), 400
 
     with get_session() as s:
         poster = s.query(Poster).filter_by(
@@ -140,15 +143,15 @@ def update_poster(poster_id):
         ).first()
 
         if not poster:
-            return {"ok": False, "error": "Poster not found"}, 404
+            return jsonify({"ok": False, "error": "Poster not found"}), 404
 
         # Update fields if provided
         if "title" in data:
-            title = data["title"].strip() if data["title"] else None
+            title = (data["title"] or "").strip()
             poster.title = title[:160] if title else None
 
         if "tagline" in data:
-            tagline = data["tagline"].strip() if data["tagline"] else None
+            tagline = (data["tagline"] or "").strip()
             poster.tagline = tagline[:220] if tagline else None
 
         if "is_private" in data:
@@ -157,7 +160,7 @@ def update_poster(poster_id):
         poster.updated_at = datetime.utcnow()
         s.commit()
 
-        return {
+        return jsonify({
             "ok": True,
             "poster": {
                 "id": poster.id,
@@ -166,7 +169,7 @@ def update_poster(poster_id):
                 "is_private": poster.is_private,
                 "updated_at": poster.updated_at.isoformat()
             }
-        }
+        })
 
 @library_bp.delete("/posters/<int:poster_id>")
 @require_auth()
@@ -180,53 +183,55 @@ def delete_poster(poster_id):
         ).first()
 
         if not poster:
-            return {"ok": False, "error": "Poster not found"}, 404
+            return jsonify({"ok": False, "error": "Poster not found"}), 404
 
         poster.is_deleted = True
         poster.updated_at = datetime.utcnow()
         s.commit()
 
-        return {"ok": True, "message": "Poster deleted"}
+        return jsonify({"ok": True, "message": "Poster deleted"})
 
 @library_bp.get("/profile")
 @require_auth()
 def get_profile():
     """Get user profile with stats"""
     with get_session() as s:
-        # Get poster count
+        db_user = s.query(User).filter_by(id=g.user.id).first()
+        if not db_user:
+            return jsonify({"ok": False, "error": "User not found"}), 404
+
         poster_count = s.query(Poster).filter_by(
-            user_id=g.user.id,
+            user_id=db_user.id,
             is_deleted=False
         ).count()
 
-        # Get credit ledger summary
         credit_spent = s.query(func.sum(CreditLedger.amount)).filter(
-            CreditLedger.user_id == g.user.id,
+            CreditLedger.user_id == db_user.id,
             CreditLedger.event == 'spend'
         ).scalar() or 0
 
         credit_purchased = s.query(func.sum(CreditLedger.amount)).filter(
-            CreditLedger.user_id == g.user.id,
+            CreditLedger.user_id == db_user.id,
             CreditLedger.event == 'purchase'
         ).scalar() or 0
 
-        return {
+        return jsonify({
             "ok": True,
             "profile": {
-                "id": g.user.id,
-                "email": user.email,
-                "display_name": user.display_name,
-                "avatar_url": user.avatar_url,
-                "plan": user.plan,
-                "credits": user.credits,
-                "created_at": user.created_at.isoformat(),
+                "id": db_user.id,
+                "email": db_user.email,
+                "display_name": db_user.display_name,
+                "avatar_url": db_user.avatar_url,
+                "plan": db_user.plan,
+                "credits": db_user.credits,
+                "created_at": db_user.created_at.isoformat(),
                 "stats": {
                     "posters_created": poster_count,
                     "credits_spent": abs(credit_spent),
                     "credits_purchased": credit_purchased
                 }
             }
-        }
+        })
 
 @library_bp.put("/profile")
 @require_auth()
@@ -237,28 +242,32 @@ def update_profile():
     """
     data = request.get_json()
     if not data:
-        return {"ok": False, "error": "JSON body required"}, 400
+        return jsonify({"ok": False, "error": "JSON body required"}), 400
 
     with get_session() as s:
+        db_user = s.query(User).filter_by(id=g.user.id).first()
+        if not db_user:
+            return jsonify({"ok": False, "error": "User not found"}), 404
+
         if "display_name" in data:
-            display_name = data["display_name"].strip()
+            display_name = (data["display_name"] or "").strip()
             if not display_name:
-                return {"ok": False, "error": "Display name cannot be empty"}, 400
-            user.display_name = display_name[:120]
+                return jsonify({"ok": False, "error": "Display name cannot be empty"}), 400
+            db_user.display_name = display_name[:120]
 
         if "avatar_url" in data:
-            avatar_url = data["avatar_url"].strip() if data["avatar_url"] else None
-            user.avatar_url = avatar_url[:512] if avatar_url else None
+            avatar_url = (data["avatar_url"] or "").strip()
+            db_user.avatar_url = (avatar_url[:512] if avatar_url else None)
 
-        user.updated_at = datetime.utcnow()
+        db_user.updated_at = datetime.utcnow()
         s.commit()
 
-        return {
+        return jsonify({
             "ok": True,
             "profile": {
-                "id": g.user.id,
-                "display_name": user.display_name,
-                "avatar_url": user.avatar_url,
-                "updated_at": user.updated_at.isoformat()
+                "id": db_user.id,
+                "display_name": db_user.display_name,
+                "avatar_url": db_user.avatar_url,
+                "updated_at": db_user.updated_at.isoformat()
             }
-        }
+        })

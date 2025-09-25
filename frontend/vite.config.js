@@ -1,29 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    host: '0.0.0.0',
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
-  },
+  base: '/static/',                 // ensures links like /static/assets/....css|js
   build: {
-    outDir: 'dist',
-    rollupOptions: {
-      output: {
-        // Force new asset names to bust cache
-        entryFileNames: `assets/[name]-[hash]-v1.0.1.js`,
-        chunkFileNames: `assets/[name]-[hash]-v1.0.1.js`,
-        assetFileNames: `assets/[name]-[hash]-v1.0.1.[ext]`
-      }
-    }
+    outDir: '../backend/static',     // write build straight into Flask's static/
+    assetsDir: 'assets',             // folder inside static/
+    emptyOutDir: true,               // wipe old hashed assets each build
+    sourcemap: false,                // disable source maps in production
+  },
+  server: {
+    port: 5173,                      // dev server (unchanged)
   }
 })

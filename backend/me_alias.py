@@ -5,16 +5,20 @@ bp = Blueprint("auth_alias", __name__, url_prefix="/api/auth")
 
 @bp.get("/whoami")
 def whoami():
-    """Get current user session state for SPA - NO AUTH REQUIRED"""
-    # Use the same logic as app_auth.py whoami endpoint
+    """
+    Get current user session state for SPA.
+    Auth is optional: if no user, return null JSON.
+    """
     user = get_current_user()
     if not user:
-        return jsonify(None), 200
+        return jsonify({"ok": True, "user": None}), 200
 
-    # Return only what the UI needs
     return jsonify({
-        "id": user.id,
-        "email": user.email,
-        "display_name": getattr(user, "display_name", None),
-        "avatar_url": getattr(user, "avatar_url", None),
+        "ok": True,
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "display_name": getattr(user, "display_name", None),
+            "avatar_url": getattr(user, "avatar_url", None),
+        }
     }), 200
