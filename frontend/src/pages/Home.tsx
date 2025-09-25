@@ -47,11 +47,6 @@ export default function Home() {
       {/* Features Section */}
       <section className="grid md:grid-cols-3 gap-8">
         <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-slate-800 to-indigo-900 border border-indigo-600/30">
-          <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
           <h3 className="text-xl font-semibold text-cyan-100 mb-2">AI-Powered Generation</h3>
           <p className="text-indigo-300">
             Advanced AI creates stunning, unique posters from your text descriptions in seconds.
@@ -59,11 +54,6 @@ export default function Home() {
         </div>
 
         <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-slate-800 to-indigo-900 border border-indigo-600/30">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </div>
           <h3 className="text-xl font-semibold text-cyan-100 mb-2">Multiple Styles</h3>
           <p className="text-indigo-300">
             Fantasy, sci-fi, horror, romance, action, anime - create in any genre you love.
@@ -71,11 +61,6 @@ export default function Home() {
         </div>
 
         <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-slate-800 to-indigo-900 border border-indigo-600/30">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </div>
           <h3 className="text-xl font-semibold text-cyan-100 mb-2">Personal Library</h3>
           <p className="text-indigo-300">
             Save, organize, and manage all your creations in your private poster library.
