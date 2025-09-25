@@ -16,8 +16,32 @@
   -webkit-text-size-adjust: 100%;
 }
 
+/* Fix emoji and symbol rendering issues */
 * {
   box-sizing: border-box;
+  /* Prevent emoji/symbols from becoming giant white shapes */
+  font-variant-emoji: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Emoji-specific styling to prevent giant white symbols */
+body, html, div, span, p, h1, h2, h3, h4, h5, h6, option {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+/* Specific fix for emoji containers */
+.emoji,
+[data-emoji],
+.preset-emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', sans-serif !important;
+  font-size: 1em !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 1.2em !important;
+  max-height: 1.2em !important;
 }
 
 body {
