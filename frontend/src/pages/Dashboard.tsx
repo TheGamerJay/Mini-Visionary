@@ -1,0 +1,238 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    // Fetch user data
+    fetch('/api/auth/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok && data.user) {
+        setUser(data.user);
+      } else {
+        localStorage.removeItem('jwt_token');
+        navigate('/login');
+      }
+    })
+    .catch(() => {
+      localStorage.removeItem('jwt_token');
+      navigate('/login');
+    });
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('jwt_token');
+    navigate('/login');
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-cyan-200">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-cyan-600/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-indigo-700/15 blur-3xl" />
+
+      <div className="relative z-10 max-w-6xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            to="/"
+            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          >
+            <img
+              src="/logo.png"
+              alt="Mini-Visionary Logo"
+              className="h-10 w-auto object-contain"
+            />
+            <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
+              Mini-Visionary
+            </span>
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm text-cyan-200">Welcome back,</p>
+              <p className="font-semibold text-white">{user.display_name}</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center text-sm font-semibold">
+              {user.display_name?.[0]?.toUpperCase()}
+            </div>
+          </div>
+        </div>
+
+        {/* Credits Display */}
+        <div className="mb-8">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-900/40 to-indigo-900/40 border border-cyan-500/30">
+            <div className="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500"></div>
+            <span className="text-sm text-cyan-200">Credits:</span>
+            <span className="font-bold text-white">{user.credits}</span>
+          </div>
+        </div>
+
+        {/* Main Navigation Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Create Poster */}
+          <Link
+            to="/create"
+            className="group p-6 rounded-2xl bg-gradient-to-br from-cyan-900/30 to-indigo-900/30 border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-cyan-100 mb-1">Create Poster</h3>
+                <p className="text-sm text-cyan-200/70">Generate AI-powered movie posters</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Library */}
+          <Link
+            to="/library"
+            className="group p-6 rounded-2xl bg-gradient-to-br from-indigo-900/30 to-purple-900/30 border border-indigo-500/30 hover:border-indigo-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-indigo-100 mb-1">Library</h3>
+                <p className="text-sm text-indigo-200/70">View your saved posters</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Wallet */}
+          <Link
+            to="/wallet"
+            className="group p-6 rounded-2xl bg-gradient-to-br from-purple-900/30 to-cyan-900/30 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-purple-100 mb-1">Wallet</h3>
+                <p className="text-sm text-purple-200/70">Manage credits & billing</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Store */}
+          <Link
+            to="/store"
+            className="group p-6 rounded-2xl bg-gradient-to-br from-emerald-900/30 to-cyan-900/30 border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-emerald-100 mb-1">Store</h3>
+                <p className="text-sm text-emerald-200/70">Buy credits & bundles</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Chat */}
+          <Link
+            to="/chat"
+            className="group p-6 rounded-2xl bg-gradient-to-br from-rose-900/30 to-indigo-900/30 border border-rose-500/30 hover:border-rose-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-rose-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-rose-100 mb-1">AI Chat</h3>
+                <p className="text-sm text-rose-200/70">Get creative assistance</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Profile */}
+          <Link
+            to="/profile"
+            className="group p-6 rounded-2xl bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-500/30 hover:border-amber-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/10"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-amber-100 mb-1">Profile</h3>
+                <p className="text-sm text-amber-200/70">Account settings</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Link
+            to="/settings"
+            className="px-6 py-3 rounded-xl bg-slate-900/50 border border-slate-600/50 text-slate-300 hover:text-white hover:border-slate-500/70 transition-all duration-200"
+          >
+            Settings
+          </Link>
+          <Link
+            to="/privacy"
+            className="px-6 py-3 rounded-xl bg-slate-900/50 border border-slate-600/50 text-slate-300 hover:text-white hover:border-slate-500/70 transition-all duration-200"
+          >
+            Privacy
+          </Link>
+          <Link
+            to="/terms"
+            className="px-6 py-3 rounded-xl bg-slate-900/50 border border-slate-600/50 text-slate-300 hover:text-white hover:border-slate-500/70 transition-all duration-200"
+          >
+            Terms
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-3 rounded-xl bg-red-900/50 border border-red-600/50 text-red-300 hover:text-white hover:border-red-500/70 transition-all duration-200"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
