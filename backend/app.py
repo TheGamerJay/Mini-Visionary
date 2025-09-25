@@ -12,8 +12,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 # --- Database models ---
-# Temporarily disabled for compression testing
-# from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterMode, PosterStatus, PosterStyle
+from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterMode, PosterStatus, PosterStyle
 # from poster import bp as poster_bp
 # from app_auth import auth_bp
 # from app_library import library_bp
@@ -25,7 +24,7 @@ from dotenv import load_dotenv
 # from ads import bp as ads_bp
 # from ads_portal import bp as ads_portal_bp
 # from me import bp as me_bp
-# from me_alias import bp as auth_alias_bp
+from me_alias import bp as auth_alias_bp
 # from webhooks import bp as webhooks_bp
 # from app_chat import bp as chat_bp
 
@@ -211,19 +210,19 @@ def _after(response):
 # Initialize bcrypt - temporarily disabled
 # bcrypt.init_app(app)
 
-# Register blueprints - temporarily disabled for compression testing
-# app.register_blueprint(new_auth_bp)
-# app.register_blueprint(poster_bp)
-# app.register_blueprint(library_bp)
-# app.register_blueprint(legal_bp)
-# app.register_blueprint(payments_bp)
-# app.register_blueprint(storage_bp)
-# app.register_blueprint(ads_bp)
-# app.register_blueprint(ads_portal_bp)
-# app.register_blueprint(me_bp)
-# app.register_blueprint(auth_alias_bp)
-# app.register_blueprint(webhooks_bp)
-# app.register_blueprint(chat_bp)
+# Register blueprints
+# app.register_blueprint(new_auth_bp)     # Temporarily disabled - needs JWT setup
+# app.register_blueprint(poster_bp)       # Temporarily disabled - needs wallet fixes
+# app.register_blueprint(library_bp)      # Temporarily disabled
+# app.register_blueprint(legal_bp)        # Temporarily disabled
+# app.register_blueprint(payments_bp)     # Temporarily disabled
+# app.register_blueprint(storage_bp)      # Temporarily disabled
+# app.register_blueprint(ads_bp)          # Temporarily disabled
+# app.register_blueprint(ads_portal_bp)   # Temporarily disabled
+# app.register_blueprint(me_bp)           # Temporarily disabled
+app.register_blueprint(auth_alias_bp)     # Essential for /api/auth/whoami
+# app.register_blueprint(webhooks_bp)     # Temporarily disabled
+# app.register_blueprint(chat_bp)         # Temporarily disabled
 
 # OpenAI client (only if key + lib present)
 oai_client: Optional["OpenAI"] = None
@@ -473,10 +472,10 @@ def spa(path):
 
         # Basic CSP allowing AdSense and self-hosted assets
         csp = ("default-src 'self'; "
-               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
+               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
                "style-src 'self' 'unsafe-inline'; "
                "img-src 'self' data: https:; "
-               "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://tpc.googlesyndication.com; "
+               "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://tpc.googlesyndication.com; "
                "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com")
         resp.headers["Content-Security-Policy"] = csp
 
@@ -526,7 +525,7 @@ def test_logging():
     }
 
 if __name__ == "__main__":
-    # Initialize database - temporarily disabled
-    # init_db()
+    # Initialize database
+    init_db()
     port = int(os.getenv("PORT", "8080"))  # fallback is 8080 now
     app.run(host="0.0.0.0", port=port, debug=True)
