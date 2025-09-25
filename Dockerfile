@@ -4,7 +4,7 @@ WORKDIR /frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ .
-RUN npm run build
+RUN npm run build -- --outDir=dist
 
 # --- Backend runtime ---
 FROM python:3.11-slim
