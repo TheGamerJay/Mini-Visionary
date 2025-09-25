@@ -25,13 +25,13 @@ from me_alias import bp as auth_alias_bp
 
 # Advanced blueprints that need proper setup:
 # from app_auth import auth_bp          # Needs JWT configuration
-# from auth import bp as new_auth_bp, bcrypt  # Needs bcrypt setup
-# from app_payments import payments_bp  # Needs Stripe configuration
+from auth import bp as new_auth_bp, bcrypt
+from app_payments import payments_bp
 # from storage import bp as storage_bp  # Needs S3/R2 configuration
 # from ads import bp as ads_bp          # Needs subscription logic
-# from ads_portal import bp as ads_portal_bp  # Needs Stripe portal
-# from webhooks import bp as webhooks_bp  # Needs Stripe webhooks
-# from app_chat import bp as chat_bp    # Needs OpenAI configuration
+from ads_portal import bp as ads_portal_bp
+from webhooks import bp as webhooks_bp
+from app_chat import bp as chat_bp
 
 # --- Optional OpenAI (auto-disabled if key missing) ---
 OPENAI_AVAILABLE = False
@@ -213,21 +213,21 @@ def _after(response):
 # --- end observability block ---
 
 # Initialize bcrypt - temporarily disabled
-# bcrypt.init_app(app)
+bcrypt.init_app(app)
 
 # Register blueprints - Enable essential core functionality
-# app.register_blueprint(new_auth_bp)     # Disabled - needs JWT setup
+app.register_blueprint(new_auth_bp)
 # app.register_blueprint(poster_bp)       # Disabled - needs OpenAI configuration
 app.register_blueprint(library_bp)        # Essential - poster library and gallery
 app.register_blueprint(legal_bp)          # Essential - privacy policy, terms of service
-# app.register_blueprint(payments_bp)     # Disabled - needs Stripe configuration
+app.register_blueprint(payments_bp)
 # app.register_blueprint(storage_bp)      # Disabled - needs S3/R2 configuration
 # app.register_blueprint(ads_bp)          # Disabled - needs subscription logic
-# app.register_blueprint(ads_portal_bp)   # Disabled - needs Stripe portal
+app.register_blueprint(ads_portal_bp)
 app.register_blueprint(me_bp)             # Essential - user profile and account management
 app.register_blueprint(auth_alias_bp)     # Essential - /api/auth/whoami endpoint
-# app.register_blueprint(webhooks_bp)     # Disabled - needs Stripe webhooks
-# app.register_blueprint(chat_bp)         # Disabled - needs OpenAI configuration
+app.register_blueprint(webhooks_bp)
+app.register_blueprint(chat_bp)
 
 # OpenAI client (only if key + lib present)
 oai_client: Optional["OpenAI"] = None
@@ -481,13 +481,13 @@ def spa(path):
         resp.headers["X-Frame-Options"] = "DENY"
         resp.headers["X-XSS-Protection"] = "1; mode=block"
 
-        # Basic CSP for now (AdSense disabled until approval)
+        # CSP with AdSense support
         csp = ("default-src 'self'; "
-               "script-src 'self' 'unsafe-inline'; "
+               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com; "
                "style-src 'self' 'unsafe-inline'; "
                "img-src 'self' data: https: blob:; "
-               "connect-src 'self'; "
-               "frame-src 'self'; "
+               "connect-src 'self' https://pagead2.googlesyndication.com; "
+               "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.google.com; "
                "object-src 'none'; base-uri 'self'")
         resp.headers["Content-Security-Policy"] = csp
 

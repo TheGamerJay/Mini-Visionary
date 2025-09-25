@@ -165,7 +165,7 @@ def get_receipt(receipt_id: int):
 <meta charset="utf-8">
 <title>Receipt #{receipt.id} - Mini Dream Poster</title>
 <style>
-  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background:#000; color:#fff; }}
+  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #000; color: #fff; }}
   .header {{ text-align:center; margin-bottom:30px; border-bottom:2px solid #0891b2; padding-bottom:20px; }}
   .logo {{ color:#06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
   .company {{ color:#a5b4fc; font-size:14px; }}
@@ -419,7 +419,7 @@ def get_receipt(receipt_id: int):
 <meta charset="utf-8">
 <title>Receipt #{receipt.id} - Mini Visionary</title>
 <style>
-  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background:#000; color:#fff; }}
+  body {{ font-family: system-ui,-apple-system,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #000; color: #fff; }}
   .header {{ text-align:center; margin-bottom:30px; border-bottom:2px solid #0891b2; padding-bottom:20px; }}
   .logo {{ color:#06b6d4; font-size:24px; font-weight:bold; margin-bottom:8px; }}
   .company {{ color:#a5b4fc; font-size:14px; }}
