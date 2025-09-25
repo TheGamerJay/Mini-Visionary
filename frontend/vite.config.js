@@ -16,6 +16,14 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        // Force new asset names to bust cache
+        entryFileNames: `assets/[name]-[hash]-v1.0.1.js`,
+        chunkFileNames: `assets/[name]-[hash]-v1.0.1.js`,
+        assetFileNames: `assets/[name]-[hash]-v1.0.1.[ext]`
+      }
+    }
   }
 })
