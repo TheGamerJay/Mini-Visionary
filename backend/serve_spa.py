@@ -20,6 +20,6 @@ def spa_frontend(path):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, "index.html")
 
-@app.get("/healthz")
-def healthz():
+@app.get("/healthz", endpoint="healthcheck")
+def healthcheck():
     return {"ok": True}, 200
