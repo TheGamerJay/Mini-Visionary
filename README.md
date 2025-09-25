@@ -37,11 +37,17 @@ Visit [Mini-Visionary](https://github.com/TheGamerJay/Mini-Visionary) to see the
 - **Stripe** for payment processing
 - **Resend** for email services
 
-### Infrastructure
+### Infrastructure & Production Features
 - **Railway** for deployment
 - **SQLite/PostgreSQL** database
 - **Docker** containerization
 - **Git** version control
+- **Brotli/gzip compression** for 60-70% smaller asset sizes
+- **Optimized caching** with 1-year cache for hashed assets
+- **Security headers** including CSP, XSS protection
+- **JSON structured logging** for production monitoring
+- **Sentry integration** for error tracking and APM
+- **Request correlation** with X-Request-ID headers
 
 ## 🏃‍♂️ Quick Start
 
@@ -123,6 +129,13 @@ JWT_SECRET=your-jwt-secret
 
 # CORS
 CORS_ORIGINS=https://your-frontend-domain.com
+
+# Observability (Production)
+SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
+ENVIRONMENT=production
+GIT_SHA=your-commit-sha
+SENTRY_TRACES_SAMPLE_RATE=0.1
+SENTRY_PROFILES_SAMPLE_RATE=0.0
 ```
 
 ## 📖 API Documentation
@@ -154,14 +167,31 @@ CORS_ORIGINS=https://your-frontend-domain.com
 docker-compose up -d
 ```
 
-## 🛡 Security Features
+## 🛡 Security & Performance Features
 
-- JWT-based authentication
-- CORS protection
-- Input validation and sanitization
-- Rate limiting
-- Secure password hashing
-- Environment variable protection
+### Security
+- **JWT-based authentication** with secure token management
+- **CORS protection** with configurable origins
+- **Input validation and sanitization** for all endpoints
+- **Rate limiting** to prevent abuse
+- **Secure password hashing** with bcrypt
+- **Environment variable protection** for sensitive data
+- **Content Security Policy (CSP)** headers for XSS protection
+- **Anti-clickjacking** with X-Frame-Options
+
+### Performance Optimizations
+- **Brotli & gzip compression** (60-70% size reduction)
+- **Optimal caching strategy** (1-year cache for hashed assets, no-cache for HTML)
+- **Build integration** (npm run build → Flask serves automatically)
+- **Source maps disabled** in production for security
+- **Asset versioning** with cache-busting hashes
+
+### Observability
+- **Structured JSON logging** for production monitoring
+- **Sentry error tracking** with automatic exception capture
+- **Request correlation IDs** (X-Request-ID) for distributed tracing
+- **Performance monitoring** with request timing data
+- **APM integration** with configurable sampling rates
 
 ## 🤝 Contributing
 
