@@ -44,8 +44,8 @@ except Exception:
 load_dotenv()
 
 # ---------------------- BRAND ----------------------
-BRAND_NAME = "Mini Visionary"
-BRAND_TAGLINE = "AI-Powered Poster Generation"
+BRAND_NAME = "Mini-Visionary"
+BRAND_TAGLINE = "You Envision it, We Generate it"
 SUPPORT_EMAIL = "support@minivisionary.com"
 
 # ---------------------- ENV / CONFIG ----------------------

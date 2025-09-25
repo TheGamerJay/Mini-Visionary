@@ -17,7 +17,7 @@ export default function Home() {
             Mini-Visionary
           </h1>
           <p className="text-2xl md:text-3xl text-cyan-300 mt-4 font-semibold">
-            You Envision it, We Generate it.
+            You Envision it, We Generate it
           </p>
           <p className="text-xl md:text-2xl text-cyan-200 mt-6 leading-relaxed">
             Transform your imagination into stunning movie-style posters with AI

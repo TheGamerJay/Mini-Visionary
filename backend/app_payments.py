@@ -285,7 +285,7 @@ margin-top: 40px;
 </head>
 <body>
   <div class="header">
-    <div class="logo">Mini Dream Poster</div>
+    <div class="logo">Mini-Visionary</div>
     <div class="company">AI
 
 
@@ -305,21 +305,21 @@ Here are the key spots to change in your payments.py:
 1. In /receipt/<id> HTML
 html
 Copy code
-<title>Receipt #{receipt.id} - Mini Visionary</title>
+<title>Receipt #{receipt.id} - Mini-Visionary</title>
 ...
-<div class="logo">Mini Visionary</div>
+<div class="logo">Mini-Visionary</div>
 <div class="company">AI-Powered Poster Generation</div>
 2. In /email-receipt HTML
 html
 Copy code
-<div style="color: #0891b2; font-size: 24px; font-weight: bold; margin-bottom: 8px;">Mini Visionary</div>
+<div style="color: #0891b2; font-size: 24px; font-weight: bold; margin-bottom: 8px;">Mini-Visionary</div>
 <div style="color: #666; font-size: 14px;">AI-Powered Poster Generation</div>
 ...
 <p>Questions? Contact us at support@minivisionary.com</p>
 3. Email subject line
 python
 Copy code
-subject=f"Receipt #{receipt.id} - Mini Visionary",
+subject=f"Receipt #{receipt.id} - Mini-Visionary",
 4. Support email address
 Change to: support@minivisionary.com
 
@@ -504,7 +504,7 @@ def get_receipt(receipt_id: int):
 <html>
 <head>
 <meta charset="utf-8">
-<title>Receipt #{receipt.id} - Mini Visionary</title>
+<title>Receipt #{receipt.id} - Mini-Visionary</title>
 <style>
   body {{
     font-family: system-ui, -apple-system, sans-serif;
@@ -626,7 +626,7 @@ margin-top: 40px;
 </head>
 <body>
   <div class="header">
-    <div class="logo">Mini Visionary</div>
+    <div class="logo">Mini-Visionary</div>
     <div class="company">AI-Powered Poster Generation</div>
   </div>
 
@@ -702,7 +702,7 @@ def email_receipt():
         receipt_html = f"""
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa; padding: 20px;">
   <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0891b2; padding-bottom: 20px;">
-    <div style="color: #0891b2; font-size: 24px; font-weight: bold; margin-bottom: 8px;">Mini Visionary</div>
+    <div style="color: #0891b2; font-size: 24px; font-weight: bold; margin-bottom: 8px;">Mini-Visionary</div>
     <div style="color: #666; font-size: 14px;">AI-Powered Poster Generation</div>
   </div>
 
@@ -748,7 +748,7 @@ def email_receipt():
         try:
             send_email(
                 to=user.email,
-                subject=f"Receipt #{receipt.id} - Mini Visionary",
+                subject=f"Receipt #{receipt.id} - Mini-Visionary",
                 html=receipt_html,
                 tags={"event": "receipt_email"}
             )

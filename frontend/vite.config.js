@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/static/',                 // ensures links like /static/assets/....css|js
+  base: process.env.NODE_ENV === 'production' ? '/static/' : '/',  // Use /static/ for production, / for dev
   build: {
     outDir: '../backend/static',     // write build straight into Flask's static/
     assetsDir: 'assets',             // folder inside static/

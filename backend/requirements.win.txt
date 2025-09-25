@@ -36,5 +36,3 @@ sentry-sdk[flask]==2.14.0
 python-json-logger==2.0.7
 
 # --- Prod server ---
-gunicorn==22.0.0
-gevent==24.2.1

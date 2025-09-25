@@ -1,6 +1,6 @@
 # Mini-Visionary
 
-**You Envision it, We Generate it.**
+**You Envision it, We Generate it**
 
 Mini-Visionary is an AI-powered poster generation platform that transforms your imagination into stunning movie-style posters in seconds. From fantasy epics to sci-fi adventures, create professional posters with just a text description.
 
@@ -219,4 +219,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Mini-Visionary** - *You Envision it, We Generate it.* ✨
+**Mini-Visionary** - *You Envision it, We Generate it* ✨

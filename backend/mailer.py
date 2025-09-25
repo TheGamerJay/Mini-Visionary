@@ -5,9 +5,9 @@ import smtplib
 from email.message import EmailMessage
 from typing import Optional, Sequence
 
-# ---- BRAND/SENDER (Mini Visionary) ----
-BRAND_NAME = "Mini Visionary"
-BRAND_TAGLINE = "If you can dream it, we can poster it."
+# ---- BRAND/SENDER (Mini-Visionary) ----
+BRAND_NAME = "Mini-Visionary"
+BRAND_TAGLINE = "You Envision it, We Generate it"
 SUPPORT_EMAIL = "support@minivisionary.com"
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")           # set in Railway
@@ -165,7 +165,7 @@ def send_email(
     except Exception as e:
         raise MailError(str(e)) from e
 
-# ---- Convenience templates (Mini Visionary) ----
+# ---- Convenience templates (Mini-Visionary) ----
 def poster_ready_email(user_email: str, poster_url: str, dashboard_url: Optional[str] = None) -> None:
     subject = f"🎨 Your {BRAND_NAME} poster is ready!"
     dash = dashboard_url or poster_url

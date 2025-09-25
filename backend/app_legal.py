@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, make_response
 
 legal_bp = Blueprint("legal", __name__, url_prefix="/api/legal")
 
-BRAND = os.getenv("BRAND_NAME", "Mini Visionary")
+BRAND = os.getenv("BRAND_NAME", "Mini-Visionary")
 SUPPORT = os.getenv("SUPPORT_EMAIL", "support@minivisionary.com")
 LAST_UPDATED = os.getenv("LEGAL_LAST_UPDATED", "January 2025")
 

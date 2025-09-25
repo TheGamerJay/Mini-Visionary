@@ -1,6 +1,6 @@
-# Mini Dream Poster — Setup
+# Mini-Visionary — Setup
 
-*If you can dream it, we can poster it.*
+*You Envision it, We Generate it*
 
 ---
 
