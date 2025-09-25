@@ -80,6 +80,8 @@ class User(Base):
     display_name: Mapped[Optional[str]] = mapped_column(String(100))
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
     credits: Mapped[int] = mapped_column(Integer, default=0)
+    ad_free: Mapped[bool] = mapped_column(Boolean, default=False)
+    stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())

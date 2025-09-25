@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import AdSlot from "../components/AdSlot";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -85,12 +86,33 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Credits Display */}
-        <div className="mb-8">
+        {/* Credits & Ad-Free Status Display */}
+        <div className="mb-8 flex flex-wrap gap-4">
           <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-900/40 to-indigo-900/40 border border-cyan-500/30">
             <div className="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500"></div>
             <span className="text-sm text-cyan-200">Credits:</span>
             <span className="font-bold text-white">{user.credits}</span>
+          </div>
+
+          <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full border ${
+            user.ad_free
+              ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-green-500/30'
+              : 'bg-gradient-to-r from-orange-900/40 to-red-900/40 border-orange-500/30'
+          }`}>
+            <div className={`w-4 h-4 rounded-full ${
+              user.ad_free ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-orange-400 to-red-500'
+            }`}></div>
+            <span className="text-sm text-cyan-200">
+              {user.ad_free ? 'Ad-Free Active' : 'Free Version'}
+            </span>
+            {!user.ad_free && (
+              <Link
+                to="/store"
+                className="text-xs text-orange-300 hover:text-orange-200 underline"
+              >
+                Upgrade
+              </Link>
+            )}
           </div>
         </div>
 
@@ -204,6 +226,16 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+
+        {/* AdSense Ad Slot - Only show for non ad-free users */}
+        {!user.ad_free && (
+          <div className="mb-8">
+            <AdSlot
+              slot="1234567890"
+              className="mx-auto max-w-lg border border-cyan-500/20 rounded-xl bg-black/40 p-4"
+            />
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-4 justify-center">

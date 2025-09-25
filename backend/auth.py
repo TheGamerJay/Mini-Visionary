@@ -136,7 +136,8 @@ def me():
         "email": g.user.email,
         "display_name": g.user.display_name,
         "credits": g.user.credits,
-        "avatar_url": g.user.avatar_url
+        "avatar_url": g.user.avatar_url,
+        "ad_free": g.user.ad_free
     })
 
 @bp.post("/forgot")
