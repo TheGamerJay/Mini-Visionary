@@ -17,22 +17,22 @@ payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
 
 # ---- PRODUCT CATALOG (server authority) ----
 PRODUCTS = {
-    "starter": {
-        "name": "Starter Pack",
+"starter": {{
+    "name": "Starter Pack",
         "desc": "60 poster credits (6 posters)",
         "credits": 60,
         "amount_cents": 900,  # $9
         "stripe_price": os.getenv("STORE_PRICE_STARTER"),
     },
-    "standard": {
-        "name": "Standard Pack",
+    "standard": {{
+    "name": "Standard Pack",
         "desc": "100 poster credits (10 posters)",
         "credits": 100,
         "amount_cents": 1500,  # $15
         "stripe_price": os.getenv("STORE_PRICE_STANDARD"),
     },
-    "studio": {
-        "name": "Studio Pack",
+    "studio": {{
+    "name": "Studio Pack",
         "desc": "400 poster credits (40 posters)",
         "credits": 400,
         "amount_cents": 4900,  # $49
@@ -131,8 +131,8 @@ def wallet():
                 "notes": notes,
             })
 
-        wallet_data = {
-            "credits": credits,
+        wallet_data = {{
+        "credits": credits,
             "updated_at": user.updated_at.isoformat() if user and user.updated_at else None
         }
         return jsonify(ok=True, wallet=wallet_data, receipts=receipts)
@@ -153,7 +153,7 @@ def get_receipt(receipt_id: int):
 
         sku = next((psku for psku, prod in PRODUCTS.items() if prod["name"] in notes), "unknown")
         product_info = PRODUCTS.get(sku, {
-            "name": "Unknown Pack",
+        "name": "Unknown Pack",
             "desc": "Poster credits",
             "credits": receipt.amount,
             "amount_cents": 0
@@ -165,104 +165,104 @@ def get_receipt(receipt_id: int):
 <meta charset="utf-8">
 <title>Receipt #{receipt.id} - Mini Dream Poster</title>
 <style>
-  body {
+  body {{
     font-family: system-ui, -apple-system, sans-serif;
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
     background: black;
     color: white;
-  }
+  }}
 
-  .header {
+  .header {{
     text-align: center;
     margin-bottom: 30px;
     border-bottom: 2px solid #0891b2;
     padding-bottom: 20px;
-  }
+  }}
 
-  .logo {
+  .logo {{
     color: #06b6d4;
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 8px;
-  }
+  }}
 
-  .company {
-    color: #a5b4fc;
+  .company {{
+color: #a5b4fc;
     font-size: 14px;
-  }
+  }}
 
-  .receipt-info {
-    display: flex;
+  .receipt-info {{
+display: flex;
     justify-content: space-between;
     margin: 20px 0;
-  }
+  }}
 
-  .receipt-info div {
-    color: #a5b4fc;
-  }
+  .receipt-info div {{
+color: #a5b4fc;
+  }}
 
-  .receipt-info strong {
-    color: #fff;
+  .receipt-info strong {{
+color: #fff;
     display: block;
-  }
+  }}
 
-  .items {
-    border: 1px solid #374151;
+  .items {{
+border: 1px solid #374151;
     border-radius: 8px;
     margin: 20px 0;
-  }
+  }}
 
-  .item-header {
-    background: #1e293b;
+  .item-header {{
+background: #1e293b;
     padding: 12px;
     border-bottom: 1px solid #374151;
     font-weight: bold;
-  }
+  }}
 
-  .item {
-    padding: 12px;
+  .item {{
+padding: 12px;
     border-bottom: 1px solid #374151;
-  }
+  }}
 
-  .item:last-child {
-    border-bottom: none;
-  }
+  .item:last-child {{
+border-bottom: none;
+  }}
 
-  .item-name {
-    font-weight: 600;
+  .item-name {{
+font-weight: 600;
     color: #06b6d4;
-  }
+  }}
 
-  .item-desc {
-    color: #a5b4fc;
+  .item-desc {{
+color: #a5b4fc;
     font-size: 14px;
     margin: 4px 0;
-  }
+  }}
 
-  .item-price {
-    float: right;
+  .item-price {{
+float: right;
     font-weight: bold;
-  }
+  }}
 
-  .total {
-    text-align: right;
+  .total {{
+text-align: right;
     margin: 20px 0;
     font-size: 18px;
-  }
+  }}
 
-  .total-label {
-    color: #a5b4fc;
-  }
+  .total-label {{
+color: #a5b4fc;
+  }}
 
-  .total-amount {
-    font-weight: bold;
+  .total-amount {{
+font-weight: bold;
     color: #06b6d4;
-  }
+  }}
 
-  .footer {
-    margin-top: 40px;
+  .footer {{
+margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid #374151;
     text-align: center;
@@ -270,17 +270,17 @@ def get_receipt(receipt_id: int):
     font-size: 12px;
   }
 
-  @media print {
-    body { background: white; color: black; }
-    .header { border-bottom-color: #0891b2; }
-    .logo { color: #0891b2; }
-    .company, .receipt-info div, .item-desc { color: #666; }
-    .items { border-color: #ddd; }
-    .item-header { background: #f8f9fa; border-bottom-color: #ddd; }
-    .item { border-bottom-color: #ddd; }
-    .item-name, .total-amount { color: #0891b2; }
-    .footer { border-top-color: #ddd; color: #666; }
-  }
+  @media print {{
+    body {{ background: white; color: black; }}
+    .header {{{ border-bottom-color: #0891b2; }}
+    .logo {{{ color: #0891b2; }}
+    .company, .receipt-info div, .item-desc {{ color: #666; }}
+    .items {{ border-color: #ddd; }}
+    .item-header {{ background: #f8f9fa; border-bottom-color: #ddd; }}
+    .item {{ border-bottom-color: #ddd; }}
+    .item-name, .total-amount {{ color: #0891b2; }}
+    .footer {{ border-top-color: #ddd; color: #666; }}
+  }}
 </style>
 </head>
 <body>
@@ -359,22 +359,22 @@ payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
 
 # ---- PRODUCT CATALOG (server authority) ----
 PRODUCTS = {
-    "starter": {
-        "name": "Starter Pack",
+"starter": {{
+    "name": "Starter Pack",
         "desc": "60 poster credits (6 posters)",
         "credits": 60,
         "amount_cents": 900,  # $9
         "stripe_price": os.getenv("STORE_PRICE_STARTER"),
     },
-    "standard": {
-        "name": "Standard Pack",
+    "standard": {{
+    "name": "Standard Pack",
         "desc": "100 poster credits (10 posters)",
         "credits": 100,
         "amount_cents": 1500,  # $15
         "stripe_price": os.getenv("STORE_PRICE_STANDARD"),
     },
-    "studio": {
-        "name": "Studio Pack",
+    "studio": {{
+    "name": "Studio Pack",
         "desc": "400 poster credits (40 posters)",
         "credits": 400,
         "amount_cents": 4900,  # $49
@@ -472,8 +472,8 @@ def wallet():
                 "notes": notes,
             })
 
-        wallet_data = {
-            "credits": credits,
+        wallet_data = {{
+        "credits": credits,
             "updated_at": user.updated_at.isoformat() if user and user.updated_at else None
         }
         return jsonify(ok=True, wallet=wallet_data, receipts=receipts)
@@ -494,7 +494,7 @@ def get_receipt(receipt_id: int):
 
         sku = next((psku for psku, prod in PRODUCTS.items() if prod["name"] in notes), "unknown")
         product_info = PRODUCTS.get(sku, {
-            "name": "Unknown Pack",
+        "name": "Unknown Pack",
             "desc": "Poster credits",
             "credits": receipt.amount,
             "amount_cents": 0
@@ -506,104 +506,104 @@ def get_receipt(receipt_id: int):
 <meta charset="utf-8">
 <title>Receipt #{receipt.id} - Mini Visionary</title>
 <style>
-  body {
+  body {{
     font-family: system-ui, -apple-system, sans-serif;
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
     background: black;
     color: white;
-  }
+  }}
 
-  .header {
+  .header {{
     text-align: center;
     margin-bottom: 30px;
     border-bottom: 2px solid #0891b2;
     padding-bottom: 20px;
-  }
+  }}
 
-  .logo {
+  .logo {{
     color: #06b6d4;
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 8px;
-  }
+  }}
 
-  .company {
-    color: #a5b4fc;
+  .company {{
+color: #a5b4fc;
     font-size: 14px;
-  }
+  }}
 
-  .receipt-info {
-    display: flex;
+  .receipt-info {{
+display: flex;
     justify-content: space-between;
     margin: 20px 0;
-  }
+  }}
 
-  .receipt-info div {
-    color: #a5b4fc;
-  }
+  .receipt-info div {{
+color: #a5b4fc;
+  }}
 
-  .receipt-info strong {
-    color: #fff;
+  .receipt-info strong {{
+color: #fff;
     display: block;
-  }
+  }}
 
-  .items {
-    border: 1px solid #374151;
+  .items {{
+border: 1px solid #374151;
     border-radius: 8px;
     margin: 20px 0;
-  }
+  }}
 
-  .item-header {
-    background: #1e293b;
+  .item-header {{
+background: #1e293b;
     padding: 12px;
     border-bottom: 1px solid #374151;
     font-weight: bold;
-  }
+  }}
 
-  .item {
-    padding: 12px;
+  .item {{
+padding: 12px;
     border-bottom: 1px solid #374151;
-  }
+  }}
 
-  .item:last-child {
-    border-bottom: none;
-  }
+  .item:last-child {{
+border-bottom: none;
+  }}
 
-  .item-name {
-    font-weight: 600;
+  .item-name {{
+font-weight: 600;
     color: #06b6d4;
-  }
+  }}
 
-  .item-desc {
-    color: #a5b4fc;
+  .item-desc {{
+color: #a5b4fc;
     font-size: 14px;
     margin: 4px 0;
-  }
+  }}
 
-  .item-price {
-    float: right;
+  .item-price {{
+float: right;
     font-weight: bold;
-  }
+  }}
 
-  .total {
-    text-align: right;
+  .total {{
+text-align: right;
     margin: 20px 0;
     font-size: 18px;
-  }
+  }}
 
-  .total-label {
-    color: #a5b4fc;
-  }
+  .total-label {{
+color: #a5b4fc;
+  }}
 
-  .total-amount {
-    font-weight: bold;
+  .total-amount {{
+font-weight: bold;
     color: #06b6d4;
-  }
+  }}
 
-  .footer {
-    margin-top: 40px;
+  .footer {{
+margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid #374151;
     text-align: center;
@@ -611,17 +611,17 @@ def get_receipt(receipt_id: int):
     font-size: 12px;
   }
 
-  @media print {
-    body { background: white; color: black; }
-    .header { border-bottom-color: #0891b2; }
-    .logo { color: #0891b2; }
-    .company, .receipt-info div, .item-desc { color: #666; }
-    .items { border-color: #ddd; }
-    .item-header { background: #f8f9fa; border-bottom-color: #ddd; }
-    .item { border-bottom-color: #ddd; }
-    .item-name, .total-amount { color: #0891b2; }
-    .footer { border-top-color: #ddd; color: #666; }
-  }
+  @media print {{
+    body {{ background: white; color: black; }}
+    .header {{{ border-bottom-color: #0891b2; }}
+    .logo {{{ color: #0891b2; }}
+    .company, .receipt-info div, .item-desc {{ color: #666; }}
+    .items {{ border-color: #ddd; }}
+    .item-header {{ background: #f8f9fa; border-bottom-color: #ddd; }}
+    .item {{ border-bottom-color: #ddd; }}
+    .item-name, .total-amount {{ color: #0891b2; }}
+    .footer {{ border-top-color: #ddd; color: #666; }}
+  }}
 </style>
 </head>
 <body>
@@ -692,7 +692,7 @@ def email_receipt():
         notes = receipt.notes or ""
         sku = next((psku for psku, prod in PRODUCTS.items() if prod["name"] in notes), "unknown")
         product_info = PRODUCTS.get(sku, {
-            "name": "Unknown Pack",
+        "name": "Unknown Pack",
             "desc": "Poster credits",
             "credits": receipt.amount,
             "amount_cents": 0
