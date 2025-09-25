@@ -23,4 +23,4 @@ COPY --from=frontend /frontend/dist /app/static
 
 # Railway target port is 8080
 EXPOSE 8080
-CMD ["gunicorn", "wsgi_runner:app", "-b", "0.0.0.0:8080", "--timeout", "120"]
+CMD ["gunicorn", "serve_spa:app", "-b", "0.0.0.0:8080", "--timeout", "120"]
