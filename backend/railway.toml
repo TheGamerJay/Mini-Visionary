@@ -2,9 +2,9 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python app.py"
+startCommand = "gunicorn -w 2 -k gevent -b 0.0.0.0:8080 app:app"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 60
+healthcheckTimeout = 120
 
 [env]
-PORT = "8000"
+PORT = "8080"

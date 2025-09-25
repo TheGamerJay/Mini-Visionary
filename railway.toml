@@ -4,4 +4,4 @@
 [services.web]
 builder = "Dockerfile"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 60000
+healthcheckTimeout = 120000

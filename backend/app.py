@@ -209,7 +209,7 @@ def make_public_url(local_path: str) -> str:
 # ---------- API ENDPOINTS ----------
 @app.get("/api/health")
 def health():
-    return {"ok": True, "service": "mini-dream-poster", "openai": bool(oai_client)}
+    return {"ok": True, "service": "mini-visionary", "openai": bool(oai_client)}
 
 @app.get("/api/version")
 def version():
