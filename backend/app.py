@@ -483,7 +483,7 @@ def spa(path):
 
         # CSP with AdSense support
         csp = ("default-src 'self'; "
-               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com; "
+               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
                "style-src 'self' 'unsafe-inline'; "
                "img-src 'self' data: https: blob:; "
                "connect-src 'self' https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
