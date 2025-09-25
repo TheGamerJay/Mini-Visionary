@@ -473,11 +473,11 @@ def spa(path):
 
         # Basic CSP allowing AdSense and self-hosted assets
         csp = ("default-src 'self'; "
-               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; "
+               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
                "style-src 'self' 'unsafe-inline'; "
                "img-src 'self' data: https:; "
-               "connect-src 'self' https://pagead2.googlesyndication.com; "
-               "frame-src https://googleads.g.doubleclick.net")
+               "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://tpc.googlesyndication.com; "
+               "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com")
         resp.headers["Content-Security-Policy"] = csp
 
         return resp
