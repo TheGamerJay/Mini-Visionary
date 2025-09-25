@@ -95,6 +95,116 @@ app.config.update(
 )
 Compress(app)
 
+# --- Observability: Sentry + Request IDs + JSON logs ---
+import sys, uuid, logging
+from flask import g
+from pythonjsonlogger import jsonlogger
+
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+except Exception:
+    sentry_sdk = None
+
+def _init_json_logging(app_name: str = "mini-visionary"):
+    """Setup JSON logging to stdout (works in Railway/Gunicorn)."""
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+
+    # remove default handlers (avoid double logs)
+    for h in list(root.handlers):
+        root.removeHandler(h)
+
+    logHandler = logging.StreamHandler(sys.stdout)
+    formatter = jsonlogger.JsonFormatter(
+        "%(asctime)s %(levelname)s %(name)s %(message)s",
+        rename_fields={
+            "levelname": "level",
+            "asctime": "ts"
+        }
+    )
+    logHandler.setFormatter(formatter)
+    root.addHandler(logHandler)
+
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)  # quieter dev server logs
+    logging.info("json_logging_initialized", extra={"app": app_name})
+
+def _init_sentry(flask_app):
+    """Initialize Sentry if DSN is provided."""
+    dsn = os.getenv("SENTRY_DSN", "").strip()
+    if not dsn or sentry_sdk is None:
+        logging.info("sentry_not_configured")
+        return
+
+    sentry_sdk.init(
+        dsn=dsn,
+        integrations=[
+            FlaskIntegration(),                       # captures unhandled errors
+            LoggingIntegration(                       # turn ERROR logs into Sentry events
+                level=logging.INFO,
+                event_level=logging.ERROR,
+            ),
+        ],
+        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),   # APM
+        profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.0")),# profiling (optional)
+        environment=os.getenv("ENVIRONMENT", "production"),
+        release=os.getenv("GIT_SHA", "dev"),
+        send_default_pii=False,
+    )
+    logging.info("sentry_initialized")
+
+def _request_id():
+    """Get or create a request id for correlation across services."""
+    rid = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    g.request_id = rid
+    return rid
+
+def _log_request_start():
+    g._t0 = time.time()
+    logging.info(
+        "request_start",
+        extra={
+            "rid": g.request_id,
+            "method": request.method,
+            "path": request.path,
+            "ip": request.headers.get("x-forwarded-for", request.remote_addr),
+            "ua": request.headers.get("user-agent"),
+        }
+    )
+
+def _log_request_end(response):
+    dt = None
+    try:
+        dt = round((time.time() - getattr(g, "_t0", time.time())) * 1000, 2)
+    except Exception:
+        pass
+    response.headers["X-Request-ID"] = g.request_id
+    logging.info(
+        "request_end",
+        extra={
+            "rid": g.request_id,
+            "status": response.status_code,
+            "duration_ms": dt,
+            "length": response.calculate_content_length() if hasattr(response, "calculate_content_length") else None,
+        }
+    )
+    return response
+
+# Initialize observability
+_init_json_logging(app_name="mini-visionary")
+_init_sentry(app)
+
+@app.before_request
+def _before():
+    _request_id()
+    _log_request_start()
+
+@app.after_request
+def _after(response):
+    return _log_request_end(response)
+# --- end observability block ---
+
 # Initialize bcrypt - temporarily disabled
 # bcrypt.init_app(app)
 
@@ -392,6 +502,24 @@ def test_compression():
             "Production-ready build system",
             "Direct React build integration"
         ]
+    }
+
+@app.get("/api/test-error")
+def test_error():
+    """Test endpoint to trigger error for Sentry testing"""
+    logging.info("test_error_triggered", extra={"rid": getattr(g, "request_id", None)})
+    raise Exception("This is a test error for Sentry verification")
+
+@app.get("/api/test-logging")
+def test_logging():
+    """Test endpoint to verify JSON logging and request correlation"""
+    rid = getattr(g, "request_id", None)
+    logging.info("test_log_message", extra={"rid": rid, "custom_field": "test_value"})
+    logging.warning("test_warning", extra={"rid": rid, "warning_type": "test"})
+    return {
+        "message": "Check logs for JSON structured entries",
+        "request_id": rid,
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 if __name__ == "__main__":
