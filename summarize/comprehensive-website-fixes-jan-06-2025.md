@@ -167,11 +167,50 @@
 
 ---
 
+## 🚨 **Critical Production Fixes - Live Issues Resolved**
+
+### **4. Authentication 401 Error Fix** 🔧
+**Date**: January 06, 2025
+**Status**: Critical Fix Deployed
+
+#### Problem Identified:
+- **401 Unauthorized errors** on `/api/auth/whoami` endpoint in production
+- **Frontend authentication failing** - users unable to login/check auth status
+- **Container restarting every few minutes** causing service instability
+
+#### Root Cause Analysis:
+- **Conflicting whoami endpoints**: `me_alias.py` was overriding `app_auth.py` with `@auth_required`
+- **Port inconsistencies**: Dockerfile used 8080, backend config used 8000
+- **Health check timeouts too short**: 60s causing premature restarts
+- **Outdated service name** in health endpoint
+
+#### Solution Applied:
+- **✅ Removed `@auth_required`** from `me_alias.py` whoami endpoint
+- **✅ Fixed port consistency** to 8080 across all configurations
+- **✅ Increased health check timeouts**: 60s → 120s, 60000ms → 120000ms
+- **✅ Updated service branding** in health endpoint to "mini-visionary"
+- **✅ Aligned start commands** to use gunicorn with gevent workers
+
+#### Files Updated:
+- `backend/me_alias.py` - Removed auth requirement, proper unauthenticated handling
+- `backend/app.py` - Updated health endpoint service name
+- `railway.toml` - Fixed health check timeout to 120000ms
+- `backend/railway.toml` - Updated start command, port, and timeout
+
+#### Impact:
+- **✅ Eliminated 401 authentication errors**
+- **✅ Fixed container restart issues**
+- **✅ Restored user authentication functionality**
+- **✅ Improved production stability**
+- **✅ Consistent deployment configuration**
+
+---
+
 **Summary Generated**: January 06, 2025
-**Total Files Modified**: 15+ files across frontend and documentation
-**Critical Issues Resolved**: 2 (Giant symbols, branding inconsistency)
+**Total Files Modified**: 19+ files across frontend, backend, and documentation
+**Critical Issues Resolved**: 4 (Giant symbols, branding inconsistency, 401 auth errors, container instability)
 **Documentation Created**: Complete professional README
-**Production Status**: ✅ Stable and fully branded
+**Production Status**: ✅ Stable, fully branded, and authentication working
 
 ---
 
