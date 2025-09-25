@@ -98,6 +98,7 @@ class PosterJob(Base):
     status: Mapped[PosterStatus] = mapped_column(Enum(PosterStatus), default=PosterStatus.PENDING)
     prompt: Mapped[Optional[str]] = mapped_column(String(2000))
     style: Mapped[PosterStyle] = mapped_column(Enum(PosterStyle), default=PosterStyle.FANTASY)
+    progress: Mapped[int] = mapped_column(Integer, default=0)  # Progress percentage 0-100
     error_message: Mapped[Optional[str]] = mapped_column(String(1000))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
