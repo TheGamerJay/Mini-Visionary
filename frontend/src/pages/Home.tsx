@@ -37,7 +37,7 @@ export default function Home() {
           </Link>
           <Link
             to="/store"
-            className="px-10 py-4 border-2 border-slate-400/30 text-slate-300 font-medium rounded-xl hover:border-indigo-400 hover:bg-indigo-500/10 transition-all duration-300 hover:scale-105 transform"
+            className="px-10 py-4 bg-slate-800/40 text-slate-300 font-medium rounded-xl hover:bg-indigo-500/20 transition-all duration-300 hover:scale-105 transform"
           >
             Explore Gallery
           </Link>
