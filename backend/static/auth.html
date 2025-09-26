@@ -226,18 +226,12 @@
       $("#formSubtitle").textContent = titles[name][1];
 
       for (const id of ["login","register","forgot"]){
-        const tab = $("#tab-" + id);
-        tab.classList.toggle("active", id===name);
-        tab.setAttribute("aria-selected", id===name);
         (id===name?show:hide)($("#form-" + id));
       }
       setMsg("");
     };
 
-    // Tab clicks + inline text links
-    for (const id of ["login","register","forgot"]) {
-      $("#tab-"+id).addEventListener("click", ()=>swapTabs(id));
-    }
+    // Inline text links only (tab buttons were removed)
     document.addEventListener("click",(e)=>{
       const t = e.target.closest("[data-switch]");
       if(!t) return;
