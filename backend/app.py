@@ -466,6 +466,22 @@ def static_files(filename):
     """Custom static file handler to ensure proper serving"""
     return send_from_directory(app.static_folder, filename)
 
+# ---------------------- AUTH PAGES ----------------------
+@app.route('/auth.html')
+def auth_page():
+    """Serve auth.html directly"""
+    return send_from_directory(app.static_folder, 'auth.html')
+
+@app.route('/terms.html')
+def terms_page():
+    """Serve terms.html directly"""
+    return send_from_directory(app.static_folder, 'terms.html')
+
+@app.route('/privacy.html')
+def privacy_page():
+    """Serve privacy.html directly"""
+    return send_from_directory(app.static_folder, 'privacy.html')
+
 # ---------------------- SPA ROUTES ----------------------
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
