@@ -2,9 +2,10 @@
 FROM node:20-alpine AS frontend
 WORKDIR /frontend
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm ci --no-cache
 COPY frontend/ .
-RUN npm run build -- --outDir=dist
+# Clean any existing builds and create fresh build
+RUN rm -rf dist && npm run build
 
 # --- Backend runtime ---
 FROM python:3.11-slim
@@ -18,7 +19,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # copy backend code
 COPY backend/ .
 
-# copy built frontend into Flask static
+# copy built frontend into Flask static (clean copy)
+RUN rm -rf /app/backend/static/*
 COPY --from=frontend /frontend/dist /app/backend/static
 
 # Railway target port is 8080
