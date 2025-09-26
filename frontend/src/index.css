@@ -132,10 +132,14 @@ html,body{height:100%}
 .login-form label{font-size:.92rem; color:#cbd5e1}
 .login-form input{
   width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(153,102,204,.35);
-  background:white; color:black; outline:none;
+  background:white !important; color:black !important; outline:none;
 }
 .login-form input:focus{
   border-color:var(--ring); box-shadow:0 0 0 4px rgba(153,102,204,.14);
+  background:white !important; color:black !important;
+}
+.login-form input::placeholder{
+  color:#666 !important;
 }
 
 /* Password field */
