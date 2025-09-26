@@ -91,23 +91,29 @@ def auth_required(fn):
 
 @bp.post("/signup")
 def signup():
-    data = request.get_json() or {}
-    display_name = (data.get("display_name") or "").strip()
-    email = (data.get("email") or "").lower().strip()
-    password = data.get("password") or ""
+    try:
+        data = request.get_json() or {}
+        display_name = (data.get("display_name") or "").strip()
+        email = (data.get("email") or "").lower().strip()
+        password = data.get("password") or ""
 
-    if not (display_name and email and password and len(password) >= 8):
-        return jsonify(ok=False, error="invalid_input"), 400
+        if not (display_name and email and password and len(password) >= 8):
+            return jsonify(ok=False, error="invalid_input"), 400
 
-    # Check if user already exists
-    if get_user_by_email(email):
-        return jsonify(ok=False, error="email_exists"), 400
+        # Check if user already exists
+        if get_user_by_email(email):
+            return jsonify(ok=False, error="email_exists"), 400
 
-    hashed = bcrypt.generate_password_hash(password).decode()
-    user = create_user(display_name, email, hashed)
-    token = sign_jwt(user["id"], email)
+        hashed = bcrypt.generate_password_hash(password).decode()
+        user = create_user(display_name, email, hashed)
+        token = sign_jwt(user["id"], email)
 
-    return jsonify(ok=True, token=token, user=user)
+        return jsonify(ok=True, token=token, user=user)
+    except Exception as e:
+        import traceback
+        print(f"Signup error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify(ok=False, error=f"server_error: {str(e)}"), 500
 
 @bp.post("/login")
 def login():

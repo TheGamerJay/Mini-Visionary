@@ -168,3 +168,23 @@ def init_db():
     """Initialize database tables."""
     engine = get_engine()
     Base.metadata.create_all(bind=engine)
+
+    # Run migrations for existing databases
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            # Check if display_name column exists, add if missing
+            result = conn.execute(text("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'display_name'
+            """))
+
+            if not result.fetchone():
+                print("Adding missing display_name column to users table...")
+                conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR(100)"))
+                conn.commit()
+                print("✅ Added display_name column")
+    except Exception as e:
+        print(f"Migration warning: {e}")
+        # Continue anyway - this might be a new database
