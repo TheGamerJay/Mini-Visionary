@@ -27,7 +27,9 @@
     a{color:var(--link); text-decoration:none}
     a:hover{text-decoration:underline}
     .link-btn{
-      color:#e6eaf2 !important; font-weight:700; text-decoration:none;
+      background:linear-gradient(90deg, var(--btn-start), var(--btn-end));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text; font-weight:700; text-decoration:none;
       transition:opacity .2s ease; display:inline-block !important;
       padding:4px 8px;
     }
