@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build --outDir=../backend/static",
+    "build:docker": "vite build --outDir=dist",
     "build:fresh": "rm -rf ../backend/static/* && npm run build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"

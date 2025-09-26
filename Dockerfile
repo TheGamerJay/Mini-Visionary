@@ -4,8 +4,8 @@ WORKDIR /frontend
 COPY frontend/package*.json ./
 RUN npm ci --no-cache
 COPY frontend/ .
-# Clean any existing builds and create fresh build
-RUN rm -rf dist && npm run build
+# Clean any existing builds and create fresh build to dist folder
+RUN rm -rf dist && npm run build:docker
 
 # --- Backend runtime ---
 FROM python:3.11-slim
