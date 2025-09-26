@@ -42,54 +42,57 @@ export default function ForgotPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <Link to="/login" className="inline-flex items-center gap-3">
-            <img src="/static/logo.png" alt="logo" className="h-10 w-10 rounded" onError={(e)=>{e.currentTarget.style.display='none';}} />
-            <div className="text-left">
-              <h1 className="text-2xl font-extrabold drop-shadow">{BRAND.name}</h1>
-              <p className="text-sm text-slate-300">{BRAND.slogan}</p>
-            </div>
-          </Link>
+    <div id="login-root">
+      <div className="login-header">MINI VISIONARY</div>
+
+      <div className="site-banner top"></div>
+
+      <div className="login-card">
+        <h2 className="login-title">Password Reset</h2>
+        <div className="login-logo">
+          <img src="/logo.png" alt="Mini Visionary" />
         </div>
+        <p className="login-subtitle">
+          Enter your email and we'll send a reset link or temp password.
+        </p>
 
-        <div className="bg-slate-900/70 backdrop-blur rounded-2xl shadow-2xl ring-1 ring-white/10 p-6">
-          <h2 className="text-2xl font-extrabold text-center mb-1">Password Reset</h2>
-          <p className="text-center text-slate-300 mb-4">Enter your email and we'll send a reset link or temp password.</p>
+        {done ? (
+          <div className="text-center space-y-4">
+            <div className="text-3xl">📬</div>
+            <p>Check your inbox for instructions to reset your password.</p>
+            <Link to="/login" className="link-quiet">Back to sign in</Link>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="login-form">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={e=>setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
 
-          {done ? (
-            <div className="text-center space-y-4">
-              <div className="text-3xl">📬</div>
-              <p>Check your inbox for instructions to reset your password.</p>
-              <Link to="/login" className="text-indigo-300 hover:text-indigo-200">Back to sign in</Link>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} className="space-y-3">
-              <label className="block">
-                <span className="block text-sm font-medium mb-1">Email</span>
-                <input type="email" autoComplete="email"
-                       className="w-full px-3 py-2 rounded-xl bg-slate-800/80 border border-white/10 focus:border-indigo-400 outline-none transition shadow-inner"
-                       value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" required />
-              </label>
+            {error && <div className="mb-4 p-3 bg-red-900/20 border border-red-500/35 text-red-200 rounded-xl text-sm">{error}</div>}
 
-              {error && <p className="text-rose-300 text-sm">{error}</p>}
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? "Please wait…" : "Reset Password"}
+            </button>
+          </form>
+        )}
 
-              <button type="submit" disabled={loading}
-                className="w-full mt-2 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-400 hover:from-pink-400 hover:to-cyan-300 text-slate-900 font-semibold shadow-lg disabled:opacity-60">
-                {loading ? "Please wait…" : "Reset Password"}
-              </button>
-
-              <div className="text-sm mt-3 text-center">
-                <Link to="/login" className="text-indigo-300 hover:text-indigo-200">Back to sign in</Link>
-              </div>
-            </form>
-          )}
+        <div className="auth-links">
+          <div className="text-sm text-center">
+            <Link to="/login" className="link-quiet">Back to sign in</Link>
+          </div>
         </div>
+      </div>
 
-        <footer className="mt-6 text-center text-xs text-slate-400">
-          © {new Date().getFullYear()} {BRAND.name}
-        </footer>
+      <div className="site-banner bottom"></div>
+      <div className="login-footer">
+        <div className="login-tagline">You Envision it, We Generate it.</div>
       </div>
     </div>
   );

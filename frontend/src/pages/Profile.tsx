@@ -22,18 +22,22 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("jwt_token");
+    if (!token) return;
+
+    const headers = { Authorization: `Bearer ${token}` };
+
     Promise.all([
-      fetch("/api/me", { credentials: "include" }).then(r => r.json()),
-      fetch("/api/profile/library", { credentials: "include" }).then(r => r.json())
+      fetch("/api/me", { headers }).then(r => r.json()),
+      fetch("/api/profile/library", { headers }).then(r => r.json())
     ]).then(([profileData, postersData]) => {
       if (profileData?.ok) {
-        // Mock additional profile stats for demo
         setProfile({
           ...profileData.user,
           posters_created: postersData?.length || 0,
-          credits_spent: 150, // Mock data
-          member_since: "2024-01-01", // Mock data
-          plan: "free"
+          credits_spent: profileData.user?.credits_spent || 0,
+          member_since: profileData.user?.member_since || profileData.user?.created_at || new Date().toISOString(),
+          plan: profileData.user?.plan || "free"
         });
       }
       if (Array.isArray(postersData)) {
