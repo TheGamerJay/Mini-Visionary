@@ -356,7 +356,17 @@
       window.addEventListener("hashchange", updateFromHash);
 
       // Initial load
-      document.addEventListener("DOMContentLoaded", updateFromHash);
+      document.addEventListener("DOMContentLoaded", () => {
+        updateFromHash();
+        // Debug: check if register link works
+        const registerLinks = document.querySelectorAll('[data-switch="register"]');
+        registerLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            console.log('Register link clicked');
+            swapTabs('register');
+          });
+        });
+      });
     })();
   </script>
 </body>
