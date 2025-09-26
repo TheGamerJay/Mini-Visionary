@@ -18,9 +18,13 @@ export default function TermsOfService() {
         </p>
 
         <div className="text-sm text-gray-300 space-y-4 max-h-96 overflow-y-auto">
+          <div className="text-center mb-4">
+            <p className="text-gray-400 italic">Last Updated: September 2025</p>
+          </div>
+
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">1. Acceptance of Terms</h3>
-            <p>By accessing and using Mini Visionary, you accept and agree to be bound by the terms and provision of this agreement.</p>
+            <p>By accessing or using Mini Visionary, you agree to be bound by these Terms. If you do not agree, do not use the Service.</p>
           </div>
 
           <div>
@@ -30,37 +34,42 @@ export default function TermsOfService() {
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">3. User Accounts</h3>
-            <p>Users must register for an account to access certain features. You are responsible for maintaining the confidentiality of your account credentials.</p>
+            <p>You must register for an account to access certain features. You are responsible for maintaining the confidentiality of your login credentials.</p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">4. Content Usage</h3>
-            <p>You retain ownership of content you create using our platform. However, you grant us a license to use, modify, and display your content for service operation purposes.</p>
+            <p>You retain all rights to the content you create. By using Mini Visionary, you grant us a limited, non-exclusive, worldwide, royalty-free license to host, display, and use your content solely to operate and improve the Service.</p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">5. Prohibited Uses</h3>
-            <p>Users may not use the service for illegal activities, harassment, spam, or creation of harmful or inappropriate content.</p>
+            <p>You may not use the Service for illegal activity, harassment, spam, or harmful/inappropriate content.</p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">6. Service Availability</h3>
-            <p>We strive to maintain service availability but do not guarantee uninterrupted access. Scheduled maintenance may occur.</p>
+            <p>We strive to maintain availability but do not guarantee uninterrupted access. Scheduled maintenance or downtime may occur.</p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">7. Limitation of Liability</h3>
-            <p>Mini Visionary shall not be liable for any indirect, incidental, special, consequential, or punitive damages.</p>
+            <p>Mini Visionary is provided "as is." We are not liable for indirect, incidental, special, consequential, or punitive damages.</p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">8. Changes to Terms</h3>
-            <p>We reserve the right to modify these terms at any time. Users will be notified of significant changes.</p>
+            <p>We may update these Terms from time to time. Users will be notified of significant changes.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">9. Contact Information</h3>
-            <p>For questions about these Terms of Service, please contact us through our support channels.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">9. Privacy</h3>
+            <p>Use of the Service is also subject to our <Link to="/privacy-policy" className="text-indigo-300 hover:text-indigo-200 underline">Privacy Policy</Link>.</p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-2">10. Contact Information</h3>
+            <p>For questions, please reach out through our support channels.</p>
           </div>
         </div>
 
