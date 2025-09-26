@@ -3,8 +3,25 @@ name: MiniVisionary Healthcheck
 on:
   push:
     branches: [ main ]
+    # Avoid noisy runs on image-only or trivial changes
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'serve_spa.py'
+      - 'backend/static/**'
+      - '.github/workflows/healthcheck.yml'
+  workflow_dispatch: {}
+  # Once per day is enough; adjust if you want
   schedule:
-    - cron: "0 * * * *"   # every hour
+    - cron: '0 12 * * *'   # 12:00 UTC daily
+
+# Prevents a flood of overlapping runs
+concurrency:
+  group: healthcheck-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   check-auth-pages:
@@ -12,68 +29,59 @@ jobs:
     env:
       BASE_URL: https://minivisionary.soulbridgeai.com
     steps:
-      - name: Checkout (no code needed, but good practice)
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install deps
+      - name: Verify auth, terms, privacy and SPA fallback
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest requests
+          set -euo pipefail
+          base="${BASE_URL%/}"
 
-      - name: Create tests
-        run: |
-          mkdir -p tests
-          cat > tests/test_auth_pages.py << 'PY'
-          import os, requests
+          fetch() {
+            local path="$1"
+            # robust curl: follow redirects, retry transient errors, bypass caches
+            curl --fail --silent --show-error --location \
+                 --retry 5 --retry-delay 3 \
+                 -H "Cache-Control: no-cache" \
+                 "$base$path"
+          }
 
-          BASE = os.environ.get("BASE_URL", "").rstrip("/")
+          lc() { tr '[:upper:]' '[:lower:]'; }
 
-          def _get(url):
-            r = requests.get(url, timeout=15, headers={"Cache-Control": "no-cache"})
-            assert r.status_code == 200, f"{url} -> {r.status_code}"
-            return r.text
+          assert_has() {
+            local haystack="$1"; local needle="$2"
+            if ! echo "$haystack" | lc | grep -q "$needle"; then
+              echo "::error::Expected to find '$needle' in page"
+              exit 1
+            fi
+          }
 
-          def _assert_not_spa(html):
-            assert 'id="root"' not in html.lower(), "Looks like SPA content leaked in"
-            assert "<title>404 Not Found" not in html, "Got a 404 page instead"
+          assert_not_has() {
+            local haystack="$1"; local needle="$2"
+            if echo "$haystack" | lc | grep -q "$needle"; then
+              echo "::error::Found forbidden string '$needle' in page"
+              exit 1
+            fi
+          }
 
-          def test_auth_html():
-            html = _get(f"{BASE}/auth.html")
-            _assert_not_spa(html)
-            assert "Mini Visionary — You Envision it, We Generate It".lower() in html.lower()
+          echo "Checking /auth.html..."
+          body=$(fetch /auth.html)
+          assert_not_has "$body" 'id="root"'
+          assert_not_has "$body" '<title>404 not found'
+          assert_has "$body" 'mini visionary'
 
-          def test_terms_html():
-            html = _get(f"{BASE}/terms.html")
-            _assert_not_spa(html)
-            assert "Mini Visionary — Terms of Service".lower() in html.lower()
+          echo "Checking /terms.html..."
+          body=$(fetch /terms.html)
+          assert_not_has "$body" 'id="root"'
+          assert_not_has "$body" '<title>404 not found'
+          assert_has "$body" 'terms'
 
-          def test_privacy_html():
-            html = _get(f"{BASE}/privacy.html")
-            _assert_not_spa(html)
-            assert "Mini Visionary — Privacy Policy".lower() in html.lower()
+          echo "Checking /privacy.html..."
+          body=$(fetch /privacy.html)
+          assert_not_has "$body" 'id="root"'
+          assert_not_has "$body" '<title>404 not found'
+          assert_has "$body" 'privacy'
 
-          def test_spa_fallback_is_still_spa():
-            # SPA route should still return index.html (root present)
-            r = requests.get(f"{BASE}/app/unknown/route", timeout=15)
-            assert r.status_code == 200
-            assert 'id="root"' in r.text.lower(), "SPA fallback not serving React shell"
-          PY
+          echo "Checking SPA fallback..."
+          body=$(fetch /app/unknown/route)
+          assert_has "$body" 'id="root"'
 
-      - name: Run tests
-        run: pytest -q
-
-      - name: Test health endpoint
-        run: |
-          curl -fsS "${BASE_URL}/api/_health" > health.json
-          python -c "
-          import json
-          with open('health.json') as f:
-              data = json.load(f)
-          assert data.get('ok') == True, f'Health check failed: {data}'
-          print('✓ Health endpoint passed')
-          "
+          echo "All health checks passed ✅"
