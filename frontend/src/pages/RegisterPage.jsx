@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const BRAND = {
   name: "Mini Visionary",
-  slogan: "You Envision it, We Generate It",
+  slogan: "You Envision it, We Generate it.",
 };
 
 async function apiRegister(payload) {
