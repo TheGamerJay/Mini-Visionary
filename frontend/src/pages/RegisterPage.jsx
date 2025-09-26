@@ -104,14 +104,14 @@ export default function RegisterPage() {
             required
           />
 
-          <label className="flex items-center gap-2 text-sm">
+          {error && <div className="mb-4 p-3 bg-red-900/20 border border-red-500/35 text-red-200 rounded-xl text-sm">{error}</div>}
+
+          <label className="flex items-center gap-2 text-sm mb-4">
             <input type="checkbox" className="accent-indigo-500 flex-shrink-0" checked={agree} onChange={e=>setAgree(e.target.checked)} />
-            <span style={{whiteSpace: 'nowrap'}}>
-              I agree to the <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Terms of Service</a> and <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Privacy Policy</a>.
+            <span>
+              I agree to the <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Terms of Service</a> and <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Privacy Policy</a>
             </span>
           </label>
-
-          {error && <div className="mb-4 p-3 bg-red-900/20 border border-red-500/35 text-red-200 rounded-xl text-sm">{error}</div>}
 
           <button type="submit" disabled={loading} className="btn-primary">
             {loading ? "Please wait…" : "Create account"}
