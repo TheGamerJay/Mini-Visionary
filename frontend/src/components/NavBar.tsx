@@ -30,7 +30,7 @@ export default function NavBar(){
     <header className="fixed top-0 w-full border-b border-indigo-500/20 bg-slate-900/95 backdrop-blur-md shadow-lg z-50">
       <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={me ? "/home" : "/"} className="flex items-center gap-2">
             <img
               src="/logo.png"
               alt="Mini-Visionary Logo"
@@ -39,7 +39,7 @@ export default function NavBar(){
             <span className="font-semibold text-cyan-100">Mini-Visionary</span>
           </Link>
           <nav className="hidden md:flex items-center gap-1 ml-6">
-            <A to="/" label="Home" />
+            <A to="/home" label="Home" />
             <A to="/chat" label="Chat" />
             <A to="/create" label="Create" />
             <A to="/store" label="Store" />

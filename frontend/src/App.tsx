@@ -37,11 +37,12 @@ export default function App(){
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></>} />
+        {/* Public routes - Landing page is login */}
+        <Route path="/" element={<><NavBar /><AuthRoute><Login /></AuthRoute></>} />
 
         {/* Auth routes (redirect if already logged in) */}
         <Route path="/login" element={<><NavBar /><AuthRoute><Login /></AuthRoute></>} />
+        <Route path="/home" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></></ProtectedRoute>} />
         <Route path="/signup" element={<><NavBar /><AuthRoute><Signup /></AuthRoute></>} />
         <Route path="/forgot" element={<><NavBar /><AuthRoute><Forgot /></AuthRoute></>} />
         <Route path="/reset-password" element={<><NavBar /><AuthRoute><ResetPassword /></AuthRoute></>} />
@@ -59,8 +60,8 @@ export default function App(){
         <Route path="/settings" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Settings /></div></main></></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Chat /></div></main></></ProtectedRoute>} />
 
-        {/* Catch-all route - redirect unknown paths to home */}
-        <Route path="*" element={<><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></>} />
+        {/* Catch-all route - redirect unknown paths to login */}
+        <Route path="*" element={<><NavBar /><AuthRoute><Login /></AuthRoute></>} />
       </Routes>
     </BrowserRouter>
   );
