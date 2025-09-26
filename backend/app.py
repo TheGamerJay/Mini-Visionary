@@ -476,6 +476,21 @@ def auth_page():
     """Serve auth.html directly"""
     return send_from_directory(app.static_folder, 'auth.html')
 
+@app.route('/register')
+def register_redirect():
+    """Redirect /register to auth.html#register"""
+    return f'<script>window.location.href="/auth.html#register";</script>'
+
+@app.route('/login')
+def login_redirect():
+    """Redirect /login to auth.html#login"""
+    return f'<script>window.location.href="/auth.html#login";</script>'
+
+@app.route('/forgot-password')
+def forgot_redirect():
+    """Redirect /forgot-password to auth.html#forgot"""
+    return f'<script>window.location.href="/auth.html#forgot";</script>'
+
 @app.route('/terms.html')
 def terms_page():
     """Serve terms.html directly"""
