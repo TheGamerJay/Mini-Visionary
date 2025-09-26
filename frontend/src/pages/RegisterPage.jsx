@@ -27,10 +27,15 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [agree, setAgree]       = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
   const nav = useNavigate();
+
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -94,15 +99,24 @@ export default function RegisterPage() {
           />
 
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={e=>setPassword(e.target.value)}
-            placeholder="At least 8 characters"
-            required
-          />
+          <div className="password-field">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={password}
+              onChange={e=>setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              required
+            />
+            <div className="password-toggle" onClick={togglePassword}>
+              {showPassword ? (
+                <span>🙈</span>
+              ) : (
+                <span>👁️</span>
+              )}
+            </div>
+          </div>
 
           {error && <div className="mb-4 p-3 bg-red-900/20 border border-red-500/35 text-red-200 rounded-xl text-sm">{error}</div>}
 
