@@ -2,13 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+:root{
+  --bg-0:#0b0b11; --bg-1:#0f0f0f; --bg-2:#111827;
+  --text:#e5e7eb; --muted:#9ca3af; --danger:#ef4444; --success:#10b981;
+  --brand-1:#663399; --brand-2:#9966cc; --accent:#93c5fd;
+  --rainbow-1:#ff6600; --rainbow-2:#ff0099; --rainbow-3:#00ccff;
+  --card:#11131a; --card-2:#0f1424; --ring:rgba(153,102,204,.55);
+  --shadow:0 10px 30px rgba(0,0,0,.45), 0 2px 8px rgba(102,51,153,.25);
+
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  background-color: #0a0a0a;
-  color: #e0f2fe;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -90,4 +95,90 @@ label {
   display: block;
   margin-bottom: 4px;
   font-weight: 500;
+}
+
+/* Mini Visionary Auth Styles - Exact Recreation */
+*{box-sizing:border-box}
+html,body{height:100%}
+
+/* Site banners */
+.site-banner{
+  height:12px; width:100%;
+  background:linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--accent));
+  box-shadow:0 0 28px rgba(153,102,204,.35), inset 0 0 22px rgba(147,197,253,.18);
+}
+.site-banner.top{position:relative}
+.site-banner.bottom{margin-top:28px}
+
+/* Card */
+.login-card{
+  width:100%; max-width:520px; margin:40px auto 0; padding:28px 24px; border-radius:18px;
+  background:linear-gradient(180deg, rgba(16,19,32,.85), rgba(13,14,22,.9));
+  border:1px solid rgba(153,102,204,.25); box-shadow: var(--shadow);
+}
+.login-title{margin:0 0 6px; font-size:1.6rem; font-weight:800; color: var(--text);}
+.login-subtitle{margin:0 0 18px; color:var(--muted)}
+.slogan{color:var(--accent); font-weight:600}
+
+/* Form */
+.login-form{display:grid; gap:10px}
+.login-form label{font-size:.92rem; color:#cbd5e1}
+.login-form input{
+  width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(153,102,204,.35);
+  background:#0e1120; color:var(--text); outline:none;
+}
+.login-form input:focus{
+  border-color:var(--ring); box-shadow:0 0 0 4px rgba(153,102,204,.14);
+}
+
+/* Password field */
+.password-field{position:relative; display:flex; align-items:center}
+.password-field input{padding-right:46px}
+.password-toggle{
+  position:absolute; right:6px; display:inline-grid; place-items:center; width:36px; height:36px;
+  border-radius:10px; background:#11131a; border:1px solid rgba(153,102,204,.25); cursor:pointer;
+}
+.password-toggle .hide-text{display:none}
+
+/* Buttons */
+.btn-primary{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:10px 14px; border-radius:12px; text-decoration:none; cursor:pointer; transition: all .2s ease;
+  border:1px solid transparent; font-weight:600; font-size:.95rem;
+  background: linear-gradient(90deg, var(--rainbow-1), var(--rainbow-2), var(--rainbow-3));
+  background-size: 200% 100%; color:#0b0b11; box-shadow: var(--shadow);
+}
+.btn-primary:hover{transform: translateY(-1px); filter:brightness(1.05)}
+.btn-secondary{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:10px 14px; border-radius:12px; text-decoration:none; cursor:pointer; transition: all .2s ease;
+  border:1px solid transparent; font-weight:600; font-size:.95rem;
+  background: linear-gradient(180deg, #1b1230, #10131f); color: var(--text);
+  border-color: rgba(153,102,204,.35);
+}
+.btn-secondary:hover{border-color: rgba(153,102,204,.6)}
+
+/* Links row */
+.auth-links{
+  display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:12px;
+}
+.link-quiet{color:var(--muted); text-decoration:none}
+.link-quiet:hover{color:var(--text)}
+
+/* Footer wordmark */
+.login-footer{
+  text-align:center; margin:18px auto 24px; letter-spacing:6px; font-weight:800; opacity:.25;
+  color: var(--text);
+}
+
+/* Auth root container */
+#login-root{
+  min-height: 100vh;
+  background: radial-gradient(1200px 800px at 25% -10%, #1a1030 0%, transparent 55%) ,linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color: var(--text);
+}
+
+/* Mobile */
+@media (max-width:560px){
+  .login-card{margin-top:24px; padding:22px 18px}
 }
