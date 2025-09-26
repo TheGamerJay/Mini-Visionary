@@ -104,18 +104,10 @@ export default function RegisterPage() {
             required
           />
 
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" className="accent-indigo-500 mt-0.5 flex-shrink-0" checked={agree} onChange={e=>setAgree(e.target.checked)} />
-            <span>
-              I agree to the{" "}
-              <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>
-                Privacy Policy
-              </a>
-              .
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" className="accent-indigo-500 flex-shrink-0" checked={agree} onChange={e=>setAgree(e.target.checked)} />
+            <span className="whitespace-nowrap">
+              I agree to the <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Terms of Service</a> and <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Privacy Policy</a>.
             </span>
           </label>
 
