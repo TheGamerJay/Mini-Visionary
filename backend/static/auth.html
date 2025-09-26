@@ -86,6 +86,11 @@
     .msg.ok{background:#0f2b22; color:#bbf7d0; border:1px solid #14532d}
 
     footer{color:var(--muted); text-align:center; font-size:12px; margin-top:6px}
+
+    /* Logo in login form */
+    .login-logo{width:200px; height:200px; margin:16px auto; border-radius:24px;
+                box-shadow:0 10px 40px rgba(0,0,0,.5); image-rendering:high-quality;
+                image-rendering:-webkit-optimize-contrast; display:block}
   </style>
 </head>
 <body>
@@ -102,17 +107,13 @@
         <h1 id="formTitle" class="title">Welcome back</h1>
         <p id="formSubtitle" class="subtitle">Sign in to continue your creative journey.</p>
 
-        <div class="tabs" role="tablist" aria-label="Auth forms">
-          <button id="tab-login"   class="tab active" role="tab" aria-selected="true">Sign in</button>
-          <button id="tab-register" class="tab" role="tab" aria-selected="false">Create account</button>
-          <button id="tab-forgot"   class="tab" role="tab" aria-selected="false">Forgot password</button>
-        </div>
 
         <!-- Messages -->
         <div id="msg" class="msg" style="display:none"></div>
 
         <!-- Login -->
         <form id="form-login" class="form">
+          <img src="/HomeLogo.png" alt="Mini Visionary Logo" class="login-logo">
           <div class="field">
             <label class="label" for="li-email">Email</label>
             <input id="li-email" class="input" type="email" placeholder="Enter your email address" autocomplete="email" required />
