@@ -26,6 +26,15 @@
     }
     a{color:var(--link); text-decoration:none}
     a:hover{text-decoration:underline}
+    .link-btn{
+      color:var(--btn-start); font-weight:600; padding:4px 8px; border-radius:6px;
+      border:1px solid rgba(34,211,238,.3); background:rgba(34,211,238,.1);
+      transition:all .2s ease;
+    }
+    .link-btn:hover{
+      text-decoration:none; background:rgba(34,211,238,.2); border-color:rgba(34,211,238,.5);
+      transform:translateY(-1px);
+    }
 
     /* Layout */
     .wrap{min-height:100%; display:grid; place-items:center; padding:24px}
@@ -128,7 +137,7 @@
           <button class="btn" id="btn-login" type="submit">Sign in</button>
 
           <div class="row">
-            <span class="hint">No account? <a href="#register" data-switch="register">Create one</a></span>
+            <span class="hint">No account? <a href="#register" data-switch="register" class="link-btn">Create one</a></span>
             <a href="#forgot" data-switch="forgot">Forgot password?</a>
           </div>
         </form>
@@ -181,7 +190,7 @@
 
           <div class="row">
             <a href="#login" data-switch="login">Back to sign in</a>
-            <span class="hint">No account? <a href="#register" data-switch="register">Create one</a></span>
+            <span class="hint">No account? <a href="#register" data-switch="register" class="link-btn">Create one</a></span>
           </div>
         </form>
       </div>
