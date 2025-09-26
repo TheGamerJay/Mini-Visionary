@@ -10,6 +10,8 @@ import Store from "./pages/Store";
 import Login from "./pages/Login";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPage from "./pages/ForgotPage";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import StoreSuccess from "./pages/StoreSuccess";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutCancel from "./pages/CheckoutCancel";
@@ -44,6 +46,8 @@ export default function App(){
         <Route path="/home" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></></ProtectedRoute>} />
         <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
         <Route path="/forgot-password" element={<AuthRoute><ForgotPage /></AuthRoute>} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* Protected routes (require authentication) */}
         <Route path="/dashboard" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Dashboard /></div></main></></ProtectedRoute>} />

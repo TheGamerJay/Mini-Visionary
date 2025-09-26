@@ -116,7 +116,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="text-sm text-center leading-relaxed">
-              I agree to the <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Terms of Service</a> and <a className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted" href="#" onClick={(e)=>e.preventDefault()}>Privacy Policy</a>
+              I agree to the <Link to="/terms-of-service" className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted">Terms of Service</Link> and <Link to="/privacy-policy" className="text-indigo-300 hover:text-indigo-200 underline decoration-dotted">Privacy Policy</Link>
             </div>
           </div>
 
