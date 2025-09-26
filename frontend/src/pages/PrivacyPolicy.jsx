@@ -75,7 +75,7 @@ export default function PrivacyPolicy() {
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">Contact Information</h3>
-            <p>If you have questions or requests, please reach us through our official support channels.</p>
+            <p>If you have questions or requests, please reach us through our official support channels. Our email for support is <a href="mailto:MiniVisionary.contactus@gmail.com" className="text-indigo-300 hover:text-indigo-200 underline">MiniVisionary.contactus@gmail.com</a>.</p>
           </div>
         </div>
 

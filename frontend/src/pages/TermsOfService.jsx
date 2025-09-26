@@ -69,7 +69,7 @@ export default function TermsOfService() {
 
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">10. Contact Information</h3>
-            <p>For questions, please reach out through our support channels.</p>
+            <p>For questions, please reach out through our support channels. Our email for support is <a href="mailto:MiniVisionary.contactus@gmail.com" className="text-indigo-300 hover:text-indigo-200 underline">MiniVisionary.contactus@gmail.com</a>.</p>
           </div>
         </div>
 
