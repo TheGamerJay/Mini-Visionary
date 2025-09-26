@@ -7,7 +7,7 @@ const BRAND = {
 };
 
 async function apiRegister(payload) {
-  const response = await fetch("/api/auth/register", {
+  const response = await fetch("/api/auth/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -57,7 +57,7 @@ export default function RegisterPage() {
     if (!agree) { setError("Please accept Terms & Privacy"); return; }
     setLoading(true); setError("");
     try {
-      await apiRegister({ displayName, username, email, password });
+      await apiRegister({ display_name: displayName, email, password });
       nav("/login");
     } catch (err) {
       setError(err.message || "Registration failed");
