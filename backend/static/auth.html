@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Visionary — You Envision it, We Generate It</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    /* ===== Theme (edit these) ===== */
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; /* blue banner */
+      --text:#e6eaf2; --muted:#9aa4b2; --link:#a5b4fc; --ok:#10b981; --err:#ef4444;
+      --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; /* cyan */
+      --btn-end:#ec4899;   /* pink */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text); background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    /* Layout */
+    .wrap{min-height:100%; display:grid; place-items:center; padding:24px}
+    .stack{width:100%; max-width:760px; display:grid; gap:18px}
+    .brand{display:grid; gap:10px; justify-items:center; text-align:center}
+    .brand .name{font-size:28px; font-weight:800; letter-spacing:.5px}
+    .banner{height:2px; width:min(680px, 92vw); background:var(--line);
+            border-radius:2px; opacity:.9}
+    .tag{color:var(--muted); font-size:14px}
+
+    .card{display:grid; gap:16px; background:color-mix(in srgb, var(--card) 90%, black 10%);
+          border:1px solid var(--ring); border-radius:18px; padding:22px 20px;
+          box-shadow:0 10px 40px rgba(0,0,0,.35)}
+    @media(min-width:720px){ .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}}
+    .title{font-size:22px; font-weight:800; text-align:center}
+    .subtitle{color:var(--muted); text-align:center; margin-top:-6px}
+
+    /* Inputs */
+    .field{display:grid; gap:8px}
+    .label{font-size:13px; color:#cbd5e1}
+    .input{
+      width:100%; padding:12px 14px; border-radius:14px; border:1px solid var(--ring);
+      background:linear-gradient(180deg, #0d1426, #0a1021);
+      color:var(--text); outline:none;
+    }
+    .input:focus{border-color:#60a5fa; box-shadow:0 0 0 4px rgba(96,165,250,.15)}
+    .pwd{position:relative}
+    .eye{
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      width:38px; height:34px; display:grid; place-items:center;
+      border-radius:10px; border:1px solid var(--ring); background:var(--sunken);
+      cursor:pointer;
+    }
+    .row{display:flex; gap:12px; align-items:center; justify-content:space-between}
+    .hint{color:var(--muted); font-size:13px}
+
+    /* Buttons */
+    .btn{
+      width:100%; padding:12px 14px; font-weight:700; color:#081018;
+      background:linear-gradient(90deg, var(--btn-start), var(--btn-end));
+      border:none; border-radius:14px; cursor:pointer;
+      box-shadow:0 8px 30px rgba(34,211,238,.25), 0 8px 30px rgba(236,72,153,.25);
+      transition:filter .15s ease, transform .04s ease;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn:active{transform:translateY(1px)}
+    .btn[disabled]{opacity:.6; cursor:progress}
+
+    /* Tabs */
+    .tabs{display:flex; gap:8px; justify-content:center}
+    .tab{padding:6px 10px; border-radius:999px; border:1px solid var(--ring);
+         background:var(--sunken); color:var(--muted); cursor:pointer; font-size:13px}
+    .tab.active{color:var(--text); border-color:#60a5fa}
+
+    /* Alerts */
+    .msg{font-size:14px; padding:10px 12px; border-radius:12px}
+    .msg.err{background:#3b1a1a; color:#fecaca; border:1px solid #7f1d1d}
+    .msg.ok{background:#0f2b22; color:#bbf7d0; border:1px solid #14532d}
+
+    footer{color:var(--muted); text-align:center; font-size:12px; margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="stack">
+      <!-- Top brand block -->
+      <div class="brand" aria-label="Brand header">
+        <div class="name">MINI VISIONARY</div>
+        <div class="banner" aria-hidden="true"></div>
+      </div>
+
+      <!-- Auth card -->
+      <div class="card" role="region" aria-label="Authentication">
+        <h1 id="formTitle" class="title">Welcome back</h1>
+        <p id="formSubtitle" class="subtitle">Sign in to continue your creative journey.</p>
+
+        <div class="tabs" role="tablist" aria-label="Auth forms">
+          <button id="tab-login"   class="tab active" role="tab" aria-selected="true">Sign in</button>
+          <button id="tab-register" class="tab" role="tab" aria-selected="false">Create account</button>
+          <button id="tab-forgot"   class="tab" role="tab" aria-selected="false">Forgot password</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="msg" class="msg" style="display:none"></div>
+
+        <!-- Login -->
+        <form id="form-login" class="form">
+          <div class="field">
+            <label class="label" for="li-email">Email</label>
+            <input id="li-email" class="input" type="email" placeholder="Enter your email address" autocomplete="email" required />
+          </div>
+
+          <div class="field pwd">
+            <label class="label" for="li-pass">Password</label>
+            <input id="li-pass" class="input" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+            <button type="button" id="li-eye" class="eye" aria-label="Show password">👁️</button>
+          </div>
+
+          <button class="btn" id="btn-login" type="submit">Sign in</button>
+
+          <div class="row">
+            <span class="hint">No account? <a href="#register" data-switch="register">Create one</a></span>
+            <a href="#forgot" data-switch="forgot">Forgot password?</a>
+          </div>
+        </form>
+
+        <!-- Register -->
+        <form id="form-register" class="form" style="display:none">
+          <div class="grid2">
+            <div class="field">
+              <label class="label" for="rg-display">Display name</label>
+              <input id="rg-display" class="input" placeholder="Enter your display name" required />
+            </div>
+            <div class="field">
+              <label class="label" for="rg-user">Username</label>
+              <input id="rg-user" class="input" placeholder="Choose a username" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="rg-email">Email</label>
+            <input id="rg-email" class="input" type="email" placeholder="Enter your email address" autocomplete="email" required />
+          </div>
+
+          <div class="field pwd">
+            <label class="label" for="rg-pass">Password</label>
+            <input id="rg-pass" class="input" type="password" placeholder="At least 8 characters" autocomplete="new-password" required />
+            <button type="button" id="rg-eye" class="eye" aria-label="Show password">👁️</button>
+          </div>
+
+          <label class="row" style="justify-content:flex-start; gap:10px; font-size:13px">
+            <input id="rg-terms" type="checkbox" required />
+            <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>.</span>
+          </label>
+
+          <button class="btn" id="btn-register" type="submit">Create account</button>
+
+          <div class="row">
+            <a href="#login" data-switch="login">Back to sign in</a>
+            <span class="hint">Need help? <a href="mailto:MiniVisionary.contactus@gmail.com">Contact support</a></span>
+          </div>
+        </form>
+
+        <!-- Forgot -->
+        <form id="form-forgot" class="form" style="display:none">
+          <div class="field">
+            <label class="label" for="fg-email">Email</label>
+            <input id="fg-email" class="input" type="email" placeholder="Enter your email address" autocomplete="email" required />
+          </div>
+
+          <button class="btn" id="btn-forgot" type="submit">Send reset link</button>
+
+          <div class="row">
+            <a href="#login" data-switch="login">Back to sign in</a>
+            <span class="hint">No account? <a href="#register" data-switch="register">Create one</a></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bottom brand block -->
+      <div class="brand" aria-label="Brand footer">
+        <div class="banner" aria-hidden="true"></div>
+        <div class="tag">You Envision it, We Generate it.</div>
+      </div>
+
+      <footer>© <span id="y"></span> Mini Visionary</footer>
+    </div>
+  </div>
+
+  <script>
+    // ===== Helpers =====
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const show = (el) => el.style.display = "";
+    const hide = (el) => el.style.display = "none";
+    const setMsg = (text, type) => {
+      const m = $("#msg");
+      if(!text){ hide(m); return; }
+      m.className = "msg " + (type || "");
+      m.textContent = text; show(m);
+    };
+    const swapTabs = (name) => {
+      const titles = {
+        login:   ["Welcome back", "Sign in to continue your creative journey."],
+        register:["Create your account", "Join Mini Visionary and start creating posters with AI."],
+        forgot:  ["Password Reset", "Enter your email and we'll send a reset link."]
+      };
+      $("#formTitle").textContent = titles[name][0];
+      $("#formSubtitle").textContent = titles[name][1];
+
+      for (const id of ["login","register","forgot"]){
+        const tab = $("#tab-" + id);
+        tab.classList.toggle("active", id===name);
+        tab.setAttribute("aria-selected", id===name);
+        (id===name?show:hide)($("#form-" + id));
+      }
+      setMsg("");
+    };
+
+    // Tab clicks + inline text links
+    for (const id of ["login","register","forgot"]) {
+      $("#tab-"+id).addEventListener("click", ()=>swapTabs(id));
+    }
+    document.addEventListener("click",(e)=>{
+      const t = e.target.closest("[data-switch]");
+      if(!t) return;
+      e.preventDefault(); swapTabs(t.dataset.switch);
+    });
+
+    // Year
+    $("#y").textContent = new Date().getFullYear();
+
+    // Password toggles (single eye each)
+    const bindEye = (inputSel, eyeSel) => {
+      const i = $(inputSel), b = $(eyeSel);
+      b.addEventListener("click", ()=>{
+        const showPwd = i.type === "password";
+        i.type = showPwd ? "text" : "password";
+        b.textContent = showPwd ? "🙈" : "👁️";
+        b.setAttribute("aria-label", showPwd ? "Hide password" : "Show password");
+      });
+    };
+    bindEye("#li-pass","#li-eye");
+    bindEye("#rg-pass","#rg-eye");
+
+    // ===== API layer (hooked up to Flask backend) =====
+    const API = {
+      async login(email, password){
+        const r = await fetch("/api/auth/login", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({email, password})
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.error || "Login failed");
+        return data;
+      },
+      async register(payload){
+        const r = await fetch("/api/auth/signup", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.error || "Registration failed");
+        return data;
+      },
+      async forgot(email){
+        const r = await fetch("/api/auth/forgot", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({email})
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.error || "Request failed");
+        return data;
+      }
+    };
+
+    // ===== Form handlers =====
+    $("#form-login").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      setMsg(""); $("#btn-login").disabled = true;
+      try{
+        const email = $("#li-email").value.trim();
+        const pass  = $("#li-pass").value;
+        const res = await API.login(email, pass);
+        if (res.ok && res.token) {
+          localStorage.setItem("jwt_token", res.token);
+          setMsg("Success! Redirecting…", "ok");
+          setTimeout(() => window.location.href = "/dashboard", 1000);
+        } else {
+          throw new Error(res.error || "Login failed");
+        }
+      }catch(err){ setMsg(err.message, "err"); }
+      finally{ $("#btn-login").disabled = false; }
+    });
+
+    $("#form-register").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      setMsg(""); $("#btn-register").disabled = true;
+      try{
+        const payload = {
+          display_name: $("#rg-display").value.trim(),
+          email: $("#rg-email").value.trim(),
+          password: $("#rg-pass").value
+        };
+        if(payload.password.length < 8) throw new Error("Password must be at least 8 characters.");
+        if(!$("#rg-terms").checked) {
+          const confirmed = confirm("By checking this box, you acknowledge that you have read, understood, and agree to be bound by Mini Visionary's Terms of Service and Privacy Policy. This agreement will govern your use of our services.");
+          if (!confirmed) throw new Error("Please accept the Terms & Privacy.");
+          $("#rg-terms").checked = true;
+        }
+        const res = await API.register(payload);
+        setMsg("Account created! Please sign in.", "ok");
+        swapTabs("login");
+      }catch(err){ setMsg(err.message, "err"); }
+      finally{ $("#btn-register").disabled = false; }
+    });
+
+    $("#form-forgot").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      setMsg(""); $("#btn-forgot").disabled = true;
+      try{
+        await API.forgot($("#fg-email").value.trim());
+        setMsg("If your email exists, we've sent reset instructions.", "ok");
+      }catch(err){ setMsg(err.message, "err"); }
+      finally{ $("#btn-forgot").disabled = false; }
+    });
+
+    // ===== Hash routing for tabs =====
+    (function () {
+      const VIEWS = ["login", "register", "forgot"];
+
+      function currentFromHash() {
+        const h = (location.hash || "").replace("#", "").toLowerCase();
+        return VIEWS.includes(h) ? h : "login";
+      }
+
+      function updateFromHash() {
+        const which = currentFromHash();
+        swapTabs(which);
+        if (VIEWS.includes(which)) history.replaceState(null, "", "#" + which);
+      }
+
+      // Switch when hash changes (e.g. user comes back from another page)
+      window.addEventListener("hashchange", updateFromHash);
+
+      // Initial load
+      document.addEventListener("DOMContentLoaded", updateFromHash);
+    })();
+  </script>
+</body>
+</html>
