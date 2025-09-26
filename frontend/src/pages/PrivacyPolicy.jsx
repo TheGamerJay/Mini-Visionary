@@ -19,60 +19,69 @@ export default function PrivacyPolicy() {
 
         <div className="text-sm text-gray-300 space-y-4 max-h-96 overflow-y-auto">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">1. Information We Collect</h3>
-            <p>We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Information We Collect</h3>
+            <p>We may collect:</p>
+            <ul className="list-disc list-inside ml-4 space-y-1">
+              <li>Account details you provide when creating an account (name, email, password)</li>
+              <li>Content you generate through our platform</li>
+              <li>Technical data such as device info, usage logs, and cookies</li>
+            </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">2. How We Use Your Information</h3>
-            <p>We use the information we collect to provide, maintain, and improve our services, process transactions, and communicate with you.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">How We Use Your Information</h3>
+            <p>We use collected data to:</p>
+            <ul className="list-disc list-inside ml-4 space-y-1">
+              <li>Operate and improve our services</li>
+              <li>Process transactions and provide support</li>
+              <li>Personalize your experience and deliver updates</li>
+            </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">3. Information Sharing</h3>
-            <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Information Sharing</h3>
+            <p>We do not sell or rent your personal information. We may share limited data only with trusted providers for service operation, or as required by law.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">4. Data Security</h3>
-            <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Data Security</h3>
+            <p>We apply reasonable safeguards to protect your personal information. However, no system can be guaranteed 100% secure.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">5. Cookies and Tracking</h3>
-            <p>We use cookies and similar technologies to enhance your experience, analyze usage patterns, and provide personalized content.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Cookies and Tracking</h3>
+            <p>Cookies and similar tools are used to remember preferences, analyze usage, and improve your experience.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">6. Third-Party Services</h3>
-            <p>Our service may contain links to third-party websites or services. We are not responsible for their privacy practices.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Third-Party Links</h3>
+            <p>Our platform may link to external sites. We are not responsible for the privacy practices of third parties.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">7. Data Retention</h3>
-            <p>We retain your information for as long as necessary to provide our services and fulfill the purposes outlined in this policy.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Data Retention</h3>
+            <p>We keep your data only as long as needed for the purposes in this policy, or as required by law.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">8. Your Rights</h3>
-            <p>You have the right to access, update, or delete your personal information. Contact us to exercise these rights.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Your Rights</h3>
+            <p>You may request to access, update, or delete your information at any time. Please contact us to exercise these rights.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">9. Changes to Privacy Policy</h3>
-            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Changes to This Policy</h3>
+            <p>We may revise this Privacy Policy from time to time. Updates will be posted here, with significant changes communicated directly.</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">10. Contact Us</h3>
-            <p>If you have any questions about this Privacy Policy, please contact us through our support channels.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Contact Information</h3>
+            <p>If you have questions or requests, please reach us through our official support channels.</p>
           </div>
         </div>
 
         <div className="auth-links mt-6">
-          <div className="text-sm text-center">
+          <div className="text-sm flex justify-between">
             <Link to="/register" className="link-quiet">Back to Register</Link>
-            <span className="mx-2">•</span>
             <Link to="/terms-of-service" className="link-quiet">Terms of Service</Link>
           </div>
         </div>
