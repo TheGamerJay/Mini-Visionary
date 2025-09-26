@@ -1,14 +1,14 @@
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../components/AuthLayout";
-import { useState } from "react";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -17,7 +17,7 @@ export default function Login() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
@@ -37,90 +37,78 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout title="Welcome to Mini-Visionary" subtitle="Sign in to start creating amazing posters">
-      <div className="space-y-4">
-        {/* Quick Action Buttons */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <Link
-            to="/signup"
-            className="flex items-center justify-center p-4 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 transition-all duration-300 group border border-slate-600/30 hover:border-slate-500/50"
-          >
-            <span className="text-sm font-medium text-slate-200 group-hover:text-white">Create Account</span>
-          </Link>
-
-          <Link
-            to="/forgot"
-            className="flex items-center justify-center p-4 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 transition-all duration-300 group border border-slate-600/30 hover:border-slate-500/50"
-          >
-            <span className="text-sm font-medium text-slate-200 group-hover:text-white">Forgot Password</span>
-          </Link>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4">
+      <div className="w-full max-w-md bg-gray-900/70 backdrop-blur rounded-2xl shadow-xl border border-gray-700 p-8">
+        {/* Logo + Slogan */}
+        <div className="text-center mb-6">
+          <img
+            src="/logo.png"
+            alt="Mini Visionary"
+            className="mx-auto w-20 h-20 rounded-2xl object-contain"
+          />
+          <h1 className="text-2xl font-bold mt-4">Mini Visionary</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            You Envision it, We Generate It
+          </p>
         </div>
 
-        {/* Login Form */}
-        <form className="space-y-4" onSubmit={onSubmit}>
-          {error && (
-            <div className="bg-red-500/10 border border-red-400/30 text-red-300 px-4 py-3 rounded-xl text-sm backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                {error}
-              </div>
-            </div>
-          )}
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-400/30 text-red-300 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-200">Email Address</label>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+              placeholder="you@example.com"
               required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full p-4 rounded-xl bg-slate-800/50 border border-slate-600/50 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 outline-none placeholder-slate-400 text-white transition-all duration-200"
-              placeholder="Enter your email"
-              autoComplete="email"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-200">Password</label>
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+              placeholder="••••••••"
               required
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full p-4 rounded-xl bg-slate-800/50 border border-slate-600/50 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 outline-none placeholder-slate-400 text-white transition-all duration-200"
-              placeholder="Enter your password"
-              autoComplete="current-password"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] transform"
+            className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Signing in...
-              </div>
-            ) : "Sign In to Continue"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        {/* Call to Action */}
-        <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-700/40 text-center border border-slate-600/20 backdrop-blur-sm">
-          <div className="mb-3">
-            <h3 className="text-lg font-semibold text-white mb-2">New to Mini-Visionary?</h3>
-            <p className="text-sm text-slate-300">Join thousands creating stunning AI-powered posters</p>
-          </div>
-          <Link
-            to="/signup"
-            className="inline-block px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/30 hover:scale-105 transform"
-          >
-            Create Free Account
-          </Link>
+        {/* Links */}
+        <div className="mt-6 text-center text-sm text-gray-400">
+          <p>
+            <Link to="/forgot" className="text-indigo-400 hover:underline">
+              Forgot password?
+            </Link>
+          </p>
+          <p className="mt-2">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-indigo-400 hover:underline">
+              Create one
+            </Link>
+          </p>
         </div>
       </div>
-    </AuthLayout>
+    </div>
   );
 }
