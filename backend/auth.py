@@ -30,8 +30,7 @@ def create_user(display_name: str, email: str, password_hash: str):
             display_name=display_name,
             email=email.lower().strip(),
             password_hash=password_hash,
-            credits=10,  # signup bonus
-            accept_terms=True
+            credits=10  # signup bonus
         )
         s.add(user)
         s.commit()
