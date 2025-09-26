@@ -249,8 +249,11 @@
         b.setAttribute("aria-label", showPwd ? "Hide password" : "Show password");
       });
     };
-    bindEye("#li-pass","#li-eye");
-    bindEye("#rg-pass","#rg-eye");
+    // Initialize after DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      bindEye("#li-pass","#li-eye");
+      bindEye("#rg-pass","#rg-eye");
+    });
 
     // ===== API layer (hooked up to Flask backend) =====
     const API = {
