@@ -44,6 +44,8 @@ export default function Login() {
     <div id="login-root">
       <div className="site-banner top"></div>
 
+      <div className="login-header">MINI VISIONARY</div>
+
       <div className="login-card">
         <h2 className="login-title">Welcome back</h2>
         <div className="login-logo">
@@ -106,7 +108,6 @@ export default function Login() {
 
       <div className="site-banner bottom"></div>
       <div className="login-footer">
-        MINI VISIONARY
         <div className="login-tagline">You Envision it, We Generate it.</div>
       </div>
     </div>

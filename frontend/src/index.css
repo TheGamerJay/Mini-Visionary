@@ -110,6 +110,13 @@ html,body{height:100%}
 .site-banner.top{position:relative}
 .site-banner.bottom{margin-top:28px}
 
+/* Login header banner */
+.login-header{
+  text-align:center; margin:40px auto 30px; letter-spacing:8px; font-weight:900;
+  color: var(--text); font-size:2rem; opacity:.8;
+  text-shadow: 0 2px 10px rgba(153,102,204,.3);
+}
+
 /* Card */
 .login-card{
   width:100%; max-width:520px; margin:40px auto 0; padding:28px 24px; border-radius:18px;
