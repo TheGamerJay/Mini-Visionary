@@ -81,8 +81,11 @@ export default function Login() {
               required
             />
             <div className="password-toggle" onClick={togglePassword}>
-              <span className={showPassword ? "hide-text" : ""}>👁️</span>
-              <span className={showPassword ? "" : "hide-text"}>🙈</span>
+              {showPassword ? (
+                <span>🙈</span>
+              ) : (
+                <span>👁️</span>
+              )}
             </div>
           </div>
 
