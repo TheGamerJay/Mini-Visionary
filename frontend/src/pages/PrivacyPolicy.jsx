@@ -80,9 +80,8 @@ export default function PrivacyPolicy() {
         </div>
 
         <div className="auth-links mt-6">
-          <div className="text-sm flex justify-between">
+          <div className="text-sm text-center">
             <Link to="/register" className="link-quiet">Back to Register</Link>
-            <Link to="/terms-of-service" className="link-quiet">Terms of Service</Link>
           </div>
         </div>
       </div>

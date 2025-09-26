@@ -74,9 +74,8 @@ export default function TermsOfService() {
         </div>
 
         <div className="auth-links mt-6">
-          <div className="text-sm flex justify-between">
+          <div className="text-sm text-center">
             <Link to="/register" className="link-quiet">Back to Register</Link>
-            <Link to="/privacy-policy" className="link-quiet">Privacy Policy</Link>
           </div>
         </div>
       </div>
