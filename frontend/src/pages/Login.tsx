@@ -45,10 +45,10 @@ export default function Login() {
       <div className="site-banner top"></div>
 
       <div className="login-card">
+        <h2 className="login-title">Welcome back</h2>
         <div className="login-logo">
           <img src="/logo.png" alt="Mini Visionary" />
         </div>
-        <h2 className="login-title">Welcome back</h2>
         <p className="login-subtitle">
           Sign in to continue.
         </p>
