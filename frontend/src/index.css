@@ -137,8 +137,14 @@ html,body{height:100%}
 .password-toggle{
   position:absolute; right:6px; display:inline-grid; place-items:center; width:36px; height:36px;
   border-radius:10px; background:#11131a; border:1px solid rgba(153,102,204,.25); cursor:pointer;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
 }
 .password-toggle .hide-text{display:none}
+.password-toggle::before, .password-toggle::after{display:none !important}
+.password-toggle span{
+  font-size:16px; line-height:1; display:block;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important;
+}
 
 /* Buttons */
 .btn-primary{
