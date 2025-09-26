@@ -353,6 +353,33 @@ def make_public_url(local_path: str) -> str:
 def health():
     return {"ok": True, "service": "mini-visionary", "openai": bool(oai_client)}
 
+@app.post("/api/migrate")
+def migrate_database():
+    """Manual migration endpoint to add missing display_name column"""
+    try:
+        from sqlalchemy import text
+        from models import get_engine
+
+        engine = get_engine()
+        with engine.connect() as conn:
+            # Check if display_name column exists
+            result = conn.execute(text("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'display_name'
+            """))
+
+            if result.fetchone():
+                return {"ok": True, "message": "display_name column already exists"}
+
+            # Add the column
+            conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR(100)"))
+            conn.commit()
+            return {"ok": True, "message": "Successfully added display_name column"}
+
+    except Exception as e:
+        return {"ok": False, "error": str(e)}, 500
+
 @app.get("/api/version")
 def version():
     """Return git SHA and build info with debugging"""
