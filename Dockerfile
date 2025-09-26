@@ -32,13 +32,8 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 # Railway target port is 8080
 EXPOSE 8080
 
-# Healthcheck: verify auth pages are NOT the SPA and return 200
+# Healthcheck: use JSON endpoint for detailed diagnostics
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD \
-  bash -lc '\
-  set -e ; \
-  curl -fsS http://localhost:8080/auth.html | grep -qi "Mini Visionary — You Envision it, We Generate It" && \
-  curl -fsS http://localhost:8080/terms.html | grep -qi "Mini Visionary — Terms of Service" && \
-  curl -fsS http://localhost:8080/privacy.html | grep -qi "Mini Visionary — Privacy Policy" \
-  '
+  curl -fsS http://localhost:8080/api/_health | grep -q '"ok": true'
 
 CMD ["gunicorn","-b","0.0.0.0:8080","--chdir","backend","serve_spa:app"]

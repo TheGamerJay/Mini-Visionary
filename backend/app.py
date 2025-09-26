@@ -32,6 +32,7 @@ from auth import bp as new_auth_bp, bcrypt
 from ads_portal import bp as ads_portal_bp
 from webhooks import bp as webhooks_bp
 from app_chat import bp as chat_bp
+from app_health import health_bp
 
 # --- Optional OpenAI (auto-disabled if key missing) ---
 OPENAI_AVAILABLE = False
@@ -66,6 +67,8 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["SECRET_KEY"] = SECRET_KEY
 app.config["JSON_SORT_KEYS"] = False
 app.config["ASSET_VERSION"] = os.getenv("GIT_SHA", "")
+app.config["PUBLIC_BASE_URL"] = os.getenv("PUBLIC_BASE_URL", "https://minivisionary.soulbridgeai.com")
+app.config["APP_VERSION"] = os.getenv("GIT_SHA", "dev")
 
 # Session cookie configuration for SPA
 app.config.update(
@@ -228,6 +231,7 @@ app.register_blueprint(me_bp)             # Essential - user profile and account
 app.register_blueprint(auth_alias_bp)     # Essential - /api/auth/whoami endpoint
 app.register_blueprint(webhooks_bp)
 app.register_blueprint(chat_bp)
+app.register_blueprint(health_bp)         # Essential - health monitoring endpoint
 
 # OpenAI client (only if key + lib present)
 oai_client: Optional["OpenAI"] = None

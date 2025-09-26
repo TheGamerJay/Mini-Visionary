@@ -66,3 +66,14 @@ jobs:
 
       - name: Run tests
         run: pytest -q
+
+      - name: Test health endpoint
+        run: |
+          curl -fsS "${BASE_URL}/api/_health" > health.json
+          python -c "
+          import json
+          with open('health.json') as f:
+              data = json.load(f)
+          assert data.get('ok') == True, f'Health check failed: {data}'
+          print('✓ Health endpoint passed')
+          "
