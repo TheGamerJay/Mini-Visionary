@@ -103,7 +103,7 @@ export default function Wallet() {
       <div className="max-w-4xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" className="h-10 w-10 rounded-xl ring-1 ring-cyan-400/40 object-contain" />
+            <img src="/logo.png" className="h-10 w-10 rounded-xl object-contain" />
             <h1 className="text-2xl font-semibold bg-gradient-to-r from-cyan-300 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
               Mini-Visionary — Wallet
             </h1>

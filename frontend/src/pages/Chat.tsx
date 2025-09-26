@@ -185,7 +185,7 @@ export default function Chat() {
       <header className="sticky top-0 z-20 backdrop-blur bg-black/40 border-b border-cyan-500/15">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Mini-Visionary" className="h-9 w-9 rounded-xl ring-1 ring-cyan-400/40" onError={(e: any) => e.currentTarget.style.display = 'none'} />
+            <img src="/logo.png" alt="Mini-Visionary" className="h-9 w-9 rounded-xl" onError={(e: any) => e.currentTarget.style.display = 'none'} />
             <div>
               <div className="text-sm text-cyan-200/80">Mini-Visionary</div>
               <div className="text-xs text-cyan-200/60">ChatMini</div>

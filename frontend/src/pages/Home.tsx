@@ -6,13 +6,6 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center space-y-8 py-16">
         <div className="max-w-5xl mx-auto">
-          <div className="flex justify-center mb-8">
-            <img
-              src="/logo.png"
-              alt="Mini-Visionary Logo"
-              className="h-24 w-auto object-contain"
-            />
-          </div>
           <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-300 bg-clip-text text-transparent leading-tight">
             Mini-Visionary
           </h1>
