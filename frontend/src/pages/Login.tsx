@@ -38,16 +38,16 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4">
-      <div className="w-full max-w-md bg-gray-900/70 backdrop-blur rounded-2xl shadow-xl border border-gray-700 p-8">
+      <div className="w-full max-w-sm bg-gray-900/70 backdrop-blur rounded-2xl shadow-xl border border-gray-700 p-6">
         {/* Logo + Slogan */}
         <div className="text-center mb-6">
           <img
             src="/logo.png"
             alt="Mini Visionary"
-            className="mx-auto w-20 h-20 rounded-2xl object-contain"
+            className="mx-auto w-16 h-16 rounded-xl object-contain"
           />
-          <h1 className="text-2xl font-bold mt-4">Mini Visionary</h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <h1 className="text-xl font-bold mt-3">Mini Visionary</h1>
+          <p className="text-gray-400 text-xs mt-1">
             You Envision it, We Generate It
           </p>
         </div>
@@ -60,14 +60,14 @@ export default function Login() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
               placeholder="you@example.com"
               required
             />
@@ -79,7 +79,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
               placeholder="••••••••"
               required
             />
@@ -88,7 +88,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors font-medium text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
