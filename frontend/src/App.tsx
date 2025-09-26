@@ -38,7 +38,7 @@ export default function App(){
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Home /></main></>} />
+        <Route path="/" element={<><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></>} />
 
         {/* Auth routes (redirect if already logged in) */}
         <Route path="/login" element={<><NavBar /><AuthRoute><Login /></AuthRoute></>} />
@@ -47,20 +47,20 @@ export default function App(){
         <Route path="/reset-password" element={<><NavBar /><AuthRoute><ResetPassword /></AuthRoute></>} />
 
         {/* Protected routes (require authentication) */}
-        <Route path="/dashboard" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Dashboard /></main></></ProtectedRoute>} />
-        <Route path="/library" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Library /></main></></ProtectedRoute>} />
-        <Route path="/create" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><CreatePoster /></main></></ProtectedRoute>} />
-        <Route path="/wallet" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Wallet /></main></></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Profile /></main></></ProtectedRoute>} />
-        <Route path="/store" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Store /></main></></ProtectedRoute>} />
-        <Route path="/store/success" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><StoreSuccess /></main></></ProtectedRoute>} />
-        <Route path="/checkout/success" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><CheckoutSuccess /></main></></ProtectedRoute>} />
-        <Route path="/checkout/cancel" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><CheckoutCancel /></main></></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Settings /></main></></ProtectedRoute>} />
-        <Route path="/chat" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Chat /></main></></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Dashboard /></div></main></></ProtectedRoute>} />
+        <Route path="/library" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Library /></div></main></></ProtectedRoute>} />
+        <Route path="/create" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><CreatePoster /></div></main></></ProtectedRoute>} />
+        <Route path="/wallet" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Wallet /></div></main></></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Profile /></div></main></></ProtectedRoute>} />
+        <Route path="/store" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Store /></div></main></></ProtectedRoute>} />
+        <Route path="/store/success" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><StoreSuccess /></div></main></></ProtectedRoute>} />
+        <Route path="/checkout/success" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><CheckoutSuccess /></div></main></></ProtectedRoute>} />
+        <Route path="/checkout/cancel" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><CheckoutCancel /></div></main></></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Settings /></div></main></></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Chat /></div></main></></ProtectedRoute>} />
 
         {/* Catch-all route - redirect unknown paths to home */}
-        <Route path="*" element={<><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Home /></main></>} />
+        <Route path="*" element={<><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></>} />
       </Routes>
     </BrowserRouter>
   );

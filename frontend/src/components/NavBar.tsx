@@ -22,13 +22,13 @@ export default function NavBar(){
     if(await post("/api/auth/logout")){ setMe(null); navigate("/login"); }
   }
   const A = ({to,label}:{to:string;label:string})=>(
-    <Link to={to} className="px-3 py-2 rounded-xl hover:bg-indigo-800/30 text-sm font-medium text-cyan-200 hover:text-cyan-100">{label}</Link>
+    <Link to={to} className="px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-indigo-600/20 hover:to-cyan-600/20 text-sm font-medium text-slate-200 hover:text-white transition-all duration-200 border border-transparent hover:border-indigo-400/30">{label}</Link>
   );
   const avatar = (me?.display_name?.[0]||me?.email?.[0]||"U").toUpperCase();
 
   return (
-    <header className="w-full border-b border-indigo-800/30 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
-      <div className="mx-auto max-w-7xl px-4 py-2 flex items-center justify-between">
+    <header className="fixed top-0 w-full border-b border-indigo-500/20 bg-slate-900/95 backdrop-blur-md shadow-lg z-50">
+      <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <img
@@ -38,7 +38,7 @@ export default function NavBar(){
             />
             <span className="font-semibold text-cyan-100">Mini-Visionary</span>
           </Link>
-          <nav className="flex items-center gap-1 ml-4">
+          <nav className="hidden md:flex items-center gap-1 ml-6">
             <A to="/" label="Home" />
             <A to="/chat" label="Chat" />
             <A to="/create" label="Create" />
@@ -48,9 +48,9 @@ export default function NavBar(){
 
         <div className="flex items-center gap-2">
           {!me ? (
-            <div className="flex items-center gap-1">
+            <div className="hidden sm:flex items-center gap-1">
               <A to="/login" label="Log in" />
-              <Link to="/signup" className="px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white text-sm hover:from-cyan-600 hover:to-indigo-700">Sign up</Link>
+              <Link to="/signup" className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 text-white text-sm font-medium hover:from-indigo-700 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:scale-105">Sign up</Link>
             </div>
           ) : (
             <>
