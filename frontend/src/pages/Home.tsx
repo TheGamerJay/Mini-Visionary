@@ -47,11 +47,6 @@ export default function Home() {
       {/* Features Section */}
       <section className="grid md:grid-cols-3 gap-8 mt-24">
         <div className="text-center p-8 rounded-2xl bg-slate-800/40 backdrop-blur-sm border border-slate-600/20 hover:border-indigo-500/40 transition-all duration-300 hover:scale-105 group">
-          <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
           <h3 className="text-xl font-semibold text-white mb-4">AI-Powered Generation</h3>
           <p className="text-slate-400 leading-relaxed">
             Advanced AI creates stunning, unique posters from your text descriptions in seconds with professional quality.
@@ -59,11 +54,6 @@ export default function Home() {
         </div>
 
         <div className="text-center p-8 rounded-2xl bg-slate-800/40 backdrop-blur-sm border border-slate-600/20 hover:border-indigo-500/40 transition-all duration-300 hover:scale-105 group">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
-            </svg>
-          </div>
           <h3 className="text-xl font-semibold text-white mb-4">Multiple Styles</h3>
           <p className="text-slate-400 leading-relaxed">
             Fantasy, sci-fi, horror, romance, action, anime - create in any genre with cinema-quality results.
@@ -71,11 +61,6 @@ export default function Home() {
         </div>
 
         <div className="text-center p-8 rounded-2xl bg-slate-800/40 backdrop-blur-sm border border-slate-600/20 hover:border-indigo-500/40 transition-all duration-300 hover:scale-105 group">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
           <h3 className="text-xl font-semibold text-white mb-4">Personal Library</h3>
           <p className="text-slate-400 leading-relaxed">
             Save, organize, and manage all your creations in your private poster library with easy sharing.
