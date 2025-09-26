@@ -482,67 +482,7 @@ def privacy_page():
     """Serve privacy.html directly"""
     return send_from_directory(app.static_folder, 'privacy.html')
 
-# ---------------------- SPA ROUTES ----------------------
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def spa(path):
-    """Serve React SPA with proper fallback to index.html"""
-    # Don't intercept API routes or other server routes (but handle static/ files below)
-    if path.startswith("api/") or path.startswith("uploads/") or path.startswith("storage/"):
-        abort(404)
-
-    # Handle /static/ routes directly
-    if path.startswith("static/"):
-        # strip the leading "static/" before sending
-        subpath = path[len("static/"):]
-        return send_from_directory(app.static_folder or "static", subpath)
-
-    # If path exists as static file, serve it directly (CSS, JS, assets)
-    static_path = os.path.join(app.static_folder or "static", path)
-    if path and os.path.exists(static_path) and not path.endswith('.html'):
-        resp = make_response(send_from_directory(app.static_folder or "static", path))
-
-        # Optimal caching: hashed assets get long-term cache, others no-cache
-        if ('assets/' in path) and ('-' in path) and (path.endswith('.js') or path.endswith('.css')):
-            # Hashed assets (e.g., static/assets/index-CckwNrXN.css) - cache for 1 year
-            resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-        elif path.endswith(('.css', '.js')):
-            # Non-hashed CSS/JS - no cache
-            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            resp.headers["Pragma"] = "no-cache"
-            resp.headers["Expires"] = "0"
-        else:
-            # Other static files (favicon, images) - moderate cache
-            resp.headers["Cache-Control"] = "public, max-age=86400"  # 1 day
-
-        return resp
-
-    # Always serve index.html with no-cache headers for SPA routing
-    index_path = os.path.join(app.static_folder or "static", "index.html")
-    if os.path.exists(index_path):
-        resp = make_response(send_from_directory(app.static_folder or "static", "index.html"))
-        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        resp.headers["Pragma"] = "no-cache"
-        resp.headers["Expires"] = "0"
-
-        # Basic security headers
-        resp.headers["X-Content-Type-Options"] = "nosniff"
-        resp.headers["X-Frame-Options"] = "DENY"
-        resp.headers["X-XSS-Protection"] = "1; mode=block"
-
-        # CSP with AdSense support
-        csp = ("default-src 'self'; "
-               "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
-               "style-src 'self' 'unsafe-inline'; "
-               "img-src 'self' data: https: blob:; "
-               "connect-src 'self' https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; "
-               "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.google.com; "
-               "object-src 'none'; base-uri 'self'")
-        resp.headers["Content-Security-Policy"] = csp
-
-        return resp
-    else:
-        return "<h1>React app not found</h1><p>Make sure the frontend is built and copied to static/</p>", 404
+# SPA routes are handled by serve_spa.py to avoid duplication
 
 # ---------------------- MAIN ----------------------
 @app.get("/healthz")
@@ -584,6 +524,9 @@ def test_logging():
         "request_id": rid,
         "timestamp": datetime.utcnow().isoformat()
     }
+
+# Import SPA routing to register catch-all routes
+import serve_spa
 
 if __name__ == "__main__":
     # Initialize database

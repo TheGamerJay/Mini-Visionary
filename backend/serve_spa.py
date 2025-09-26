@@ -6,18 +6,7 @@ app = flask_app
 app.static_folder = "static"
 app.static_url_path = "/static"
 
-# Friendly direct URL for the standalone auth page
-@app.get("/auth.html", endpoint="auth_page")
-def auth_page():
-    return send_from_directory(app.static_folder, "auth.html")
-
-@app.get("/terms.html", endpoint="terms_page")
-def terms_page():
-    return send_from_directory(app.static_folder, "terms.html")
-
-@app.get("/privacy.html", endpoint="privacy_page")
-def privacy_page():
-    return send_from_directory(app.static_folder, "privacy.html")
+# Auth routes are defined in app.py to avoid duplicates
 
 # SPA catch-all that won't swallow real files
 @app.route("/", defaults={"path": ""}, endpoint="spa_frontend")
