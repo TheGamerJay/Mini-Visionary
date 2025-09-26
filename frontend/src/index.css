@@ -132,7 +132,7 @@ html,body{height:100%}
 .login-form label{font-size:.92rem; color:#cbd5e1}
 .login-form input{
   width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(153,102,204,.35);
-  background:#0e1120; color:var(--text); outline:none;
+  background:white; color:black; outline:none;
 }
 .login-form input:focus{
   border-color:var(--ring); box-shadow:0 0 0 4px rgba(153,102,204,.14);

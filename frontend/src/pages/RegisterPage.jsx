@@ -88,7 +88,7 @@ export default function RegisterPage() {
             type="text"
             value={displayName}
             onChange={e=>setDisplayName(e.target.value)}
-            placeholder="Jay"
+placeholder=""
             required
           />
 
@@ -98,7 +98,7 @@ export default function RegisterPage() {
             type="text"
             value={username}
             onChange={e=>setUsername(e.target.value)}
-            placeholder="minivisionary_jay"
+placeholder=""
             required
           />
 
@@ -109,7 +109,7 @@ export default function RegisterPage() {
             autoComplete="email"
             value={email}
             onChange={e=>setEmail(e.target.value)}
-            placeholder="you@example.com"
+placeholder=""
             required
           />
 
@@ -121,7 +121,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
               value={password}
               onChange={e=>setPassword(e.target.value)}
-              placeholder="At least 8 characters"
+placeholder=""
               required
             />
             <div className="password-toggle" onClick={togglePassword}>
