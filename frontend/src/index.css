@@ -123,8 +123,8 @@ html,body{height:100%}
   background:linear-gradient(180deg, rgba(16,19,32,.85), rgba(13,14,22,.9));
   border:1px solid rgba(153,102,204,.25); box-shadow: var(--shadow);
 }
-.login-title{margin:0 0 6px; font-size:1.6rem; font-weight:800; color: var(--text);}
-.login-subtitle{margin:0 0 18px; color:var(--muted)}
+.login-title{margin:0 0 6px; font-size:1.6rem; font-weight:800; color: var(--text); text-align:center;}
+.login-subtitle{margin:0 0 18px; color:var(--muted); text-align:center;}
 .slogan{color:var(--accent); font-weight:600}
 
 /* Form */
@@ -168,20 +168,23 @@ input[type="password"]::-webkit-password-toggle-button {
 /* Buttons */
 .btn-primary{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 14px; border-radius:12px; text-decoration:none; cursor:pointer; transition: all .2s ease;
+  padding:8px 14px; border-radius:12px; text-decoration:none; cursor:pointer; transition: all .2s ease;
   border:1px solid transparent; font-weight:600; font-size:.95rem;
-  background: linear-gradient(90deg, var(--rainbow-1), var(--rainbow-2), var(--rainbow-3));
-  background-size: 200% 100%; color:#0b0b11; box-shadow: var(--shadow);
+  background: linear-gradient(90deg, #ec4899, #a855f7, #06b6d4); color:#0f172a; box-shadow: var(--shadow);
+  width:100%; margin-top:8px;
 }
-.btn-primary:hover{transform: translateY(-1px); filter:brightness(1.05)}
+.btn-primary:hover{
+  background: linear-gradient(90deg, #f472b6, #c084fc, #67e8f9); transform: translateY(-1px); filter:brightness(1.05);
+}
 .btn-secondary{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 14px; border-radius:12px; text-decoration:none; cursor:pointer; transition: all .2s ease;
+  padding:8px 14px; border-radius:12px; text-decoration:none; cursor:pointer; transition: all .2s ease;
   border:1px solid transparent; font-weight:600; font-size:.95rem;
-  background: linear-gradient(180deg, #1b1230, #10131f); color: var(--text);
-  border-color: rgba(153,102,204,.35);
+  background: linear-gradient(90deg, #ec4899, #a855f7, #06b6d4); color:#0f172a; box-shadow: var(--shadow);
 }
-.btn-secondary:hover{border-color: rgba(153,102,204,.6)}
+.btn-secondary:hover{
+  background: linear-gradient(90deg, #f472b6, #c084fc, #67e8f9); transform: translateY(-1px); filter:brightness(1.05);
+}
 
 /* Links row */
 .auth-links{

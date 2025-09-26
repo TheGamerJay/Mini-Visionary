@@ -52,7 +52,7 @@ export default function Login() {
           <img src="/logo.png" alt="Mini Visionary" />
         </div>
         <p className="login-subtitle">
-          Sign in to continue.
+          Sign in to continue Your Vision.
         </p>
 
         {error && (
