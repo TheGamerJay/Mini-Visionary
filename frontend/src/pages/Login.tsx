@@ -97,10 +97,10 @@ export default function Login() {
         </form>
 
         <div className="auth-links">
-          <Link to="/signup" className="btn-secondary">
+          <Link to="/register" className="btn-secondary">
             Create account
           </Link>
-          <Link to="/forgot" className="link-quiet">
+          <Link to="/forgot-password" className="link-quiet">
             Forgot password?
           </Link>
         </div>
