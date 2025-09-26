@@ -10,6 +10,8 @@ import Store from "./pages/Store";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Forgot from "./pages/Forgot";
+import RegisterPage from "./pages/RegisterPage";
+import ForgotPage from "./pages/ForgotPage";
 import StoreSuccess from "./pages/StoreSuccess";
 import ResetPassword from "./pages/ResetPassword";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
@@ -44,7 +46,9 @@ export default function App(){
         <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
         <Route path="/home" element={<ProtectedRoute><><NavBar /><main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"><div className="max-w-7xl mx-auto px-4 py-8 pt-20"><Home /></div></main></></ProtectedRoute>} />
         <Route path="/signup" element={<><NavBar /><AuthRoute><Signup /></AuthRoute></>} />
+        <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
         <Route path="/forgot" element={<><NavBar /><AuthRoute><Forgot /></AuthRoute></>} />
+        <Route path="/forgot-password" element={<AuthRoute><ForgotPage /></AuthRoute>} />
         <Route path="/reset-password" element={<><NavBar /><AuthRoute><ResetPassword /></AuthRoute></>} />
 
         {/* Protected routes (require authentication) */}
