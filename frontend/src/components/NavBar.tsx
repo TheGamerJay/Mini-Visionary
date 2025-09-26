@@ -38,7 +38,7 @@ export default function NavBar(){
             />
             <span className="font-semibold text-cyan-100">Mini-Visionary</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-1 ml-4">
+          <nav className="flex items-center gap-1 ml-4">
             <A to="/" label="Home" />
             <A to="/chat" label="Chat" />
             <A to="/create" label="Create" />
@@ -48,7 +48,7 @@ export default function NavBar(){
 
         <div className="flex items-center gap-2">
           {!me ? (
-            <div className="hidden md:flex items-center gap-1">
+            <div className="flex items-center gap-1">
               <A to="/login" label="Log in" />
               <Link to="/signup" className="px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white text-sm hover:from-cyan-600 hover:to-indigo-700">Sign up</Link>
             </div>

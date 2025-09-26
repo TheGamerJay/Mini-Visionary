@@ -41,13 +41,13 @@ export default function App(){
         <Route path="/" element={<><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Home /></main></>} />
 
         {/* Auth routes (redirect if already logged in) */}
-        <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
-        <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
-        <Route path="/forgot" element={<AuthRoute><Forgot /></AuthRoute>} />
-        <Route path="/reset-password" element={<AuthRoute><ResetPassword /></AuthRoute>} />
+        <Route path="/login" element={<><NavBar /><AuthRoute><Login /></AuthRoute></>} />
+        <Route path="/signup" element={<><NavBar /><AuthRoute><Signup /></AuthRoute></>} />
+        <Route path="/forgot" element={<><NavBar /><AuthRoute><Forgot /></AuthRoute></>} />
+        <Route path="/reset-password" element={<><NavBar /><AuthRoute><ResetPassword /></AuthRoute></>} />
 
         {/* Protected routes (require authentication) */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Dashboard /></main></></ProtectedRoute>} />
         <Route path="/library" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Library /></main></></ProtectedRoute>} />
         <Route path="/create" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><CreatePoster /></main></></ProtectedRoute>} />
         <Route path="/wallet" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Wallet /></main></></ProtectedRoute>} />
