@@ -45,9 +45,12 @@ export default function Login() {
       <div className="site-banner top"></div>
 
       <div className="login-card">
+        <div className="login-logo">
+          <img src="/logo.png" alt="Mini Visionary" />
+        </div>
         <h2 className="login-title">Welcome back</h2>
         <p className="login-subtitle">
-          Sign in to continue. <span className="slogan">You Envision it, We Generate it.</span>
+          Sign in to continue.
         </p>
 
         {error && (
@@ -99,7 +102,10 @@ export default function Login() {
       </div>
 
       <div className="site-banner bottom"></div>
-      <div className="login-footer">MINI VISIONARY</div>
+      <div className="login-footer">
+        MINI VISIONARY
+        <div className="login-tagline">You Envision it, We Generate it.</div>
+      </div>
     </div>
   );
 }
