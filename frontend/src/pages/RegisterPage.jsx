@@ -37,6 +37,21 @@ export default function RegisterPage() {
     setShowPassword(!showPassword);
   };
 
+  const handleAgreementChange = (e) => {
+    if (e.target.checked) {
+      const confirmed = window.confirm(
+        "By checking this box, you acknowledge that you have read, understood, and agree to be bound by Mini Visionary's Terms of Service and Privacy Policy. This agreement will govern your use of our services."
+      );
+      if (confirmed) {
+        setAgree(true);
+      } else {
+        e.target.checked = false;
+      }
+    } else {
+      setAgree(false);
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!agree) { setError("Please accept Terms & Privacy"); return; }
@@ -126,7 +141,7 @@ export default function RegisterPage() {
                 type="checkbox"
                 className="accent-indigo-500 w-4 h-4"
                 checked={agree}
-                onChange={e=>setAgree(e.target.checked)}
+                onChange={handleAgreementChange}
               />
             </div>
             <div className="text-sm text-center leading-relaxed">
