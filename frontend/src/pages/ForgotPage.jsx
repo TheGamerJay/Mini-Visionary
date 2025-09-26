@@ -71,7 +71,7 @@ export default function ForgotPage() {
               autoComplete="email"
               value={email}
               onChange={e=>setEmail(e.target.value)}
-placeholder=""
+placeholder="Enter your email address"
               required
             />
 

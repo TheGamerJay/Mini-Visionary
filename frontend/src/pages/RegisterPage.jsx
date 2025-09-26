@@ -88,7 +88,7 @@ export default function RegisterPage() {
             type="text"
             value={displayName}
             onChange={e=>setDisplayName(e.target.value)}
-placeholder=""
+placeholder="Enter your display name"
             required
           />
 
@@ -98,7 +98,7 @@ placeholder=""
             type="text"
             value={username}
             onChange={e=>setUsername(e.target.value)}
-placeholder=""
+placeholder="Choose a username"
             required
           />
 
@@ -109,7 +109,7 @@ placeholder=""
             autoComplete="email"
             value={email}
             onChange={e=>setEmail(e.target.value)}
-placeholder=""
+placeholder="Enter your email address"
             required
           />
 
