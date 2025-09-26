@@ -42,9 +42,9 @@ export default function Login() {
 
   return (
     <div id="login-root">
-      <div className="site-banner top"></div>
-
       <div className="login-header">MINI VISIONARY</div>
+
+      <div className="site-banner top"></div>
 
       <div className="login-card">
         <h2 className="login-title">Welcome back</h2>
