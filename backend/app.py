@@ -471,9 +471,15 @@ def static_files(filename):
 @app.route("/<path:path>")
 def spa(path):
     """Serve React SPA with proper fallback to index.html"""
-    # Don't intercept API routes or static files
-    if path.startswith("api/") or path.startswith("uploads/") or path.startswith("storage/") or path.startswith("static/"):
+    # Don't intercept API routes or other server routes (but handle static/ files below)
+    if path.startswith("api/") or path.startswith("uploads/") or path.startswith("storage/"):
         abort(404)
+
+    # Handle /static/ routes directly
+    if path.startswith("static/"):
+        # strip the leading "static/" before sending
+        subpath = path[len("static/"):]
+        return send_from_directory(app.static_folder or "static", subpath)
 
     # If path exists as static file, serve it directly (CSS, JS, assets)
     static_path = os.path.join(app.static_folder or "static", path)
