@@ -106,6 +106,17 @@ export default function Login() {
             {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
+
+        {/* Call to Action */}
+        <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-indigo-900/30 to-cyan-900/30 text-center">
+          <p className="text-sm text-slate-300 mb-3">Ready to create stunning posters?</p>
+          <Link
+            to="/signup"
+            className="inline-block px-6 py-2 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-medium rounded-lg hover:from-cyan-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:scale-105"
+          >
+            Create Account
+          </Link>
+        </div>
       </div>
     </AuthLayout>
   );

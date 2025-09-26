@@ -7,30 +7,20 @@ export default function Home() {
       <section className="text-center space-y-8 py-16">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-300 bg-clip-text text-transparent leading-tight">
-            Mini-Visionary
+            Welcome Back!
           </h1>
           <p className="text-2xl md:text-3xl text-slate-300 mt-6 font-light tracking-wide">
-            You Envision it, We Generate it
+            Ready to create amazing posters?
           </p>
           <p className="text-xl md:text-2xl text-slate-400 mt-8 leading-relaxed max-w-4xl mx-auto">
-            Transform your imagination into stunning movie-style posters with professional AI technology
-          </p>
-          <p className="text-lg text-slate-500 max-w-3xl mx-auto mt-4 leading-relaxed">
-            From fantasy epics to sci-fi adventures, create cinema-quality posters in seconds.
-            Just describe your vision and watch it come to life with unprecedented detail.
+            Your creative workspace is ready. Explore tools, browse the gallery, or start your next masterpiece.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mt-12">
-          <Link
-            to="/create"
-            className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-cyan-700 transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:scale-105 transform"
-          >
-            Start Creating
-          </Link>
+        <div className="flex justify-center mt-12">
           <Link
             to="/store"
-            className="px-10 py-4 bg-slate-800/40 text-slate-300 font-medium rounded-xl hover:bg-indigo-500/20 transition-all duration-300 hover:scale-105 transform"
+            className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-cyan-700 transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:scale-105 transform"
           >
             Explore Gallery
           </Link>
