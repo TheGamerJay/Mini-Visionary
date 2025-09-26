@@ -1,0 +1,68 @@
+name: MiniVisionary Healthcheck
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "0 * * * *"   # every hour
+
+jobs:
+  check-auth-pages:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: https://minivisionary.soulbridgeai.com
+    steps:
+      - name: Checkout (no code needed, but good practice)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest requests
+
+      - name: Create tests
+        run: |
+          mkdir -p tests
+          cat > tests/test_auth_pages.py << 'PY'
+          import os, requests
+
+          BASE = os.environ.get("BASE_URL", "").rstrip("/")
+
+          def _get(url):
+            r = requests.get(url, timeout=15, headers={"Cache-Control": "no-cache"})
+            assert r.status_code == 200, f"{url} -> {r.status_code}"
+            return r.text
+
+          def _assert_not_spa(html):
+            assert 'id="root"' not in html.lower(), "Looks like SPA content leaked in"
+            assert "<title>404 Not Found" not in html, "Got a 404 page instead"
+
+          def test_auth_html():
+            html = _get(f"{BASE}/auth.html")
+            _assert_not_spa(html)
+            assert "Mini Visionary — You Envision it, We Generate It".lower() in html.lower()
+
+          def test_terms_html():
+            html = _get(f"{BASE}/terms.html")
+            _assert_not_spa(html)
+            assert "Mini Visionary — Terms of Service".lower() in html.lower()
+
+          def test_privacy_html():
+            html = _get(f"{BASE}/privacy.html")
+            _assert_not_spa(html)
+            assert "Mini Visionary — Privacy Policy".lower() in html.lower()
+
+          def test_spa_fallback_is_still_spa():
+            # SPA route should still return index.html (root present)
+            r = requests.get(f"{BASE}/app/unknown/route", timeout=15)
+            assert r.status_code == 200
+            assert 'id="root"' in r.text.lower(), "SPA fallback not serving React shell"
+          PY
+
+      - name: Run tests
+        run: pytest -q
