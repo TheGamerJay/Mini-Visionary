@@ -130,16 +130,28 @@ html,body{height:100%}
 /* Form */
 .login-form{display:grid; gap:10px}
 .login-form label{font-size:.92rem; color:#cbd5e1}
+input[type="text"],
+input[type="email"],
+input[type="password"],
 .login-form input{
   width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(153,102,204,.35);
   background:white !important; color:black !important; outline:none;
+  -webkit-text-fill-color:black !important;
 }
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
 .login-form input:focus{
   border-color:var(--ring); box-shadow:0 0 0 4px rgba(153,102,204,.14);
   background:white !important; color:black !important;
+  -webkit-text-fill-color:black !important;
 }
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
 .login-form input::placeholder{
   color:#666 !important;
+  -webkit-text-fill-color:#666 !important;
 }
 
 /* Password field */
