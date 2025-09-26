@@ -477,7 +477,7 @@ def spa(path):
 
     # If path exists as static file, serve it directly (CSS, JS, assets)
     static_path = os.path.join(app.static_folder or "static", path)
-    if path and os.path.exists(static_path) and not path.endswith('.html'):
+    if path and os.path.exists(static_path) and (not path.endswith('.html') or path in ['auth.html', 'terms.html', 'privacy.html']):
         resp = make_response(send_from_directory(app.static_folder or "static", path))
 
         # Optimal caching: hashed assets get long-term cache, others no-cache
