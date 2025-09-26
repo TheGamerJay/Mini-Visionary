@@ -58,6 +58,9 @@ export default function App(){
         <Route path="/checkout/cancel" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><CheckoutCancel /></main></></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Settings /></main></></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Chat /></main></></ProtectedRoute>} />
+
+        {/* Catch-all route - redirect unknown paths to home */}
+        <Route path="*" element={<><NavBar /><main className="max-w-7xl mx-auto px-4 py-6"><Home /></main></>} />
       </Routes>
     </BrowserRouter>
   );

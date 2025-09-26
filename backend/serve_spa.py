@@ -1,5 +1,5 @@
 import os
-from flask import send_from_directory, abort
+from flask import send_from_directory, abort, redirect
 from app import app as flask_app  # this imports your real API app
 
 # Reuse the real app instance, but ensure static paths are correct
@@ -11,6 +11,10 @@ app.static_url_path = "/static"
 @app.route("/", defaults={"path": ""}, endpoint="spa_frontend")
 @app.route("/<path:path>", endpoint="spa_frontend")
 def spa_frontend(path):
+    # Normalize /index.html -> /
+    if path == "index.html":
+        return redirect("/", code=301)
+
     # Let real API routes handle /api/*
     if path.startswith("api/"):
         abort(404)
