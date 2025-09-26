@@ -23,6 +23,9 @@ COPY backend/ .
 RUN rm -rf /app/backend/static/*
 COPY --from=frontend /frontend/dist /app/backend/static
 
+# NOW overlay backend/static again so auth.html (and any hand-made files) survive
+COPY backend/static/ /app/backend/static/
+
 # Railway target port is 8080
 EXPOSE 8080
 CMD ["gunicorn","-b","0.0.0.0:8080","--chdir","backend","serve_spa:app"]
