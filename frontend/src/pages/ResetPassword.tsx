@@ -99,11 +99,6 @@ export default function ResetPassword() {
     return (
       <AuthLayout title="Password Reset!" subtitle="Your password has been successfully updated">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-green-900/50 rounded-full flex items-center justify-center mx-auto">
-            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
 
           <div className="bg-green-900/50 border border-green-600/50 text-green-200 px-4 py-3 rounded-lg text-sm">
             Your password has been successfully reset. You can now log in with your new password.

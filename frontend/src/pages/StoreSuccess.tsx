@@ -60,11 +60,6 @@ export default function StoreSuccess() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full text-center space-y-6">
-          <div className="w-16 h-16 bg-red-900/50 rounded-full flex items-center justify-center mx-auto">
-            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
           <h1 className="text-2xl font-bold text-red-400">Payment Error</h1>
           <p className="text-indigo-300">
             We couldn't verify your payment. Please check your account or contact support if you were charged.
@@ -91,12 +86,6 @@ export default function StoreSuccess() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full text-center space-y-6">
-        <div className="w-16 h-16 bg-green-900/50 rounded-full flex items-center justify-center mx-auto">
-          <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-green-400">Payment Success!</h1>
           <p className="text-indigo-300">

@@ -46,21 +46,21 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="grid md:grid-cols-3 gap-8 mt-24">
-        <div className="text-center p-8 rounded-2xl bg-slate-800/40 backdrop-blur-sm border border-slate-600/20 hover:border-indigo-500/40 transition-all duration-300 hover:scale-105 group">
+        <div className="text-center p-8 rounded-2xl bg-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:scale-105 group">
           <h3 className="text-xl font-semibold text-white mb-4">AI-Powered Generation</h3>
           <p className="text-slate-400 leading-relaxed">
             Advanced AI creates stunning, unique posters from your text descriptions in seconds with professional quality.
           </p>
         </div>
 
-        <div className="text-center p-8 rounded-2xl bg-slate-800/40 backdrop-blur-sm border border-slate-600/20 hover:border-indigo-500/40 transition-all duration-300 hover:scale-105 group">
+        <div className="text-center p-8 rounded-2xl bg-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:scale-105 group">
           <h3 className="text-xl font-semibold text-white mb-4">Multiple Styles</h3>
           <p className="text-slate-400 leading-relaxed">
             Fantasy, sci-fi, horror, romance, action, anime - create in any genre with cinema-quality results.
           </p>
         </div>
 
-        <div className="text-center p-8 rounded-2xl bg-slate-800/40 backdrop-blur-sm border border-slate-600/20 hover:border-indigo-500/40 transition-all duration-300 hover:scale-105 group">
+        <div className="text-center p-8 rounded-2xl bg-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:scale-105 group">
           <h3 className="text-xl font-semibold text-white mb-4">Personal Library</h3>
           <p className="text-slate-400 leading-relaxed">
             Save, organize, and manage all your creations in your private poster library with easy sharing.
@@ -69,7 +69,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="bg-slate-800/30 backdrop-blur-sm rounded-3xl p-12 md:p-16 border border-slate-600/20 mt-24">
+      <section className="bg-slate-800/20 backdrop-blur-sm rounded-3xl p-12 md:p-16 mt-24">
         <h2 className="text-4xl font-bold text-center text-white mb-12">How It Works</h2>
         <div className="grid md:grid-cols-3 gap-8">
           <div className="text-center">
@@ -103,7 +103,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="text-center bg-gradient-to-r from-indigo-600 via-purple-700 to-cyan-700 text-white rounded-3xl p-12 md:p-16 border border-indigo-400/30 shadow-2xl shadow-indigo-500/20 mt-24">
+      <section className="text-center bg-gradient-to-r from-indigo-600 via-purple-700 to-cyan-700 text-white rounded-3xl p-12 md:p-16 shadow-2xl shadow-indigo-500/20 mt-24">
         <h2 className="text-4xl font-bold mb-6 text-white">Ready to Create Your First Poster?</h2>
         <p className="text-xl mb-10 max-w-3xl mx-auto text-slate-200 leading-relaxed">
           Join thousands of creators who've brought their stories to life with our professional AI-powered poster generation platform.

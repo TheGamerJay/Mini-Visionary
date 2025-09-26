@@ -105,12 +105,7 @@ export default function Profile() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-2xl border shadow-sm">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
+                <div>
                   <p className="text-sm font-medium text-gray-600">Posters Created</p>
                   <p className="text-2xl font-semibold text-gray-900">{profile?.posters_created || 0}</p>
                 </div>
@@ -119,12 +114,7 @@ export default function Profile() {
 
             <div className="bg-white p-6 rounded-2xl border shadow-sm">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
-                </div>
-                <div className="ml-4">
+                <div>
                   <p className="text-sm font-medium text-gray-600">Credits Remaining</p>
                   <p className="text-2xl font-semibold text-gray-900">{profile?.credits || 0}</p>
                 </div>
@@ -133,12 +123,7 @@ export default function Profile() {
 
             <div className="bg-white p-6 rounded-2xl border shadow-sm">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
+                <div>
                   <p className="text-sm font-medium text-gray-600">Member Since</p>
                   <p className="text-2xl font-semibold text-gray-900">
                     {new Date(profile?.member_since || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
@@ -156,11 +141,6 @@ export default function Profile() {
                 to="/create"
                 className="flex items-center p-4 bg-white rounded-xl border hover:shadow-md transition-all duration-200"
               >
-                <div className="p-2 bg-blue-100 rounded-lg mr-4">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Create New Poster</h3>
                   <p className="text-sm text-gray-600">Generate a new AI poster</p>
@@ -171,11 +151,6 @@ export default function Profile() {
                 to="/store"
                 className="flex items-center p-4 bg-white rounded-xl border hover:shadow-md transition-all duration-200"
               >
-                <div className="p-2 bg-green-100 rounded-lg mr-4">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293a1 1 0 00.293 2.707H19M7 13v6a2 2 0 002 2h6a2 2 0 002-2v-6" />
-                  </svg>
-                </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Buy Credits</h3>
                   <p className="text-sm text-gray-600">Get more poster credits</p>
