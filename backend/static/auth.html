@@ -29,8 +29,7 @@
     .link-btn{
       color:#081018 !important; font-weight:700; text-decoration:none;
       transition:opacity .2s ease; display:inline-block !important;
-      background:rgba(255,0,0,0.1); border:1px solid red; /* DEBUG: make visible */
-      padding:4px 8px; min-width:80px; min-height:20px;
+      padding:4px 8px;
     }
     .link-btn:hover{
       text-decoration:none; opacity:.8;
@@ -358,17 +357,7 @@
       window.addEventListener("hashchange", updateFromHash);
 
       // Initial load
-      document.addEventListener("DOMContentLoaded", () => {
-        updateFromHash();
-        // Debug: check if register link works
-        const registerLinks = document.querySelectorAll('[data-switch="register"]');
-        registerLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            console.log('Register link clicked');
-            swapTabs('register');
-          });
-        });
-      });
+      document.addEventListener("DOMContentLoaded", updateFromHash);
     })();
   </script>
 </body>
