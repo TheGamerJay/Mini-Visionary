@@ -240,7 +240,10 @@
     document.addEventListener("click",(e)=>{
       const t = e.target.closest("[data-switch]");
       if(!t) return;
-      e.preventDefault(); swapTabs(t.dataset.switch);
+      e.preventDefault();
+      const tab = t.dataset.switch;
+      swapTabs(tab);
+      location.hash = "#" + tab;
     });
 
     // Year
@@ -356,7 +359,10 @@
       function updateFromHash() {
         const which = currentFromHash();
         swapTabs(which);
-        if (VIEWS.includes(which)) history.replaceState(null, "", "#" + which);
+        // Don't modify the URL if hash is already correct
+        if (location.hash !== "#" + which) {
+          history.replaceState(null, "", "#" + which);
+        }
       }
 
       // Switch when hash changes (e.g. user comes back from another page)
