@@ -7,13 +7,19 @@ const BRAND = {
 };
 
 async function apiRegister(payload) {
-  // TODO: replace with your real API endpoint
-  // return fetch("/api/auth/register", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload) })
-  //   .then(r => { if(!r.ok) throw new Error("Registration failed"); return r.json(); });
+  const response = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-  // Mock for UI
-  await new Promise(r => setTimeout(r, 700));
-  return { ok: true };
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Registration failed");
+  }
+
+  return data;
 }
 
 export default function RegisterPage() {

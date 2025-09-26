@@ -101,27 +101,21 @@ export default function CreatePoster() {
   };
 
   return (
-    <div style={{
-      maxWidth: 980,
-      margin: "32px auto",
-      padding: "0 16px",
-      fontFamily: "system-ui"
-    }}>
-      <header style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: "16px"
-      }}>
-        <h1 style={{
-          background: "linear-gradient(135deg, #06b6d4, #6366f1, #8b5cf6)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          margin: 0
-        }}>
-          Mini-Visionary
-        </h1>
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+    <div id="login-root">
+      <div className="login-header">MINI VISIONARY</div>
+
+      <div className="site-banner top"></div>
+
+      <div className="login-card">
+        <h2 className="login-title">Create Your Poster</h2>
+        <div className="login-logo">
+          <img src="/logo.png" alt="Mini Visionary" />
+        </div>
+        <p className="login-subtitle">
+          If you can dream it, we can poster it.
+        </p>
+
+        <div style={{ display: "flex", gap: "12px", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
           {!adFree && (
             <button
               onClick={async () => {
@@ -134,16 +128,8 @@ export default function CreatePoster() {
                 if (js?.ok && js.url) window.location.href = js.url;
                 else alert("Checkout unavailable");
               }}
-              style={{
-                padding: "6px 12px",
-                borderRadius: "8px",
-                border: "1px solid rgba(6, 182, 212, 0.4)",
-                background: "rgba(6, 182, 212, 0.1)",
-                color: "#06b6d4",
-                fontSize: "12px",
-                fontWeight: "500",
-                cursor: "pointer"
-              }}
+              className="btn-secondary"
+              style={{ fontSize: "12px", padding: "6px 12px" }}
             >
               Remove Ads — $5/mo
             </button>
@@ -159,35 +145,10 @@ export default function CreatePoster() {
             Credits: <strong>{credits ?? "…"}</strong>
           </div>
         </div>
-      </header>
 
-      <p style={{
-        marginTop: 8,
-        color: "#a1a1aa",
-        fontStyle: "italic",
-        fontSize: "1.1em"
-      }}>
-        "If you can dream it, we can poster it."
-      </p>
-
-      <form onSubmit={onGenerate} style={{
-        display: "grid",
-        gap: 20,
-        marginTop: 32,
-        background: "linear-gradient(135deg, rgba(30, 27, 75, 0.3), rgba(15, 23, 42, 0.5))",
-        padding: "24px",
-        borderRadius: "16px",
-        border: "1px solid rgba(99, 102, 241, 0.3)"
-      }}>
+      <form onSubmit={onGenerate} className="login-form" style={{ gap: 20 }}>
         <div>
-          <h2 style={{
-            marginBottom: "8px",
-            fontWeight: "500",
-            fontSize: "1.2rem",
-            color: "#06b6d4"
-          }}>
-            Choose a Poster Style
-          </h2>
+          <label htmlFor="style">Choose a Poster Style</label>
           <PosterStyleGallery
             onSelect={(val) => setStyle(val)}
             selectedStyle={style}
@@ -201,63 +162,39 @@ export default function CreatePoster() {
           </p>
         </div>
 
-        <label>
-          <div style={{ marginBottom: "8px", fontWeight: "500" }}>
-            Description (optional if you upload an image)
-          </div>
-          <textarea
-            rows={4}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g., a cosmic demi-human standing in star-lit ruins, cinematic lighting"
-            style={{
-              width: "100%",
-              padding: 12,
-              borderRadius: 10,
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              color: "inherit",
-              fontSize: "1rem",
-              resize: "vertical"
-            }}
-          />
-        </label>
+        <label htmlFor="prompt">Description (optional if you upload an image)</label>
+        <textarea
+          id="prompt"
+          rows={4}
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="e.g., a cosmic demi-human standing in star-lit ruins, cinematic lighting"
+          style={{ resize: "vertical" }}
+        />
 
-        <label>
-          <div style={{ marginBottom: "8px", fontWeight: "500" }}>
-            Upload Image (optional)
-          </div>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              borderRadius: "8px",
-              color: "inherit"
-            }}
-          />
-        </label>
+        <label htmlFor="file">Upload Image (optional)</label>
+        <input
+          id="file"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
 
         <button
           type="submit"
           disabled={loading || credits < 10}
-          style={{
+          className={loading || credits < 10 ? "" : "btn-primary"}
+          style={loading || credits < 10 ? {
             padding: "14px 20px",
             borderRadius: 12,
-            border: "none",
-            background: loading || credits < 10
-              ? "rgba(153, 153, 153, 0.3)"
-              : "linear-gradient(135deg, #0ea5e9, #3b82f6)",
-            color: "white",
+            border: "1px solid rgba(153, 153, 153, 0.3)",
+            background: "rgba(153, 153, 153, 0.3)",
+            color: "#666",
             fontWeight: 700,
             fontSize: "1.1rem",
-            cursor: loading || credits < 10 ? "not-allowed" : "pointer",
-            transition: "all 0.2s ease"
-          }}
+            cursor: "not-allowed",
+            width: "100%"
+          } : {}}
           title="Costs 10 credits per generate"
         >
           {loading ? "Generating…" :
@@ -266,14 +203,7 @@ export default function CreatePoster() {
         </button>
 
         {credits !== null && credits < 10 && (
-          <div style={{
-            background: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            borderRadius: "8px",
-            padding: "12px",
-            color: "#fca5a5",
-            textAlign: "center"
-          }}>
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-500/35 text-red-200 rounded-xl text-sm text-center">
             You need at least 10 credits to generate a poster.
             <a href="/store" style={{ color: "#3b82f6", marginLeft: "8px" }}>
               Buy credits →
@@ -320,6 +250,12 @@ export default function CreatePoster() {
           )}
         </div>
       )}
+      </div>
+
+      <div className="site-banner bottom"></div>
+      <div className="login-footer">
+        <div className="login-tagline">You Envision it, We Generate it.</div>
+      </div>
 
       {/* Modal */}
       <Modal

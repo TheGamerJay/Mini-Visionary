@@ -7,13 +7,19 @@ const BRAND = {
 };
 
 async function apiForgot(payload) {
-  // TODO: replace with your real API endpoint
-  // return fetch("/api/auth/forgot", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload) })
-  //   .then(r => { if(!r.ok) throw new Error("Request failed"); return r.json(); });
+  const response = await fetch("/api/auth/forgot", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-  // Mock for UI
-  await new Promise(r => setTimeout(r, 700));
-  return { ok: true };
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
 }
 
 export default function ForgotPage() {
