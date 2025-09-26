@@ -167,15 +167,18 @@
             <button type="button" id="rg-eye" class="eye" aria-label="Show password">👁️</button>
           </div>
 
-          <label class="row" style="justify-content:flex-start; gap:10px; font-size:13px">
-            <input id="rg-terms" type="checkbox" required />
-            <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>.</span>
-          </label>
-
           <button class="btn" id="btn-register" type="submit" style="margin-top:8px">Create account</button>
 
           <div class="row" style="margin-top:16px">
             <a href="#login" data-switch="login" class="link-btn">Back to sign in</a>
+            <label style="display:flex; align-items:center; gap:6px; font-size:12px">
+              <input id="rg-terms" type="checkbox" required />
+              <span>I agree to the <a href="/terms.html" target="_blank" class="link-btn">Terms of Service</a> and <a href="/privacy.html" target="_blank" class="link-btn">Privacy Policy</a>.</span>
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <span></span>
             <span class="hint">Need help? <a href="mailto:MiniVisionary.contactus@gmail.com" class="link-btn">Contact support</a></span>
           </div>
         </form>
