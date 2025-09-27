@@ -9,6 +9,17 @@ __pycache__/
 node_modules/
 dist/
 
+# Environment variables (contains sensitive data)
+.env
+.env.local
+.env.production
+backend/.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # Logs
 *.log
 
