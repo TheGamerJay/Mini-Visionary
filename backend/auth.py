@@ -117,31 +117,36 @@ def signup():
 
 @bp.post("/login")
 def login():
-    # Debug logging
-    print(f"🔍 LOGIN DEBUG:")
-    print(f"  Headers: {dict(request.headers)}")
-    print(f"  Content-Type: {request.content_type}")
-    print(f"  Raw data: {request.data}")
+    # 🔎 Debug logs
+    print("=== LOGIN ATTEMPT ===")
+    print(f"Headers: {dict(request.headers)}")
+    print(f"Cookies: {request.cookies}")
 
-    data = request.get_json() or {}
-    print(f"  Parsed JSON: {data}")
+    data = request.get_json(silent=True)
+    print(f"JSON Body: {data}")
 
-    email = (data.get("email") or "").lower().strip()
+    if not data:
+        print("❌ No JSON body received")
+        return jsonify({"error": "No JSON body received"}), 400
+
+    email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
-    print(f"  Email: '{email}', Password length: {len(password)}")
+
+    if not email or not password:
+        print(f"❌ Missing email or password - email: '{email}', password length: {len(password)}")
+        return jsonify({"error": "Missing email or password"}), 400
 
     user = get_user_by_email(email)
-    print(f"  User found: {user is not None}")
-
     if not user:
-        print(f"  ❌ No user found for email: {email}")
-        return jsonify(ok=False, error="invalid_credentials"), 401
+        print(f"❌ No user found for email: {email}")
+        return jsonify({"error": "Invalid credentials"}), 401
 
     if not verify_password(user.password_hash, password):
-        print(f"  ❌ Password verification failed for user: {email}")
-        return jsonify(ok=False, error="invalid_credentials"), 401
+        print(f"❌ Password mismatch for email: {email}")
+        return jsonify({"error": "Invalid credentials"}), 401
 
-    print(f"  ✅ Login successful for user: {email}")
+    # ✅ Success
+    print(f"✅ Login success for: {email}")
     token = sign_jwt(user.id, email)
     return jsonify(ok=True, token=token, user={
         "id": user.id,
