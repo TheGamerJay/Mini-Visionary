@@ -425,6 +425,25 @@ def api_email_send():
     except MailError as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+@app.get("/api/email/config")
+def email_config_check():
+    """Check email configuration status"""
+    from mailer import RESEND_API_KEY, FROM_EMAIL, RESEND_FROM
+
+    config = {
+        "resend_api_key_set": bool(RESEND_API_KEY),
+        "resend_api_key_length": len(RESEND_API_KEY) if RESEND_API_KEY else 0,
+        "from_email": FROM_EMAIL,
+        "resend_from": RESEND_FROM,
+        "environment_vars": {
+            "RESEND_API_KEY": "SET" if os.getenv("RESEND_API_KEY") else "MISSING",
+            "FROM_EMAIL": os.getenv("FROM_EMAIL", "NOT_SET"),
+            "RESEND_FROM": os.getenv("RESEND_FROM", "NOT_SET")
+        }
+    }
+
+    return jsonify({"ok": True, "config": config})
+
 # DEV ONLY: serve local storage dir so returned /storage/... URLs load in browser
 @app.get("/storage/<path:key>")
 def storage(key: str):
