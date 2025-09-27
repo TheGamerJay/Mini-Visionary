@@ -287,13 +287,11 @@
     if (!token) {
       console.log('No token found, redirecting to login');
       window.location.href = '/auth.html#login';
-      return;
-    }
+    } else {
+      console.log('Token found, attempting auth check...');
 
-    console.log('Token found, attempting auth check...');
-
-    // Load user info - with better error handling
-    setTimeout(() => {
+      // Load user info - with better error handling
+      setTimeout(() => {
       fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
