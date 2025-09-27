@@ -291,17 +291,25 @@
     fetch('/api/auth/me', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(r => r.json())
+    .then(r => {
+      console.log('Auth check response status:', r.status);
+      return r.json();
+    })
     .then(data => {
+      console.log('Auth check response data:', data);
       if (data.ok && data.user) {
         document.getElementById('user-name').textContent = data.user.display_name || 'User';
         document.getElementById('user-credits').textContent = data.user.credits || 0;
         document.getElementById('display-name').textContent = data.user.display_name || 'User';
       } else {
+        console.log('Auth check failed, logging out:', data);
         logout();
       }
     })
-    .catch(() => logout());
+    .catch(err => {
+      console.log('Auth check error:', err);
+      logout();
+    });
 
     // Logout function
     function logout() {
