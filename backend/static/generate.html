@@ -293,6 +293,9 @@
     })
     .then(r => {
       console.log('Auth check response status:', r.status);
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}`);
+      }
       return r.json();
     })
     .then(data => {
@@ -301,14 +304,17 @@
         document.getElementById('user-name').textContent = data.user.display_name || 'User';
         document.getElementById('user-credits').textContent = data.user.credits || 0;
         document.getElementById('display-name').textContent = data.user.display_name || 'User';
+        console.log('Authentication successful, staying on generate page');
       } else {
-        console.log('Auth check failed, logging out:', data);
-        logout();
+        console.log('Auth check failed, response not ok:', data);
+        // Give it a moment before logout in case of temporary issues
+        setTimeout(() => logout(), 2000);
       }
     })
     .catch(err => {
       console.log('Auth check error:', err);
-      logout();
+      // Give it a moment before logout in case of temporary issues
+      setTimeout(() => logout(), 2000);
     });
 
     // Logout function
