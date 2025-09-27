@@ -2,29 +2,35 @@ import os
 import time
 import jwt
 from functools import wraps
-from flask import Blueprint, request, jsonify, g
+from typing import Optional
+
+from flask import Blueprint, request, jsonify, g, current_app
 from werkzeug.exceptions import Unauthorized
 from flask_bcrypt import Bcrypt
+from werkzeug.security import check_password_hash as wz_check_password_hash
+
 from models import get_session, User
 
+# Public objects expected by app.py and other modules (e.g. /api/generate)
 bcrypt = Bcrypt()
 bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
-SECRET = os.getenv("SECRET_KEY", "dev-secret")
-# Default: 30 days in minutes -> seconds
-TTL = int(os.getenv("JWT_EXPIRES_MIN", "43200")) * 60
-
-# Brand-aware defaults
+# JWT/brand config
+SECRET = os.getenv("SECRET_KEY", "dev-secret")                 # used to sign/verify JWTs
+TTL = int(os.getenv("JWT_EXPIRES_MIN", "43200")) * 60          # default 30 days (min->sec)
 PUBLIC_APP_URL = os.getenv("PUBLIC_APP_URL", "https://app.minivisionary.com")
 
-def get_user_by_email(email: str):
+
+# ----------------------- Helpers -----------------------
+
+def get_user_by_email(email: str) -> Optional[User]:
     email = (email or "").lower().strip()
     if not email:
         return None
     with get_session() as s:
         return s.query(User).filter_by(email=email).first()
 
-def create_user(display_name: str, email: str, password_hash: str):
+def create_user(display_name: str, email: str, password_hash: str) -> dict:
     with get_session() as s:
         user = User(
             display_name=display_name,
@@ -43,12 +49,38 @@ def create_user(display_name: str, email: str, password_hash: str):
         }
 
 def verify_password(hashed: str, plain: str) -> bool:
+    """
+    Backward-compatible password check.
+    Supports legacy Werkzeug PBKDF2 hashes ('pbkdf2:...') and current bcrypt ('$2b$', '$2a$', '$2y$').
+    """
     if not hashed or not plain:
         return False
     try:
-        return bcrypt.check_password_hash(hashed, plain)
+        h = str(hashed)
+        if h.startswith("pbkdf2:"):
+            # Legacy accounts created with Werkzeug generate_password_hash
+            return wz_check_password_hash(h, plain)
+        if h.startswith("$2a$") or h.startswith("$2b$") or h.startswith("$2y$"):
+            # Bcrypt (current)
+            return bcrypt.check_password_hash(h, plain)
+        # Unknown format -> fail closed
+        return False
     except Exception:
         return False
+
+def maybe_upgrade_hash_to_bcrypt(user: User, plain_password: str) -> None:
+    """If user has a legacy PBKDF2 hash, upgrade it to bcrypt after a successful login."""
+    try:
+        if str(user.password_hash).startswith("pbkdf2:"):
+            new_hash = bcrypt.generate_password_hash(plain_password).decode()
+            with get_session() as s:
+                u = s.query(User).filter_by(id=user.id).first()
+                if u:
+                    u.password_hash = new_hash
+                    s.commit()
+            current_app.logger.info("Upgraded password hash to bcrypt for user_id=%s", user.id)
+    except Exception as e:
+        current_app.logger.warning("Hash upgrade failed for user_id=%s err=%s", user.id, e)
 
 def sign_jwt(user_id, email: str) -> str:
     now = int(time.time())
@@ -57,7 +89,7 @@ def sign_jwt(user_id, email: str) -> str:
         "email": email,
         "iat": now,
         "exp": now + TTL,
-        # Optional: issuer/audience if you want
+        # Optional:
         # "iss": "mini-visionary",
         # "aud": "mini-visionary-web",
     }
@@ -77,7 +109,6 @@ def auth_required(fn):
         except Exception:
             raise Unauthorized("Invalid token")
 
-        # Load and attach current user
         with get_session() as s:
             user = s.query(User).filter_by(id=payload.get("sub")).first()
             if not user:
@@ -89,10 +120,13 @@ def auth_required(fn):
         return fn(*args, **kwargs)
     return wrapper
 
+
+# ----------------------- Routes -----------------------
+
 @bp.post("/signup")
 def signup():
     try:
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         display_name = (data.get("display_name") or "").strip()
         email = (data.get("email") or "").lower().strip()
         password = data.get("password") or ""
@@ -100,7 +134,6 @@ def signup():
         if not (display_name and email and password and len(password) >= 8):
             return jsonify(ok=False, error="invalid_input"), 400
 
-        # Check if user already exists
         if get_user_by_email(email):
             return jsonify(ok=False, error="email_exists"), 400
 
@@ -110,20 +143,28 @@ def signup():
 
         return jsonify(ok=True, token=token, user=user)
     except Exception as e:
-        import traceback
-        print(f"Signup error: {str(e)}")
-        print(traceback.format_exc())
-        return jsonify(ok=False, error=f"server_error: {str(e)}"), 500
+        current_app.logger.exception("Signup error: %s", e)
+        return jsonify(ok=False, error="server_error"), 500
+
 
 @bp.post("/login")
 def login():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").lower().strip()
     password = data.get("password") or ""
 
+    # Loud but safe debug (no plaintext password)
+    current_app.logger.info("[auth.login] email=%s json_keys=%s", email, list(data.keys()))
+
     user = get_user_by_email(email)
-    if not user or not verify_password(user.password_hash, password):
+    if not user:
         return jsonify(ok=False, error="invalid_credentials"), 401
+
+    if not verify_password(user.password_hash, password):
+        return jsonify(ok=False, error="invalid_credentials"), 401
+
+    # Upgrade legacy pbkdf2 -> bcrypt after successful login
+    maybe_upgrade_hash_to_bcrypt(user, password)
 
     token = sign_jwt(user.id, email)
     return jsonify(ok=True, token=token, user={
@@ -132,6 +173,7 @@ def login():
         "display_name": user.display_name,
         "credits": user.credits
     })
+
 
 @bp.get("/me")
 @auth_required
@@ -145,11 +187,12 @@ def me():
         "ad_free": getattr(g.user, 'ad_free', False)
     })
 
+
 @bp.post("/forgot")
 def forgot():
     from mailer import send_reset_email, MailError
 
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").lower().strip()
 
     if not email:
@@ -165,28 +208,22 @@ def forgot():
                 "email": user.email,
                 "type": "password_reset",
                 "iat": now,
-                "exp": now + (24 * 60 * 60)  # 24 hours
+                "exp": now + (24 * 60 * 60),  # 24 hours
             }
             reset_token = jwt.encode(reset_payload, SECRET, algorithm="HS256")
-
-            # Build reset URL (brand-aware default)
             reset_url = f"{PUBLIC_APP_URL}/reset-password?token={reset_token}"
-
             send_reset_email(user.email, reset_url)
-            print(f"✅ Password reset email sent to {user.email}")
+            current_app.logger.info("Password reset email sent to %s", user.email)
         except MailError as e:
-            # Log the error for debugging but don't leak to client
-            print(f"❌ Failed to send reset email to {user.email}: {e}")
-            # For now, we still return success to prevent user enumeration
-            pass
+            current_app.logger.warning("Reset email failed for %s: %s", user.email, e)
+            # Return success anyway to avoid enumeration
 
-    # Always return success to prevent user enumeration
     return jsonify(ok=True, message="reset_email_sent")
+
 
 @bp.post("/reset-password")
 def reset_password():
-    """Reset password using token from email"""
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     token = (data.get("token") or "").strip()
     new_password = data.get("password") or ""
 
@@ -217,17 +254,20 @@ def reset_password():
     except jwt.InvalidTokenError:
         return jsonify(ok=False, error="invalid_token"), 400
 
+
 @bp.get("/wallet")
 @auth_required
 def wallet():
-    """Get wallet/credits info for authenticated user"""
-    from models import CreditLedger, CreditEventType
+    """Return wallet/credits info for authenticated user."""
+    from models import CreditLedger, CreditEventType  # lazy import to avoid circulars
 
     with get_session() as s:
-        receipts_q = (s.query(CreditLedger)
-                        .filter_by(user_id=g.user_id, event=CreditEventType.PURCHASE)
-                        .order_by(CreditLedger.created_at.desc())
-                        .limit(10))
+        receipts_q = (
+            s.query(CreditLedger)
+            .filter_by(user_id=g.user_id, event=CreditEventType.PURCHASE)
+            .order_by(CreditLedger.created_at.desc())
+            .limit(10)
+        )
 
         receipts = [{
             "id": r.id,

@@ -287,35 +287,42 @@
       window.location.href = '/auth.html#login';
     }
 
-    // Load user info
-    fetch('/api/auth/me', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(r => {
-      console.log('Auth check response status:', r.status);
-      if (!r.ok) {
-        throw new Error(`HTTP ${r.status}`);
-      }
-      return r.json();
-    })
-    .then(data => {
-      console.log('Auth check response data:', data);
-      if (data.ok && data.user) {
-        document.getElementById('user-name').textContent = data.user.display_name || 'User';
-        document.getElementById('user-credits').textContent = data.user.credits || 0;
-        document.getElementById('display-name').textContent = data.user.display_name || 'User';
-        console.log('Authentication successful, staying on generate page');
-      } else {
-        console.log('Auth check failed, response not ok:', data);
-        // Give it a moment before logout in case of temporary issues
-        setTimeout(() => logout(), 2000);
-      }
-    })
-    .catch(err => {
-      console.log('Auth check error:', err);
-      // Give it a moment before logout in case of temporary issues
-      setTimeout(() => logout(), 2000);
-    });
+    console.log('Token found, attempting auth check...');
+
+    // Load user info - with better error handling
+    setTimeout(() => {
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(r => {
+        console.log('Auth check response status:', r.status);
+        console.log('Auth check response headers:', r.headers);
+        if (!r.ok) {
+          throw new Error(`HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then(data => {
+        console.log('Auth check response data:', data);
+        if (data.ok && data.user) {
+          document.getElementById('user-name').textContent = data.user.display_name || 'User';
+          document.getElementById('user-credits').textContent = data.user.credits || 0;
+          document.getElementById('display-name').textContent = data.user.display_name || 'User';
+          console.log('Authentication successful, staying on generate page');
+        } else {
+          console.log('Auth check failed, response not ok:', data);
+          // Longer timeout to debug - DON'T logout immediately
+          console.log('Delaying logout for 10 seconds to allow debugging...');
+          setTimeout(() => logout(), 10000);
+        }
+      })
+      .catch(err => {
+        console.log('Auth check error:', err);
+        // Longer timeout to debug - DON'T logout immediately
+        console.log('Delaying logout for 10 seconds to allow debugging...');
+        setTimeout(() => logout(), 10000);
+      });
+    }, 500); // Small delay to ensure page is fully loaded
 
     // Logout function
     function logout() {
