@@ -303,6 +303,7 @@
 
       // Click toggles visibility
       eye.addEventListener('click', () => {
+        console.log('TOGGLE: current type:', input.type, 'will set to:', input.type === 'password' ? 'text' : 'password');
         setVisible(input.type === 'password');
         input.focus({ preventScroll: true });
       });
