@@ -293,6 +293,20 @@
     } else {
       console.log('Token found, attempting auth check...');
 
+      // Try to load cached user data first to prevent username flash
+      try {
+        const cachedUser = localStorage.getItem('cached_user_data');
+        if (cachedUser) {
+          const userData = JSON.parse(cachedUser);
+          const displayNameEl = document.getElementById('display-name');
+          if (displayNameEl && userData.display_name) {
+            displayNameEl.textContent = userData.display_name;
+          }
+        }
+      } catch (e) {
+        console.log('Error loading cached user data:', e);
+      }
+
       // Load user info - with better error handling
       setTimeout(() => {
       fetch('/api/auth/me', {
@@ -309,6 +323,13 @@
       .then(data => {
         console.log('Auth check response data:', data);
         if (data.ok && data.user) {
+          // Cache user data to prevent username flash on refresh
+          try {
+            localStorage.setItem('cached_user_data', JSON.stringify(data.user));
+          } catch (e) {
+            console.log('Error caching user data:', e);
+          }
+
           // Safely update DOM elements if they exist
           const userNameEl = document.getElementById('user-name');
           const userCreditsEl = document.getElementById('user-credits');
