@@ -4,7 +4,7 @@
 import requests
 import json
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "https://minivisionary.soulbridgeai.com"
 
 def test_signup():
     """Test signup endpoint"""
