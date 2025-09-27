@@ -504,8 +504,8 @@ def privacy_page():
 # ---------------------- DASHBOARD ROUTE ----------------------
 @app.route('/dashboard')
 def dashboard_redirect():
-    """Redirect /dashboard to working React dashboard route"""
-    return f'<script>window.location.href="/home";</script>'
+    """Redirect /dashboard to user dashboard (not homepage)"""
+    return f'<script>window.location.href="/create";</script>'
 
 # SPA routes are handled by serve_spa.py to avoid duplication
 
