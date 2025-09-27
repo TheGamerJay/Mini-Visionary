@@ -594,9 +594,7 @@
       });
     });
 
-    // Multi-session management
-    let sessions = JSON.parse(localStorage.getItem('mv_sessions') || '[]');
-    let currentSessionId = localStorage.getItem('mv_current_session') || null;
+    // Multi-session management (using existing variables from line 326)
 
     function generateSessionId() {
       return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -604,15 +602,15 @@
 
     function createNewSession() {
       // First, ensure current session is saved and updated
-      if (currentSessionId && chatHistory.length > 0) {
+      if (activeSessionId && chatHistory.length > 0) {
         // Save current chat history
-        localStorage.setItem(`mv_chat_${currentSessionId}`, JSON.stringify(chatHistory));
+        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
 
         // Update current session title if it hasn't been changed and has messages
-        updateSessionTitle(currentSessionId);
+        updateSessionTitle(activeSessionId);
 
         // Update current session's updatedAt timestamp
-        const currentSession = sessions.find(s => s.id === currentSessionId);
+        const currentSession = sessions.find(s => s.id === activeSessionId);
         if (currentSession) {
           currentSession.updatedAt = new Date().toISOString();
         }
@@ -642,11 +640,11 @@
 
     function switchToSession(sessionId) {
       // Save current chat history to session-specific storage
-      if (currentSessionId && chatHistory.length > 0) {
-        localStorage.setItem(`mv_chat_${currentSessionId}`, JSON.stringify(chatHistory));
+      if (activeSessionId && chatHistory.length > 0) {
+        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
       }
 
-      currentSessionId = sessionId;
+      activeSessionId = sessionId;
       localStorage.setItem('mv_current_session', sessionId);
 
       // Load chat history for this session
@@ -669,7 +667,7 @@
       localStorage.setItem('mv_sessions', JSON.stringify(sessions));
       localStorage.removeItem(`mv_chat_${sessionId}`);
 
-      if (currentSessionId === sessionId) {
+      if (activeSessionId === sessionId) {
         switchToSession(sessions[0].id);
       }
 
@@ -704,7 +702,7 @@
     function renderSessions() {
       const container = document.getElementById('chat-sessions');
       container.innerHTML = sessions.map(session => `
-        <div class="session-item ${session.id === currentSessionId ? 'active' : ''}" data-session-id="${session.id}">
+        <div class="session-item ${session.id === activeSessionId ? 'active' : ''}" data-session-id="${session.id}">
           <div class="session-content" onclick="switchToSession('${session.id}')">
             <div class="session-title">${session.title}</div>
             <div class="session-date">${new Date(session.updatedAt).toLocaleDateString()}</div>
@@ -756,14 +754,14 @@
     addMessage = function(role, content, imageUrl) {
       originalAddMessage(role, content, imageUrl);
 
-      if (currentSessionId && role === 'user') {
-        updateSessionTitle(currentSessionId);
+      if (activeSessionId && role === 'user') {
+        updateSessionTitle(activeSessionId);
         renderSessions();
       }
 
       // Save to session-specific storage
-      if (currentSessionId) {
-        localStorage.setItem(`mv_chat_${currentSessionId}`, JSON.stringify(chatHistory));
+      if (activeSessionId) {
+        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
       }
     };
 
@@ -772,11 +770,11 @@
       if (sessions.length === 0) {
         createNewSession();
       } else {
-        if (!currentSessionId || !sessions.find(s => s.id === currentSessionId)) {
-          currentSessionId = sessions[0].id;
-          localStorage.setItem('mv_current_session', currentSessionId);
+        if (!activeSessionId || !sessions.find(s => s.id === activeSessionId)) {
+          activeSessionId = sessions[0].id;
+          localStorage.setItem('mv_current_session', activeSessionId);
         }
-        switchToSession(currentSessionId);
+        switchToSession(activeSessionId);
       }
       renderSessions();
     }
@@ -921,7 +919,7 @@
           body: JSON.stringify({
             image_url: imageUrl,
             prompt: chatHistory[messageIndex-1]?.content || 'Generated poster',
-            session_id: currentSessionId
+            session_id: activeSessionId
           })
         });
 
