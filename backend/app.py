@@ -501,6 +501,12 @@ def privacy_page():
     """Serve privacy.html directly"""
     return send_from_directory(app.static_folder, 'privacy.html')
 
+# ---------------------- DASHBOARD ROUTE ----------------------
+@app.route('/dashboard')
+def dashboard_redirect():
+    """Redirect /dashboard to working React dashboard route"""
+    return f'<script>window.location.href="/home";</script>'
+
 # SPA routes are handled by serve_spa.py to avoid duplication
 
 # ---------------------- MAIN ----------------------
