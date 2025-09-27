@@ -594,10 +594,6 @@ def privacy_page():
     return send_from_directory(app.static_folder, 'privacy.html')
 
 # ---------------------- DASHBOARD ROUTES ----------------------
-@app.route('/dashboard')
-def dashboard_redirect():
-    """Redirect /dashboard to user dashboard (not homepage)"""
-    return f'<script>window.location.href="/generate";</script>'
 
 @app.route('/create')
 def create_redirect():
