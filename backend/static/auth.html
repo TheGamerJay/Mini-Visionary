@@ -337,8 +337,12 @@
           $("#rg-terms").checked = true;
         }
         const res = await API.register(payload);
+        console.log("Registration response:", res);
         setMsg("Account created! Please sign in.", "ok");
-        swapTabs("login");
+        setTimeout(() => {
+          swapTabs("login");
+          location.hash = "#login";
+        }, 1000);
       }catch(err){ setMsg(err.message, "err"); }
       finally{ $("#btn-register").disabled = false; }
     });
