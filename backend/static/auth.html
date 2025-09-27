@@ -284,20 +284,12 @@
     // Year
     $("#y").textContent = new Date().getFullYear();
 
-    // Enhanced password field functionality
-    const enhancedPasswordField = (inputId, eyeId) => {
-      const input = $(inputId);
-      const eye = $(eyeId);
+    // Clean password field implementation for both fields
+    function setupPasswordField(inputId, eyeId) {
+      const input = document.getElementById(inputId);
+      const eye = document.getElementById(eyeId);
 
-      // Debug logging
-      console.log(`Setting up password field: ${inputId} + ${eyeId}`);
-      console.log('Input element:', input);
-      console.log('Eye element:', eye);
-
-      if (!input || !eye) {
-        console.error(`Failed to find elements: input=${!!input}, eye=${!!eye}`);
-        return;
-      }
+      if (!input || !eye) return;
 
       function setVisible(on) {
         const selStart = input.selectionStart, selEnd = input.selectionEnd;
@@ -310,8 +302,7 @@
       }
 
       // Click toggles visibility
-      eye.addEventListener('click', (e) => {
-        console.log('Eye button clicked!', e);
+      eye.addEventListener('click', () => {
         setVisible(input.type === 'password');
         input.focus({ preventScroll: true });
       });
@@ -351,12 +342,12 @@
         else if (capsBadge) capsBadge.style.display = 'none';
       });
       input.addEventListener('blur', () => { if (capsBadge) capsBadge.style.display = 'none'; });
-    };
+    }
 
     // Initialize after DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
-      enhancedPasswordField("#li-pass","#li-eye");
-      enhancedPasswordField("#rg-pass","#rg-eye");
+      setupPasswordField("li-pass","li-eye");
+      setupPasswordField("rg-pass","rg-eye");
 
       // Terms checkbox confirmation
       const termsCheckbox = $("#rg-terms");
