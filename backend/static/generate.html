@@ -13,27 +13,88 @@
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{
-      margin:0; color:var(--text);
+      margin:0; color:var(--text); height:100vh; display:flex; flex-direction:column;
       background:
         radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
         radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
         linear-gradient(180deg, var(--bg-0), var(--bg-1));
       font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
     }
-    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring); position:relative; z-index:100}
+    .header-left{display:flex; align-items:center; gap:12px}
+    .sidebar-toggle{display:none; background:none; border:none; color:var(--text); font-size:18px; cursor:pointer; padding:8px}
     .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
     .logo img{width:32px; height:32px; border-radius:8px}
-    .nav{display:flex; gap:16px}
+    .nav{display:flex; gap:16px; align-items:center}
     .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
     .nav a:hover{color:var(--text); background:var(--sunken)}
-    .user-info{display:flex; align-items:center; gap:12px; color:var(--muted); font-size:14px}
+    .credits-display{color:var(--text); font-weight:600; padding:8px 12px; font-size:14px}
     .logout-btn{background:none; border:1px solid var(--ring); color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px}
     .logout-btn:hover{color:var(--text); border-color:var(--text)}
 
-    .container{max-width:1200px; margin:0 auto; padding:24px}
-    .main-grid{display:grid; grid-template-columns:1fr 400px; gap:32px; align-items:start}
-    .generator{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px}
-    .preview{background:var(--sunken); border:1px solid var(--ring); border-radius:16px; padding:24px; text-align:center}
+    /* Sidebar */
+    .sidebar{position:fixed; top:0; left:0; width:320px; height:100vh; background:var(--card); border-right:1px solid var(--ring); z-index:200; transform:translateX(-100%); transition:transform 0.3s ease; display:flex; flex-direction:column}
+    .sidebar.open{transform:translateX(0)}
+    .sidebar-header{padding:16px; border-bottom:1px solid var(--ring)}
+    .new-chat-btn{width:100%; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.2s}
+    .new-chat-btn:hover{transform:translateY(-1px)}
+    .sidebar-title{padding:16px 16px 8px; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted)}
+    .chat-sessions{flex:1; overflow-y:auto; padding:0 12px}
+    .session-item{display:flex; align-items:center; justify-content:space-between; padding:12px; margin:4px 0; border-radius:12px; cursor:pointer; transition:all 0.2s; border:1px solid transparent}
+    .session-item:hover{background:var(--sunken)}
+    .session-item.active{background:var(--sunken); border:1px solid var(--ring)}
+    .session-content{flex:1; display:flex; flex-direction:column; gap:2px}
+    .session-title{color:var(--text); font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .session-date{color:var(--muted); font-size:12px}
+    .session-actions{display:flex; gap:4px; opacity:0; transition:opacity 0.2s}
+    .session-item:hover .session-actions{opacity:1}
+    .session-action{background:none; border:none; color:var(--muted); padding:4px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center}
+    .session-action:hover{color:var(--text); background:var(--sunken)}
+    .session-action.delete:hover{color:#ef4444}
+    .sidebar-footer{padding:16px; border-top:1px solid var(--ring); margin-top:auto}
+    .sidebar-brand{font-weight:700; color:var(--text); margin-bottom:4px}
+    .sidebar-tagline{font-size:12px; color:var(--muted)}
+    .sidebar-overlay{position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:150; opacity:0; visibility:hidden; transition:all 0.3s ease}
+    .sidebar-overlay.show{opacity:1; visibility:visible}
+
+    @media (max-width: 768px) {
+      .sidebar-toggle{display:block}
+      .main-content{margin-left:0}
+    }
+    @media (min-width: 769px) {
+      .sidebar{transform:translateX(0)}
+      .main-content{margin-left:320px}
+      .sidebar-overlay{display:none}
+    }
+
+    .main-content{flex:1; display:flex; flex-direction:column; max-width:1000px; margin:0 auto; padding:24px; transition:margin-left 0.3s ease}
+
+    .welcome-section{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:40px 20px}
+    .welcome-title{font-size:2.5rem; font-weight:800; margin-bottom:32px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+
+    .input-container{display:flex; align-items:end; gap:12px; background:var(--sunken); border:1px solid var(--ring); border-radius:16px; padding:12px; margin-bottom:24px; min-width:600px}
+    .main-textarea, .chat-textarea{flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:inherit; resize:none; min-height:44px; max-height:120px}
+    .generate-btn{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; padding:12px 24px; cursor:pointer; transition:all 0.2s}
+    .generate-btn:hover{transform:translateY(-1px)}
+    .generate-btn:disabled{opacity:0.6; cursor:not-allowed; transform:none}
+
+    .quick-actions{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; max-width:600px}
+    .action-chip{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:14px; transition:all 0.2s}
+    .action-chip:hover{background:var(--sunken); border-color:var(--line)}
+
+    .chat-section{flex:1; overflow-y:auto; padding:20px 0}
+    .chat-messages{display:flex; flex-direction:column; gap:16px}
+    .message{display:flex; max-width:85%}
+    .message.user{margin-left:auto}
+    .message.assistant{margin-right:auto}
+    .message-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px}
+    .message.user .message-content{background:var(--sunken)}
+    .message-header{font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px}
+    .message-text{color:var(--text); white-space:pre-wrap; word-break:break-word}
+    .message-image{max-width:100%; border-radius:8px; margin-top:12px}
+
+    .bottom-input{border-top:1px solid var(--ring); padding:16px 0; background:var(--bg-0)}
+    .bottom-input .input-container{min-width:auto; margin-bottom:0}
 
     h1{margin:0 0 8px; font-size:28px; font-weight:800}
     .subtitle{color:var(--muted); margin-bottom:24px}
@@ -67,56 +128,69 @@
 </head>
 <body>
   <div class="header">
-    <a href="/" class="logo">
-      <img src="/logo.png" alt="Mini Visionary Logo">
-      Mini Visionary
-    </a>
+    <div class="header-left">
+      <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+      <a href="/" class="logo">
+        <img src="/logo.png" alt="Mini Visionary Logo">
+        Mini Visionary
+      </a>
+    </div>
     <nav class="nav">
-      <a href="/generate">Generate</a>
+      <a href="/guide">Guide</a>
       <a href="/gallery">Gallery</a>
       <a href="/library">Library</a>
-    </nav>
-    <div class="user-info">
-      <span id="user-name">Loading...</span>
+      <span class="credits-display">Credits: <span id="user-credits">10</span></span>
+      <a href="/store">💎 Store</a>
+      <a href="/wallet">💰 Wallet</a>
+      <a href="/profile">🧑 Profile</a>
       <button class="logout-btn" onclick="logout()">Logout</button>
+    </nav>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <button id="new-chat-btn" class="new-chat-btn">+ New Chat</button>
+    </div>
+    <div class="sidebar-title">Chats</div>
+    <div id="chat-sessions" class="chat-sessions"></div>
+    <div class="sidebar-footer">
+      <div class="sidebar-brand">Mini Visionary</div>
+      <div class="sidebar-tagline">You Envision it, We Generate It</div>
     </div>
   </div>
 
-  <div class="container">
-    <div class="main-grid">
-      <div class="generator">
-        <h1>AI Poster Generator</h1>
-        <p class="subtitle">Create stunning movie posters with AI</p>
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-        <div id="message"></div>
-
-        <form id="generate-form">
-          <div class="form-group">
-            <label class="label" for="prompt">Poster Description</label>
-            <textarea id="prompt" class="textarea" placeholder="Describe your poster idea in detail... (e.g., A sci-fi thriller poster featuring a lone astronaut on a mysterious alien planet with dramatic lighting)" required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="label" for="style">Style</label>
-            <select id="style" class="input">
-              <option value="cinematic">Cinematic Movie Poster</option>
-              <option value="vintage">Vintage Movie Poster</option>
-              <option value="modern">Modern Minimalist</option>
-              <option value="horror">Horror Movie Poster</option>
-              <option value="comedy">Comedy Movie Poster</option>
-              <option value="action">Action Movie Poster</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn" id="generate-btn">Generate Poster</button>
-        </form>
+  <div class="main-content">
+    <!-- Welcome Section (shown when no chat history) -->
+    <div id="welcome-section" class="welcome-section">
+      <h1 class="welcome-title">How can I help you create today, <span id="display-name">User</span>?</h1>
+      <div class="input-container">
+        <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
+        <button id="main-generate-btn" class="generate-btn">Generate</button>
       </div>
+      <div class="quick-actions">
+        <button class="action-chip" data-prompt="Create a movie poster: ">Movie Poster</button>
+        <button class="action-chip" data-prompt="Create a vintage poster: ">Vintage Style</button>
+        <button class="action-chip" data-prompt="Create a horror poster: ">Horror Theme</button>
+        <button class="action-chip" data-prompt="Create a minimalist poster: ">Minimalist</button>
+        <button class="action-chip" data-prompt="Create an action poster: ">Action Style</button>
+        <button class="action-chip" data-prompt="Create a comedy poster: ">Comedy Theme</button>
+      </div>
+    </div>
 
-      <div class="preview">
-        <h3>Preview</h3>
-        <div class="preview-area" id="preview-area">
-          <span>Your generated poster will appear here</span>
-        </div>
+    <!-- Chat Section (shown when there's conversation history) -->
+    <div id="chat-section" class="chat-section" style="display: none;">
+      <div id="chat-messages" class="chat-messages"></div>
+    </div>
+
+    <!-- Bottom Input (always visible when in chat mode) -->
+    <div id="bottom-input" class="bottom-input" style="display: none;">
+      <div class="input-container">
+        <textarea id="chat-input" class="chat-textarea" placeholder="Describe another poster idea..." rows="1"></textarea>
+        <button id="chat-generate-btn" class="generate-btn">Generate</button>
       </div>
     </div>
 
@@ -147,6 +221,8 @@
     .then(data => {
       if (data.ok && data.user) {
         document.getElementById('user-name').textContent = data.user.display_name || 'User';
+        document.getElementById('user-credits').textContent = data.user.credits || 0;
+        document.getElementById('display-name').textContent = data.user.display_name || 'User';
       } else {
         logout();
       }
@@ -172,22 +248,196 @@
       document.getElementById('message').style.display = 'none';
     }
 
-    // Generate poster form
-    document.getElementById('generate-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Multi-session chat state
+    let sessions = JSON.parse(localStorage.getItem('mv_sessions') || '[]');
+    let activeSessionId = null;
+    let chatHistory = [];
+    let isGenerating = false;
 
-      const btn = document.getElementById('generate-btn');
-      const prompt = document.getElementById('prompt').value.trim();
-      const style = document.getElementById('style').value;
+    // Session management
+    function generateSessionId() {
+      return crypto.randomUUID();
+    }
 
-      if (!prompt) {
-        showMessage('Please enter a poster description', 'error');
-        return;
+    function createNewSession() {
+      const sessionId = generateSessionId();
+      const session = {
+        id: sessionId,
+        title: 'New chat',
+        titleChanged: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      sessions.unshift(session); // Add to beginning
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      localStorage.setItem(`mv_chat_${sessionId}`, JSON.stringify([]));
+
+      setActiveSession(sessionId);
+      renderSessions();
+      showWelcomeMode();
+    }
+
+    function setActiveSession(sessionId) {
+      activeSessionId = sessionId;
+      chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+
+      if (chatHistory.length > 0) {
+        showChatMode();
+        renderChatHistory();
+      } else {
+        showWelcomeMode();
       }
+    }
 
-      btn.disabled = true;
-      btn.textContent = 'Generating...';
-      hideMessage();
+    function updateSessionTitle(sessionId, title) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session && !session.titleChanged) {
+        session.title = title;
+        session.titleChanged = true;
+        session.updatedAt = new Date().toISOString();
+        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        renderSessions();
+      }
+    }
+
+    function deleteSession(sessionId) {
+      if (sessions.length <= 1) return; // Keep at least one session
+
+      sessions = sessions.filter(s => s.id !== sessionId);
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      localStorage.removeItem(`mv_chat_${sessionId}`);
+
+      if (activeSessionId === sessionId) {
+        setActiveSession(sessions[0].id);
+      }
+      renderSessions();
+    }
+
+    function renameSession(sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (!session) return;
+
+      const newTitle = prompt('Rename chat', session.title);
+      if (newTitle && newTitle.trim()) {
+        session.title = newTitle.trim();
+        session.titleChanged = true;
+        session.updatedAt = new Date().toISOString();
+        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        renderSessions();
+      }
+    }
+
+    function renderSessions() {
+      const container = document.getElementById('chat-sessions');
+      container.innerHTML = sessions.map(session => `
+        <div class="chat-session ${session.id === activeSessionId ? 'active' : ''}" data-session-id="${session.id}">
+          <div class="chat-session-title">${session.title}</div>
+          <div class="chat-session-actions">
+            <button class="session-btn" onclick="renameSession('${session.id}')" title="Rename">✏️</button>
+            <button class="session-btn" onclick="deleteSession('${session.id}')" title="Delete">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Add click listeners to session items
+      document.querySelectorAll('.chat-session').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (!e.target.closest('.chat-session-actions')) {
+            const sessionId = item.dataset.sessionId;
+            setActiveSession(sessionId);
+            renderSessions();
+          }
+        });
+      });
+    }
+
+    // Sidebar functionality
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+
+    // Initialize interface
+    function initInterface() {
+      if (chatHistory.length > 0) {
+        showChatMode();
+        renderChatHistory();
+      } else {
+        showWelcomeMode();
+      }
+    }
+
+    function showWelcomeMode() {
+      document.getElementById('welcome-section').style.display = 'flex';
+      document.getElementById('chat-section').style.display = 'none';
+      document.getElementById('bottom-input').style.display = 'none';
+    }
+
+    function showChatMode() {
+      document.getElementById('welcome-section').style.display = 'none';
+      document.getElementById('chat-section').style.display = 'flex';
+      document.getElementById('bottom-input').style.display = 'block';
+    }
+
+    function addMessage(role, content, imageUrl = null) {
+      const message = {
+        id: crypto.randomUUID(),
+        role,
+        content,
+        imageUrl,
+        timestamp: new Date().toISOString()
+      };
+      chatHistory.push(message);
+      localStorage.setItem('mv_chat', JSON.stringify(chatHistory));
+
+      if (chatHistory.length === 1) {
+        showChatMode();
+      }
+      renderChatHistory();
+      scrollToBottom();
+    }
+
+    function renderChatHistory() {
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = chatHistory.map(msg => `
+        <div class="message ${msg.role}">
+          <div class="message-content">
+            <div class="message-header">${msg.role === 'user' ? 'You' : 'Mini Visionary'} · ${new Date(msg.timestamp).toLocaleTimeString()}</div>
+            <div class="message-text">${msg.content}</div>
+            ${msg.imageUrl ? `<img src="${msg.imageUrl}" alt="Generated poster" class="message-image">` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function scrollToBottom() {
+      const container = document.getElementById('chat-messages');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function generatePoster(prompt) {
+      if (!prompt.trim() || isGenerating) return;
+
+      addMessage('user', prompt);
+      isGenerating = true;
+
+      // Update button states
+      const buttons = document.querySelectorAll('.generate-btn');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+      });
 
       try {
         const response = await fetch('/api/generate', {
@@ -196,38 +446,250 @@
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ prompt, style })
+          body: JSON.stringify({ prompt, style: 'cinematic' })
         });
 
         const data = await response.json();
 
         if (data.ok) {
-          showMessage('Poster generated successfully!', 'success');
-          // Show preview
-          const previewArea = document.getElementById('preview-area');
-          previewArea.innerHTML = `<img src="${data.image_url}" alt="Generated poster" class="preview-image">`;
-
-          // Add to gallery (simplified for now)
-          loadGallery();
+          addMessage('assistant', '✨ Here\\'s your generated poster!', data.image_url);
         } else {
-          showMessage(data.error || 'Failed to generate poster', 'error');
+          addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
         }
       } catch (error) {
-        showMessage('Network error. Please try again.', 'error');
+        addMessage('assistant', `⚠️ Network error: ${error.message}`);
       } finally {
-        btn.disabled = false;
-        btn.textContent = 'Generate Poster';
-      }
-    });
+        isGenerating = false;
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = 'Generate';
+        });
 
-    // Load gallery (placeholder)
-    function loadGallery() {
-      // This would normally load from the API
-      showMessage('Gallery loading is not implemented yet. This is a demo interface.', 'info');
+        // Clear inputs
+        const mainInput = document.getElementById('main-input');
+        const chatInput = document.getElementById('chat-input');
+        if (mainInput) mainInput.value = '';
+        if (chatInput) chatInput.value = '';
+      }
     }
 
+    // Event listeners
+    const mainBtn = document.getElementById('main-generate-btn');
+    const chatBtn = document.getElementById('chat-generate-btn');
+
+    if (mainBtn) {
+      mainBtn.addEventListener('click', () => {
+        const prompt = document.getElementById('main-input').value.trim();
+        if (prompt) generatePoster(prompt);
+      });
+    }
+
+    if (chatBtn) {
+      chatBtn.addEventListener('click', () => {
+        const prompt = document.getElementById('chat-input').value.trim();
+        if (prompt) generatePoster(prompt);
+      });
+    }
+
+    // Enter key handling
+    function handleEnterKey(e, inputId) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const prompt = document.getElementById(inputId).value.trim();
+        if (prompt) generatePoster(prompt);
+      }
+    }
+
+    const mainInput = document.getElementById('main-input');
+    const chatInput = document.getElementById('chat-input');
+
+    if (mainInput) mainInput.addEventListener('keydown', (e) => handleEnterKey(e, 'main-input'));
+    if (chatInput) chatInput.addEventListener('keydown', (e) => handleEnterKey(e, 'chat-input'));
+
+    // Quick action chips
+    document.querySelectorAll('.action-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const prompt = chip.dataset.prompt;
+        const mainInput = document.getElementById('main-input');
+        if (mainInput) {
+          mainInput.value = prompt;
+          mainInput.focus();
+        }
+      });
+    });
+
+    // Multi-session management
+    let sessions = JSON.parse(localStorage.getItem('mv_sessions') || '[]');
+    let currentSessionId = localStorage.getItem('mv_current_session') || null;
+
+    function generateSessionId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function createNewSession() {
+      const sessionId = generateSessionId();
+      const session = {
+        id: sessionId,
+        title: 'New chat',
+        titleChanged: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      sessions.unshift(session);
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      switchToSession(sessionId);
+      renderSessions();
+    }
+
+    function switchToSession(sessionId) {
+      // Save current chat history to session-specific storage
+      if (currentSessionId && chatHistory.length > 0) {
+        localStorage.setItem(`mv_chat_${currentSessionId}`, JSON.stringify(chatHistory));
+      }
+
+      currentSessionId = sessionId;
+      localStorage.setItem('mv_current_session', sessionId);
+
+      // Load chat history for this session
+      chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+
+      if (chatHistory.length === 0) {
+        showWelcomeMode();
+      } else {
+        showChatMode();
+      }
+
+      renderChatHistory();
+      renderSessions();
+    }
+
+    function deleteSession(sessionId) {
+      if (sessions.length <= 1) return; // Keep at least one session
+
+      sessions = sessions.filter(s => s.id !== sessionId);
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      localStorage.removeItem(`mv_chat_${sessionId}`);
+
+      if (currentSessionId === sessionId) {
+        switchToSession(sessions[0].id);
+      }
+
+      renderSessions();
+    }
+
+    function renameSession(sessionId, newTitle) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session) {
+        session.title = newTitle.trim() || 'Untitled';
+        session.titleChanged = true;
+        session.updatedAt = new Date().toISOString();
+        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        renderSessions();
+      }
+    }
+
+    function updateSessionTitle(sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      const sessionMessages = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+
+      if (session && !session.titleChanged && sessionMessages.length > 0) {
+        const firstUserMessage = sessionMessages.find(m => m.role === 'user');
+        if (firstUserMessage) {
+          session.title = firstUserMessage.content.slice(0, 30) + (firstUserMessage.content.length > 30 ? '...' : '');
+          session.updatedAt = new Date().toISOString();
+          localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        }
+      }
+    }
+
+    function renderSessions() {
+      const container = document.getElementById('chat-sessions');
+      container.innerHTML = sessions.map(session => `
+        <div class="session-item ${session.id === currentSessionId ? 'active' : ''}" data-session-id="${session.id}">
+          <div class="session-content" onclick="switchToSession('${session.id}')">
+            <div class="session-title">${session.title}</div>
+            <div class="session-date">${new Date(session.updatedAt).toLocaleDateString()}</div>
+          </div>
+          <div class="session-actions">
+            <button class="session-action" onclick="event.stopPropagation(); promptRename('${session.id}')" title="Rename">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="m18.5 2.5-8 8v4h4l8-8a2 2 0 0 0 0-2.83z"></path>
+              </svg>
+            </button>
+            <button class="session-action delete" onclick="event.stopPropagation(); deleteSession('${session.id}')" title="Delete" ${sessions.length <= 1 ? 'disabled' : ''}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"></polyline>
+                <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function promptRename(sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session) {
+        const newTitle = prompt('Enter new chat name:', session.title);
+        if (newTitle !== null) {
+          renameSession(sessionId, newTitle);
+        }
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isOpen = sidebar.classList.contains('open');
+
+      if (isOpen) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+      }
+    }
+
+    // Override addMessage to update session title
+    const originalAddMessage = addMessage;
+    addMessage = function(role, content, imageUrl) {
+      originalAddMessage(role, content, imageUrl);
+
+      if (currentSessionId && role === 'user') {
+        updateSessionTitle(currentSessionId);
+        renderSessions();
+      }
+
+      // Save to session-specific storage
+      if (currentSessionId) {
+        localStorage.setItem(`mv_chat_${currentSessionId}`, JSON.stringify(chatHistory));
+      }
+    };
+
+    // Initialize sessions
+    function initSessions() {
+      if (sessions.length === 0) {
+        createNewSession();
+      } else {
+        if (!currentSessionId || !sessions.find(s => s.id === currentSessionId)) {
+          currentSessionId = sessions[0].id;
+          localStorage.setItem('mv_current_session', currentSessionId);
+        }
+        switchToSession(currentSessionId);
+      }
+      renderSessions();
+    }
+
+    // Event listeners for sidebar
+    document.getElementById('new-chat-btn').addEventListener('click', createNewSession);
+    document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+    document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
+
     // Initialize
-    hideMessage();
+    initSessions();
+    initInterface();
   </script>
 </body>
 </html>
