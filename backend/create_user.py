@@ -24,7 +24,7 @@ def create_user_account(display_name, email, password):
             display_name=display_name,
             email=email.lower().strip(),
             password_hash=hashed,
-            credits=10
+            credits=20
         )
         s.add(user)
         s.commit()
