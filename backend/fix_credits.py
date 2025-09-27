@@ -25,7 +25,7 @@ def fix_user_credits(email, new_credits):
 
 if __name__ == "__main__":
     # Fix credits for the user
-    success = fix_user_credits("jaaye@test.com", 20)
+    success = fix_user_credits("acelenene@gmail.com", 20)
     if success:
         print("✅ Credits fixed successfully!")
     else:

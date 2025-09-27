@@ -67,15 +67,14 @@
     .field.pwd { position: relative; }
     .field.pwd .eye {
       position: absolute; right: 8px; top: 32px;
-      background: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; font-size: 1rem; cursor: pointer; opacity: .75;
+      font-size: 1rem; cursor: pointer; opacity: .75;
       z-index: 1000; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      border-radius: 6px; transition: all 0.2s ease;
+      transition: all 0.2s ease;
       pointer-events: auto;
     }
     .field.pwd .eye.on { opacity: 1; }
     .field.pwd .eye:hover {
       opacity: 1;
-      background-color: rgba(0, 0, 0, 0.05);
     }
     .field.pwd .input {
       padding-right: 48px; /* Add padding to prevent text overlapping the eye */
