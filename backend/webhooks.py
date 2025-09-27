@@ -1,9 +1,13 @@
 # webhooks.py
 import os
 import stripe
-from flask import Blueprint, request, jsonify
+import logging
+from flask import Blueprint, request, jsonify, abort
 from models import get_session, User, CreditEventType
 from wallet import grant_credits
+
+# Set up logging
+log = logging.getLogger("webhooks")
 
 bp = Blueprint("webhooks", __name__, url_prefix="/api")
 
@@ -22,6 +26,9 @@ CREDIT_MAP = {
     PRICE_STANDARD: 100,
     PRICE_STUDIO:   400,
 }
+
+# --- Resend config ---
+RESEND_WEBHOOK_SECRET = os.getenv("RESEND_WEBHOOK_SECRET", "").strip()
 
 # ---- Simple in-memory idempotency (for prod, store in DB) ----
 _PROCESSED: set[str] = set()
@@ -158,3 +165,59 @@ def stripe_webhook():
 
     # --- 4) Other events: acknowledge ---
     return ("", 200)
+
+@bp.post("/resend-webhook")
+def resend_webhook():
+    """Resend webhook handler: email delivery tracking."""
+    if not RESEND_WEBHOOK_SECRET:
+        # Skip webhook verification if secret not configured (dev mode)
+        log.warning("RESEND_WEBHOOK_SECRET not configured - webhook verification disabled")
+        payload = request.get_json()
+        event_type = payload.get("type") if payload else "unknown"
+        data = payload.get("data", {}) if payload else {}
+    else:
+        # Production: verify webhook signature using svix
+        try:
+            from svix.webhooks import Webhook, WebhookVerificationError
+        except ImportError:
+            log.error("svix library not installed - run: pip install svix")
+            return jsonify(ok=False, error="svix_not_installed"), 500
+
+        payload = request.data
+        headers = {
+            "svix-id": request.headers.get("svix-id", ""),
+            "svix-timestamp": request.headers.get("svix-timestamp", ""),
+            "svix-signature": request.headers.get("svix-signature", ""),
+        }
+
+        try:
+            wh = Webhook(RESEND_WEBHOOK_SECRET)
+            event = wh.verify(payload, headers)  # verified JSON dict
+        except WebhookVerificationError as e:
+            log.warning("Resend webhook signature invalid: %s", e)
+            return abort(400)
+
+        event_type = event.get("type")
+        data = event.get("data", {})
+
+    # Handle different email events
+    if event_type == "email.sent":
+        log.info("📨 Email sent: %s", data)
+    elif event_type == "email.delivered":
+        log.info("📬 Email delivered: %s", data)
+    elif event_type == "email.bounced":
+        log.info("❌ Email bounced: %s", data)
+        # TODO: Optionally suppress bounced email addresses in your database
+    elif event_type == "email.complained":
+        log.info("⚠️ Email complaint: %s", data)
+        # TODO: Handle spam complaints by suppressing email addresses
+    elif event_type == "email.opened":
+        log.info("👀 Email opened: %s", data)
+        # TODO: Track email open rates in your database
+    elif event_type == "email.clicked":
+        log.info("🔗 Link clicked: %s", data)
+        # TODO: Track email click rates in your database
+    else:
+        log.info("ℹ️ Unknown Resend event: %s", event_type)
+
+    return "", 200
