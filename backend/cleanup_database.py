@@ -56,6 +56,9 @@ def cleanup_database():
 
                     # Add stripe customer ID for payments (if not exists)
                     "ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255)",
+
+                    # Add avatar URL for user profiles (if not exists)
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255)",
                 ]
 
                 # Execute cleanup queries
