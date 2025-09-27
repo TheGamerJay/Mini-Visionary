@@ -321,8 +321,8 @@
         };
         if(payload.password.length < 8) throw new Error("Password must be at least 8 characters.");
         if(!$("#rg-terms").checked) {
-          const confirmed = confirm("By checking this box, you acknowledge that you have read, understood, and agree to be bound by Mini Visionary's Terms of Service and Privacy Policy. This agreement will govern your use of our services.");
-          if (!confirmed) throw new Error("Please accept the Terms & Privacy.");
+          const confirmed = confirm("You must agree to the Terms & Conditions and Privacy Policy to create an account.\n\nBy checking this box, you acknowledge that you have read, understood, and agree to be bound by Mini Visionary's Terms & Conditions and Privacy Policy.\n\nDo you agree to the terms?");
+          if (!confirmed) throw new Error("You must accept the Terms & Conditions and Privacy Policy to continue.");
           $("#rg-terms").checked = true;
         }
         const res = await API.register(payload);
