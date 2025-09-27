@@ -65,16 +65,32 @@
     /* Password field improvements */
     .field.pwd { position: relative; }
     .field.pwd .eye {
-      position: absolute; right: 8px; top: 32px;
-      font-size: 1rem; cursor: pointer; opacity: .75;
-      z-index: 1000; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s ease;
-      pointer-events: auto;
-      user-select: none;
+      position: absolute !important;
+      right: 8px !important;
+      top: 32px !important;
+      font-size: 1rem !important;
+      cursor: pointer !important;
+      opacity: .75 !important;
+      z-index: 1000 !important;
+      width: 36px !important;
+      height: 36px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      pointer-events: auto !important;
+      user-select: none !important;
+      background: none !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
-    .field.pwd .eye.on { opacity: 1; }
+    .field.pwd .eye.on { opacity: 1 !important; }
     .field.pwd .eye:hover {
-      opacity: 1;
+      opacity: 1 !important;
+      background: none !important;
+      border: none !important;
     }
     .field.pwd .input {
       padding-right: 48px; /* Add padding to prevent text overlapping the eye */
