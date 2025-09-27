@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Visionary — AI Poster Generator</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover{color:var(--text); background:var(--sunken)}
+    .user-info{display:flex; align-items:center; gap:12px; color:var(--muted); font-size:14px}
+    .logout-btn{background:none; border:1px solid var(--ring); color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px}
+    .logout-btn:hover{color:var(--text); border-color:var(--text)}
+
+    .container{max-width:1200px; margin:0 auto; padding:24px}
+    .main-grid{display:grid; grid-template-columns:1fr 400px; gap:32px; align-items:start}
+    .generator{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px}
+    .preview{background:var(--sunken); border:1px solid var(--ring); border-radius:16px; padding:24px; text-align:center}
+
+    h1{margin:0 0 8px; font-size:28px; font-weight:800}
+    .subtitle{color:var(--muted); margin-bottom:24px}
+
+    .form-group{margin-bottom:20px}
+    .label{display:block; margin-bottom:8px; font-weight:600; color:var(--text)}
+    .input, .textarea{width:100%; padding:12px; border:1px solid var(--ring); border-radius:8px; background:var(--sunken); color:var(--text); font-family:inherit}
+    .input:focus, .textarea:focus{outline:none; border-color:var(--line)}
+    .textarea{min-height:120px; resize:vertical}
+
+    .btn{display:inline-block; padding:12px 24px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; text-decoration:none; transition:all 0.2s}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:0.6; cursor:not-allowed; transform:none}
+
+    .preview-area{width:100%; height:400px; background:var(--bg-0); border:2px dashed var(--ring); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--muted)}
+    .preview-image{max-width:100%; max-height:100%; border-radius:8px}
+
+    .gallery{margin-top:32px}
+    .gallery h2{color:var(--text); margin-bottom:16px}
+    .gallery-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px}
+    .gallery-item{background:var(--sunken); border:1px solid var(--ring); border-radius:8px; padding:12px; text-align:center}
+    .gallery-item img{width:100%; height:120px; object-fit:cover; border-radius:4px; margin-bottom:8px}
+    .gallery-item .title{font-size:14px; font-weight:600; margin-bottom:4px}
+    .gallery-item .date{font-size:12px; color:var(--muted)}
+
+    .msg{padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:14px}
+    .msg.success{background:#0f2b22; color:#bbf7d0; border:1px solid #14532d}
+    .msg.error{background:#3b1a1a; color:#fecaca; border:1px solid #7f1d1d}
+    .msg.info{background:#1e293b; color:#cbd5e1; border:1px solid #475569}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/" class="logo">
+      <img src="/logo.png" alt="Mini Visionary Logo">
+      Mini Visionary
+    </a>
+    <nav class="nav">
+      <a href="/generate">Generate</a>
+      <a href="/gallery">Gallery</a>
+      <a href="/library">Library</a>
+    </nav>
+    <div class="user-info">
+      <span id="user-name">Loading...</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="main-grid">
+      <div class="generator">
+        <h1>AI Poster Generator</h1>
+        <p class="subtitle">Create stunning movie posters with AI</p>
+
+        <div id="message"></div>
+
+        <form id="generate-form">
+          <div class="form-group">
+            <label class="label" for="prompt">Poster Description</label>
+            <textarea id="prompt" class="textarea" placeholder="Describe your poster idea in detail... (e.g., A sci-fi thriller poster featuring a lone astronaut on a mysterious alien planet with dramatic lighting)" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="style">Style</label>
+            <select id="style" class="input">
+              <option value="cinematic">Cinematic Movie Poster</option>
+              <option value="vintage">Vintage Movie Poster</option>
+              <option value="modern">Modern Minimalist</option>
+              <option value="horror">Horror Movie Poster</option>
+              <option value="comedy">Comedy Movie Poster</option>
+              <option value="action">Action Movie Poster</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn" id="generate-btn">Generate Poster</button>
+        </form>
+      </div>
+
+      <div class="preview">
+        <h3>Preview</h3>
+        <div class="preview-area" id="preview-area">
+          <span>Your generated poster will appear here</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <h2>Your Recent Posters</h2>
+      <div class="gallery-grid" id="gallery-grid">
+        <div class="gallery-item">
+          <div style="width:100%; height:120px; background:var(--bg-0); border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--muted); margin-bottom:8px">No posters yet</div>
+          <div class="title">Create your first poster!</div>
+          <div class="date">Get started above</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      window.location.href = '/auth.html#login';
+    }
+
+    // Load user info
+    fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok && data.user) {
+        document.getElementById('user-name').textContent = data.user.display_name || 'User';
+      } else {
+        logout();
+      }
+    })
+    .catch(() => logout());
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('jwt_token');
+      window.location.href = '/auth.html#login';
+    }
+
+    // Show message
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.className = `msg ${type}`;
+      msg.textContent = text;
+      msg.style.display = 'block';
+    }
+
+    // Hide message
+    function hideMessage() {
+      document.getElementById('message').style.display = 'none';
+    }
+
+    // Generate poster form
+    document.getElementById('generate-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('generate-btn');
+      const prompt = document.getElementById('prompt').value.trim();
+      const style = document.getElementById('style').value;
+
+      if (!prompt) {
+        showMessage('Please enter a poster description', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+      hideMessage();
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ prompt, style })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          showMessage('Poster generated successfully!', 'success');
+          // Show preview
+          const previewArea = document.getElementById('preview-area');
+          previewArea.innerHTML = `<img src="${data.image_url}" alt="Generated poster" class="preview-image">`;
+
+          // Add to gallery (simplified for now)
+          loadGallery();
+        } else {
+          showMessage(data.error || 'Failed to generate poster', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate Poster';
+      }
+    });
+
+    // Load gallery (placeholder)
+    function loadGallery() {
+      // This would normally load from the API
+      showMessage('Gallery loading is not implemented yet. This is a demo interface.', 'info');
+    }
+
+    // Initialize
+    hideMessage();
+  </script>
+</body>
+</html>

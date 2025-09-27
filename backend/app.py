@@ -436,6 +436,79 @@ def storage(key: str):
 def serve_upload(filename):
     return send_from_directory(UPLOAD_DIR, filename, as_attachment=False)
 
+@app.post("/api/generate")
+def generate_poster():
+    """
+    Generate AI poster using OpenAI DALL-E.
+    Body: { prompt: str, style?: str }
+    Requires JWT authentication.
+    """
+    from auth import auth_required
+    from flask import g
+
+    # Check authentication - verify JWT token is present and valid
+    hdr = request.headers.get("Authorization", "")
+    if not hdr.startswith("Bearer "):
+        return {"ok": False, "error": "authentication_required"}, 401
+
+    token = hdr.split(" ", 1)[1].strip()
+    try:
+        import jwt
+        from auth import SECRET
+        payload = jwt.decode(token, SECRET, algorithms=["HS256"])
+        user_id = payload.get("sub")
+        if not user_id:
+            return {"ok": False, "error": "invalid_token"}, 401
+    except Exception as e:
+        return {"ok": False, "error": "authentication_required"}, 401
+
+    ip = request.headers.get("x-forwarded-for", request.remote_addr or "unknown")
+    if rate_limited(ip):
+        return {"ok": False, "error": "rate_limited"}, 429
+
+    if not oai_client:
+        return {"ok": False, "error": "openai_not_configured"}, 503
+
+    d = request.get_json(force=True, silent=True) or {}
+    prompt = (d.get("prompt") or "").strip()
+    style = (d.get("style") or "cinematic").strip()
+
+    if not prompt:
+        return {"ok": False, "error": "prompt_required"}, 400
+
+    # Style-specific prompt enhancement
+    style_prompts = {
+        "cinematic": "cinematic movie poster style, dramatic lighting, professional movie poster design",
+        "vintage": "vintage retro movie poster style, aged paper texture, classic typography",
+        "modern": "modern minimalist poster design, clean typography, contemporary aesthetic",
+        "horror": "horror movie poster style, dark atmosphere, scary elements",
+        "comedy": "comedy movie poster style, bright colors, playful elements",
+        "action": "action movie poster style, explosive effects, dynamic composition"
+    }
+
+    style_enhancement = style_prompts.get(style, style_prompts["cinematic"])
+    enhanced_prompt = f"{prompt}, {style_enhancement}, high quality, detailed"
+
+    try:
+        # Generate image with OpenAI DALL-E
+        response = oai_client.images.generate(
+            model="dall-e-3",
+            prompt=enhanced_prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1
+        )
+
+        image_url = response.data[0].url
+
+        # TODO: Save to database and associate with user
+        # For now, just return the URL
+
+        return {"ok": True, "image_url": image_url, "prompt": prompt, "style": style}
+
+    except Exception as e:
+        return {"ok": False, "error": f"generation_failed: {str(e)}"}, 500
+
 @app.post("/api/poster/add-text")
 def add_text_to_poster():
     """
@@ -501,11 +574,21 @@ def privacy_page():
     """Serve privacy.html directly"""
     return send_from_directory(app.static_folder, 'privacy.html')
 
-# ---------------------- DASHBOARD ROUTE ----------------------
+# ---------------------- DASHBOARD ROUTES ----------------------
 @app.route('/dashboard')
 def dashboard_redirect():
     """Redirect /dashboard to user dashboard (not homepage)"""
-    return f'<script>window.location.href="/create";</script>'
+    return f'<script>window.location.href="/generate";</script>'
+
+@app.route('/create')
+def create_redirect():
+    """Redirect /create to poster generation dashboard"""
+    return f'<script>window.location.href="/generate";</script>'
+
+@app.route('/generate')
+def generate_page():
+    """Serve the AI poster generation dashboard"""
+    return send_from_directory(app.static_folder, 'generate.html')
 
 # SPA routes are handled by serve_spa.py to avoid duplication
 
