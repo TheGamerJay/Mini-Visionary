@@ -117,14 +117,31 @@ def signup():
 
 @bp.post("/login")
 def login():
+    # Debug logging
+    print(f"🔍 LOGIN DEBUG:")
+    print(f"  Headers: {dict(request.headers)}")
+    print(f"  Content-Type: {request.content_type}")
+    print(f"  Raw data: {request.data}")
+
     data = request.get_json() or {}
+    print(f"  Parsed JSON: {data}")
+
     email = (data.get("email") or "").lower().strip()
     password = data.get("password") or ""
+    print(f"  Email: '{email}', Password length: {len(password)}")
 
     user = get_user_by_email(email)
-    if not user or not verify_password(user.password_hash, password):
+    print(f"  User found: {user is not None}")
+
+    if not user:
+        print(f"  ❌ No user found for email: {email}")
         return jsonify(ok=False, error="invalid_credentials"), 401
 
+    if not verify_password(user.password_hash, password):
+        print(f"  ❌ Password verification failed for user: {email}")
+        return jsonify(ok=False, error="invalid_credentials"), 401
+
+    print(f"  ✅ Login successful for user: {email}")
     token = sign_jwt(user.id, email)
     return jsonify(ok=True, token=token, user={
         "id": user.id,
