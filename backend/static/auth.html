@@ -66,11 +66,19 @@
     /* Password field improvements */
     .field.pwd { position: relative; }
     .field.pwd .eye {
-      position: absolute; right: .5rem; top: 50%; transform: translateY(-50%);
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
       background: none; border: 0; font-size: 1rem; cursor: pointer; opacity: .75;
-      z-index: 10; width: 28px; height: 28px; display: grid; place-items: center;
+      z-index: 100; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; transition: all 0.2s ease;
     }
     .field.pwd .eye.on { opacity: 1; }
+    .field.pwd .eye:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    .field.pwd .input {
+      padding-right: 48px; /* Add padding to prevent text overlapping the eye */
+    }
     .field.pwd .caps-hint {
       position: absolute; right: 2.25rem; top: 100%; margin-top: .25rem;
       font-size: .75rem; color: #f59e0b; display: none;

@@ -284,6 +284,9 @@
     // Check authentication
     const token = localStorage.getItem('jwt_token');
     console.log('Retrieved token from localStorage:', token ? `${token.substring(0, 20)}...` : 'null');
+    console.log('Current page URL:', window.location.href);
+    console.log('localStorage contents:', Object.keys(localStorage));
+
     if (!token) {
       console.log('No token found, redirecting to login');
       window.location.href = '/auth.html#login';
@@ -306,22 +309,24 @@
       .then(data => {
         console.log('Auth check response data:', data);
         if (data.ok && data.user) {
-          document.getElementById('user-name').textContent = data.user.display_name || 'User';
-          document.getElementById('user-credits').textContent = data.user.credits || 0;
-          document.getElementById('display-name').textContent = data.user.display_name || 'User';
+          // Safely update DOM elements if they exist
+          const userNameEl = document.getElementById('user-name');
+          const userCreditsEl = document.getElementById('user-credits');
+          const displayNameEl = document.getElementById('display-name');
+
+          if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
+          if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
+          if (displayNameEl) displayNameEl.textContent = data.user.display_name || 'User';
+
           console.log('Authentication successful, staying on generate page');
         } else {
           console.log('Auth check failed, response not ok:', data);
-          // Longer timeout to debug - DON'T logout immediately
-          console.log('Delaying logout for 10 seconds to allow debugging...');
-          setTimeout(() => logout(), 10000);
+          logout();
         }
       })
       .catch(err => {
         console.log('Auth check error:', err);
-        // Longer timeout to debug - DON'T logout immediately
-        console.log('Delaying logout for 10 seconds to allow debugging...');
-        setTimeout(() => logout(), 10000);
+        logout();
       });
     }, 500); // Small delay to ensure page is fully loaded
     }
