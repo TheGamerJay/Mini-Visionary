@@ -258,6 +258,17 @@
     document.addEventListener('DOMContentLoaded', () => {
       bindEye("#li-pass","#li-eye");
       bindEye("#rg-pass","#rg-eye");
+
+      // Terms checkbox confirmation
+      const termsCheckbox = $("#rg-terms");
+      termsCheckbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          const confirmed = confirm("By checking this box, you acknowledge that you have read, understood, and agree to be bound by Mini Visionary's Terms & Conditions and Privacy Policy.\n\nDo you agree to these terms?");
+          if (!confirmed) {
+            e.target.checked = false;
+          }
+        }
+      });
     });
 
     // ===== API layer (hooked up to Flask backend) =====
