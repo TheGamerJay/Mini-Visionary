@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:minivisionary.soulbridgeai.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
