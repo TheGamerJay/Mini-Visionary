@@ -301,6 +301,8 @@
         eye.setAttribute('aria-pressed', on ? 'true' : 'false');
         eye.setAttribute('aria-label', on ? 'Hide password' : 'Show password');
         eye.classList.toggle('on', on);
+        // Update icon: eye when visible, monkey when hidden
+        eye.textContent = on ? '👁️' : '🙈';
       }
 
       // Click toggles visibility
