@@ -307,26 +307,6 @@
         input.focus({ preventScroll: true });
       });
 
-      // Press-and-hold to peek (mouse or touch)
-      const downEvents = ['pointerdown','touchstart','mousedown'];
-      const upEvents   = ['pointerup','touchend','mouseup','pointercancel','mouseleave'];
-      let holding = false;
-
-      function holdStart(e) {
-        if (eye.disabled) return;
-        holding = true;
-        setVisible(true);
-        e.preventDefault();
-      }
-      function holdEnd() {
-        if (!holding) return;
-        holding = false;
-        setVisible(false);
-      }
-
-      downEvents.forEach(ev => eye.addEventListener(ev, holdStart));
-      upEvents.forEach(ev => eye.addEventListener(ev, holdEnd));
-
       // Caps Lock indicator
       let capsBadge;
       function ensureCapsBadge() {
