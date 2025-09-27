@@ -289,6 +289,16 @@
       const input = $(inputId);
       const eye = $(eyeId);
 
+      // Debug logging
+      console.log(`Setting up password field: ${inputId} + ${eyeId}`);
+      console.log('Input element:', input);
+      console.log('Eye element:', eye);
+
+      if (!input || !eye) {
+        console.error(`Failed to find elements: input=${!!input}, eye=${!!eye}`);
+        return;
+      }
+
       function setVisible(on) {
         const selStart = input.selectionStart, selEnd = input.selectionEnd;
         input.type = on ? 'text' : 'password';
@@ -300,7 +310,8 @@
       }
 
       // Click toggles visibility
-      eye.addEventListener('click', () => {
+      eye.addEventListener('click', (e) => {
+        console.log('Eye button clicked!', e);
         setVisible(input.type === 'password');
         input.focus({ preventScroll: true });
       });
