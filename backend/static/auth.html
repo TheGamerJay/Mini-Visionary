@@ -292,8 +292,10 @@
       if (!input || !eye) return;
 
       function setVisible(on) {
+        console.log('setVisible called with:', on, 'changing input type to:', on ? 'text' : 'password');
         const selStart = input.selectionStart, selEnd = input.selectionEnd;
         input.type = on ? 'text' : 'password';
+        console.log('input.type is now:', input.type);
         // restore caret/selection position
         try { input.setSelectionRange(selStart, selEnd); } catch {}
         eye.setAttribute('aria-pressed', on ? 'true' : 'false');
