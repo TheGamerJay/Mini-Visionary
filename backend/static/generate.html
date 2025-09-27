@@ -53,7 +53,7 @@
     .session-action.delete:hover{color:#ef4444}
     .sidebar-footer{padding:16px; border-top:1px solid var(--ring); margin-top:auto; text-align:center}
     .sidebar-brand{font-weight:700; color:var(--text); margin-bottom:8px}
-    .sidebar-logo{width:48px; height:48px; border-radius:12px; margin:8px auto; display:block}
+    .sidebar-logo{width:144px; height:144px; border-radius:24px; margin:16px auto; display:block}
     .sidebar-tagline{font-size:12px; color:var(--muted)}
     .sidebar-overlay{position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:150; opacity:0; visibility:hidden; transition:all 0.3s ease}
     .sidebar-overlay.show{opacity:1; visibility:visible}
@@ -190,9 +190,7 @@
     <div class="sidebar-title">Chats</div>
     <div id="chat-sessions" class="chat-sessions"></div>
     <div class="sidebar-footer">
-      <div class="sidebar-brand">Mini Visionary</div>
       <img src="/logo.png" alt="Mini Visionary Logo" class="sidebar-logo">
-      <div class="sidebar-tagline">You Envision it, We Generate It</div>
     </div>
   </div>
 
@@ -529,7 +527,7 @@
         const data = await response.json();
 
         if (data.ok) {
-          addMessage('assistant', '✨ Here\\'s your generated poster!', data.image_url);
+          addMessage('assistant', '✨ Here\'s your generated poster!', data.image_url);
           addToImageGrid(data.image_url, prompt);
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
@@ -883,7 +881,7 @@
         const data = await response.json();
 
         if (data.ok) {
-          addMessage('assistant', '✨ Here\\'s your generated poster!', data.image_url);
+          addMessage('assistant', '✨ Here\'s your generated poster!', data.image_url);
           addToImageGrid(data.image_url, prompt);
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
