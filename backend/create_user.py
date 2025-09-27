@@ -33,8 +33,8 @@ def create_user_account(display_name, email, password):
         return user
 
 if __name__ == "__main__":
-    # Create account with the problematic password
-    user = create_user_account("Test User", "jaaye@test.com", "Yariel@13")
+    # Create account for the real user
+    user = create_user_account("Jaaye", "aceelnene@gmail.com", "Yariel@13")
     print(f"User created successfully!")
     print(f"Email: {user.email}")
     print(f"Password: Yariel@13")
