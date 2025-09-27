@@ -63,10 +63,17 @@
     }
     .input:focus{border-color:#60a5fa; box-shadow:0 0 0 4px rgba(96,165,250,.15)}
     .pwd{position:relative}
-    .eye{
-      position:absolute; right:8px; top:calc(50% + 12px); transform:translateY(-50%);
-      width:28px; height:28px; display:grid; place-items:center;
-      cursor:pointer; z-index:10; border:none; background:none;
+    /* Password field improvements */
+    .field.pwd { position: relative; }
+    .field.pwd .eye {
+      position: absolute; right: .5rem; top: 50%; transform: translateY(-50%);
+      background: none; border: 0; font-size: 1rem; cursor: pointer; opacity: .75;
+      z-index: 10; width: 28px; height: 28px; display: grid; place-items: center;
+    }
+    .field.pwd .eye.on { opacity: 1; }
+    .field.pwd .caps-hint {
+      position: absolute; right: 2.25rem; top: 100%; margin-top: .25rem;
+      font-size: .75rem; color: #f59e0b; display: none;
     }
     .row{display:flex; gap:12px; align-items:center; justify-content:space-between}
     .hint{color:var(--muted); font-size:13px}
@@ -130,8 +137,18 @@
 
           <div class="field pwd">
             <label class="label" for="li-pass">Password</label>
-            <input id="li-pass" class="input" type="password" placeholder="Enter your password" autocomplete="current-password" required />
-            <button type="button" id="li-eye" class="eye" aria-label="Show password">👁️</button>
+            <input id="li-pass"
+                   class="input"
+                   type="password"
+                   placeholder="Enter your password"
+                   autocomplete="current-password"
+                   required>
+            <button type="button"
+                    id="li-eye"
+                    class="eye"
+                    aria-label="Show password"
+                    aria-controls="li-pass"
+                    aria-pressed="false">👁️</button>
           </div>
 
           <button class="btn" id="btn-login" type="submit" style="margin-top:8px">Login</button>
@@ -243,20 +260,68 @@
     // Year
     $("#y").textContent = new Date().getFullYear();
 
-    // Password toggles (single eye each)
-    const bindEye = (inputSel, eyeSel) => {
-      const i = $(inputSel), b = $(eyeSel);
-      b.addEventListener("click", ()=>{
-        const showPwd = i.type === "password";
-        i.type = showPwd ? "text" : "password";
-        b.textContent = showPwd ? "🙈" : "👁️";
-        b.setAttribute("aria-label", showPwd ? "Hide password" : "Show password");
+    // Enhanced password field functionality
+    const enhancedPasswordField = (inputId, eyeId) => {
+      const input = $(inputId);
+      const eye = $(eyeId);
+
+      function setVisible(on) {
+        const selStart = input.selectionStart, selEnd = input.selectionEnd;
+        input.type = on ? 'text' : 'password';
+        // restore caret/selection position
+        try { input.setSelectionRange(selStart, selEnd); } catch {}
+        eye.setAttribute('aria-pressed', on ? 'true' : 'false');
+        eye.setAttribute('aria-label', on ? 'Hide password' : 'Show password');
+        eye.classList.toggle('on', on);
+      }
+
+      // Click toggles visibility
+      eye.addEventListener('click', () => {
+        setVisible(input.type === 'password');
+        input.focus({ preventScroll: true });
       });
+
+      // Press-and-hold to peek (mouse or touch)
+      const downEvents = ['pointerdown','touchstart','mousedown'];
+      const upEvents   = ['pointerup','touchend','mouseup','pointercancel','mouseleave'];
+      let holding = false;
+
+      function holdStart(e) {
+        if (eye.disabled) return;
+        holding = true;
+        setVisible(true);
+        e.preventDefault();
+      }
+      function holdEnd() {
+        if (!holding) return;
+        holding = false;
+        setVisible(false);
+      }
+
+      downEvents.forEach(ev => eye.addEventListener(ev, holdStart));
+      upEvents.forEach(ev => eye.addEventListener(ev, holdEnd));
+
+      // Caps Lock indicator
+      let capsBadge;
+      function ensureCapsBadge() {
+        if (capsBadge) return capsBadge;
+        capsBadge = document.createElement('div');
+        capsBadge.className = 'caps-hint';
+        capsBadge.textContent = 'Caps Lock is ON';
+        input.parentElement.appendChild(capsBadge);
+        return capsBadge;
+      }
+      input.addEventListener('keydown', (e) => {
+        if (e.getModifierState && e.getModifierState('CapsLock')) ensureCapsBadge().style.display = 'block';
+        else if (capsBadge) capsBadge.style.display = 'none';
+      });
+      input.addEventListener('blur', () => { if (capsBadge) capsBadge.style.display = 'none'; });
     };
+
     // Initialize after DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
-      bindEye("#li-pass","#li-eye");
-      bindEye("#rg-pass","#rg-eye");
+      enhancedPasswordField("#li-pass","#li-eye");
+      enhancedPasswordField("#rg-pass","#rg-eye");
 
       // Terms checkbox confirmation
       const termsCheckbox = $("#rg-terms");
