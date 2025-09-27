@@ -173,8 +173,11 @@ def forgot():
             reset_url = f"{PUBLIC_APP_URL}/reset-password?token={reset_token}"
 
             send_reset_email(user.email, reset_url)
-        except MailError:
-            # Log internally if you like; don't leak to client
+            print(f"✅ Password reset email sent to {user.email}")
+        except MailError as e:
+            # Log the error for debugging but don't leak to client
+            print(f"❌ Failed to send reset email to {user.email}: {e}")
+            # For now, we still return success to prevent user enumeration
             pass
 
     # Always return success to prevent user enumeration
