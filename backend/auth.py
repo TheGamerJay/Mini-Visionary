@@ -98,21 +98,34 @@ def sign_jwt(user_id, email: str) -> str:
 def auth_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        current_app.logger.info("[auth_required] Checking auth for %s", request.endpoint)
         hdr = request.headers.get("Authorization", "")
+        current_app.logger.info("[auth_required] Auth header: %s", hdr[:20] + "..." if len(hdr) > 20 else hdr)
+
         if not hdr.startswith("Bearer "):
+            current_app.logger.warning("[auth_required] Missing bearer token")
             raise Unauthorized("Missing bearer token")
+
         token = hdr.split(" ", 1)[1].strip()
+        current_app.logger.info("[auth_required] Token extracted: %s", token[:20] + "...")
+
         try:
             payload = jwt.decode(token, SECRET, algorithms=["HS256"])
+            current_app.logger.info("[auth_required] Token decoded successfully, user_id=%s", payload.get("sub"))
         except jwt.ExpiredSignatureError:
+            current_app.logger.warning("[auth_required] Token expired")
             raise Unauthorized("Token expired")
-        except Exception:
+        except Exception as e:
+            current_app.logger.warning("[auth_required] Invalid token: %s", str(e))
             raise Unauthorized("Invalid token")
 
         with get_session() as s:
             user = s.query(User).filter_by(id=payload.get("sub")).first()
             if not user:
+                current_app.logger.warning("[auth_required] User not found: %s", payload.get("sub"))
                 raise Unauthorized("User not found")
+
+            current_app.logger.info("[auth_required] User found: %s", user.email)
             g.user_id = user.id
             g.user = user
             g.email = user.email
@@ -178,6 +191,7 @@ def login():
 @bp.get("/me")
 @auth_required
 def me():
+    current_app.logger.info("[auth.me] Success for user_id=%s email=%s", g.user.id, g.user.email)
     return jsonify(ok=True, user={
         "id": g.user.id,
         "email": g.user.email,

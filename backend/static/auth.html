@@ -309,8 +309,10 @@
         const email = $("#li-email").value.trim();
         const pass  = $("#li-pass").value;
         const res = await API.login(email, pass);
+        console.log('Login response:', res);
         if (res.ok && res.token) {
           localStorage.setItem("jwt_token", res.token);
+          console.log('Token saved to localStorage:', res.token);
           setMsg("Success! Redirecting…", "ok");
           setTimeout(() => window.location.href = "/generate", 1000);
         } else {
