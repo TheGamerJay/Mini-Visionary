@@ -220,19 +220,23 @@
       <div class="mini-plus-menu" id="main-plus-menu">
         <button class="mini-plus-btn" id="main-plus-btn">+</button>
         <div class="mini-plus-dropdown" id="main-plus-dropdown">
-          <div class="mini-plus-item" onclick="openFromLibrary()">
+          <div class="mini-plus-item" id="from-library-btn">
             <span class="mini-plus-item-icon">📁</span>
             <span>From Library</span>
           </div>
-          <div class="mini-plus-item" onclick="openTemplates()">
+          <div class="mini-plus-item" id="templates-btn">
             <span class="mini-plus-item-icon">📋</span>
             <span>Templates</span>
           </div>
-          <div class="mini-plus-item" onclick="openUploadDialog()">
+          <div class="mini-plus-item" id="upload-image-btn">
             <span class="mini-plus-item-icon">📤</span>
             <span>Upload Image</span>
           </div>
-          <div class="mini-plus-item" onclick="openTextPrompts()">
+          <div class="mini-plus-item" id="add-reference-btn">
+            <span class="mini-plus-item-icon">📎</span>
+            <span>Add Reference Image</span>
+          </div>
+          <div class="mini-plus-item" id="text-prompts-btn">
             <span class="mini-plus-item-icon">💬</span>
             <span>Text Prompts</span>
           </div>
@@ -959,9 +963,12 @@
       const plusBtn = document.querySelector('.mini-plus-btn');
       const dropdown = document.querySelector('.mini-plus-dropdown');
 
+      console.log('Initializing MiniPlusMenu:', plusBtn, dropdown);
+
       if (plusBtn && dropdown) {
         plusBtn.addEventListener('click', (e) => {
           e.stopPropagation();
+          console.log('Plus button clicked, toggling dropdown');
           dropdown.classList.toggle('active');
         });
 
@@ -976,6 +983,7 @@
         document.getElementById('from-library-btn')?.addEventListener('click', openFromLibrary);
         document.getElementById('templates-btn')?.addEventListener('click', openTemplates);
         document.getElementById('upload-image-btn')?.addEventListener('click', openUploadDialog);
+        document.getElementById('add-reference-btn')?.addEventListener('click', openAddReference);
         document.getElementById('text-prompts-btn')?.addEventListener('click', openTextPrompts);
       }
     }
@@ -1025,6 +1033,18 @@
 
       // Trigger the existing reference upload
       const fileInput = document.getElementById('reference-upload');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    function openAddReference() {
+      console.log('openAddReference called');
+      document.querySelector('.mini-plus-dropdown').classList.remove('active');
+
+      // Trigger the main reference upload
+      const fileInput = document.getElementById('main-reference-input');
+      console.log('File input found:', fileInput);
       if (fileInput) {
         fileInput.click();
       }
