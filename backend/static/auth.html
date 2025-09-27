@@ -312,7 +312,7 @@
         if (res.ok && res.token) {
           localStorage.setItem("jwt_token", res.token);
           setMsg("Success! Redirecting…", "ok");
-          setTimeout(() => window.location.href = "/dashboard", 1000);
+          setTimeout(() => window.location.href = "/generate", 1000);
         } else {
           throw new Error(res.error || "Login failed");
         }
