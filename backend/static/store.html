@@ -120,11 +120,7 @@
           <div class="hero-icon"></div>
           <h1>Mini Visionary — Store</h1>
         </div>
-        <p class="hero-subtitle">Create boldly. <span>Believe everything except your eyes.</span></p>
-      </div>
-      <div class="cycle-toggle">
-        <button class="cycle-btn active" id="monthly-btn" onclick="setCycle('monthly')">Monthly</button>
-        <button class="cycle-btn" id="yearly-btn" onclick="setCycle('yearly')">Yearly <span style="font-weight:400">(–15%)</span></button>
+        <p class="hero-subtitle">You Envision it, <span>We Generate it.</span></p>
       </div>
     </div>
 
@@ -132,88 +128,58 @@
     <div class="section">
       <h2 class="section-title">Credit Packs</h2>
       <div class="packages-grid">
-        <div class="package" data-pack="starter">
+        <div class="package">
           <div class="package-header">
-            <div class="package-name">Starter</div>
+            <div class="package-name">Starter Pack</div>
           </div>
-          <div class="package-credits">100 credits</div>
           <div>
-            <div class="package-price">$<span class="price-value">8</span><span class="package-price-suffix"> / mo</span></div>
-            <div class="package-savings savings-text" style="display:none;">You save 15% with yearly billing</div>
+            <div class="package-price">$9.00<span class="package-price-suffix"> USD</span></div>
           </div>
           <ul class="package-features">
             <li>High-res generations</li>
             <li>Priority queue</li>
             <li>Commercial license</li>
           </ul>
-          <button class="package-btn" onclick="checkout('starter')">Subscribe</button>
+          <button class="package-btn" onclick="checkout('starter')">Purchase</button>
         </div>
 
-        <div class="package popular" data-pack="creator">
+        <div class="package">
           <div class="package-header">
-            <div class="package-name">Creator</div>
-            <div class="package-badge">Popular</div>
+            <div class="package-name">Standard Pack</div>
           </div>
-          <div class="package-credits">500 credits</div>
           <div>
-            <div class="package-price">$<span class="price-value">29</span><span class="package-price-suffix"> / mo</span></div>
-            <div class="package-savings savings-text" style="display:none;">You save 15% with yearly billing</div>
+            <div class="package-price">$15.00<span class="package-price-suffix"> USD</span></div>
           </div>
           <ul class="package-features">
             <li>High-res generations</li>
             <li>Priority queue</li>
             <li>Commercial license</li>
           </ul>
-          <button class="package-btn" onclick="checkout('creator')">Subscribe</button>
+          <button class="package-btn" onclick="checkout('standard')">Purchase</button>
         </div>
 
-        <div class="package" data-pack="studio">
+        <div class="package">
           <div class="package-header">
-            <div class="package-name">Studio</div>
+            <div class="package-name">Studio Pack</div>
           </div>
-          <div class="package-credits">2500 credits</div>
           <div>
-            <div class="package-price">$<span class="price-value">109</span><span class="package-price-suffix"> / mo</span></div>
-            <div class="package-savings savings-text" style="display:none;">You save 15% with yearly billing</div>
+            <div class="package-price">$49.00<span class="package-price-suffix"> USD</span></div>
           </div>
           <ul class="package-features">
             <li>High-res generations</li>
             <li>Priority queue</li>
             <li>Commercial license</li>
           </ul>
-          <button class="package-btn" onclick="checkout('studio')">Subscribe</button>
+          <button class="package-btn" onclick="checkout('studio')">Purchase</button>
         </div>
       </div>
     </div>
 
-    <!-- One-time & Extras -->
+    <!-- Ad-Free Subscription -->
     <div class="section">
       <div class="extras-grid">
         <div class="extra-card">
-          <div class="extra-header">
-            <div class="extra-title">One-time Credits (Stripe)</div>
-            <div class="extra-badge">Ad-free</div>
-          </div>
-          <p class="extra-desc">Top up whenever you need more. No subscription required.</p>
-          <div class="onetime-grid">
-            <button class="onetime-btn" onclick="checkout('one100')">
-              <div class="onetime-credits">100 credits</div>
-              <div class="onetime-price">$10</div>
-            </button>
-            <button class="onetime-btn" onclick="checkout('one400')">
-              <div class="onetime-credits">400 credits</div>
-              <div class="onetime-price">$35</div>
-            </button>
-            <button class="onetime-btn" onclick="checkout('one1200')">
-              <div class="onetime-credits">1200 credits</div>
-              <div class="onetime-price">$90</div>
-            </button>
-          </div>
-          <div class="extra-note">Checkout opens a secure Stripe session.</div>
-        </div>
-
-        <div class="extra-card">
-          <div class="extra-title">Ad-Free Workspace</div>
+          <div class="extra-title">Ad-Free Subscription</div>
           <p class="extra-desc">Remove promotional banners and sponsored templates. Cleaner UI, faster focus.</p>
           <ul class="extra-features">
             <li>No ads or promos</li>
@@ -221,8 +187,8 @@
             <li>Early access to new layouts</li>
           </ul>
           <div class="extra-action">
-            <button class="extra-btn" onclick="checkout('adfree')">Enable Ad-Free</button>
-            <span class="extra-note adfree-price">$3 / mo</span>
+            <button class="extra-btn" onclick="checkout('adfree')">Subscribe</button>
+            <span class="extra-note">$4.99 USD / Per month</span>
           </div>
         </div>
       </div>
@@ -261,63 +227,7 @@
       window.location.href = '/auth.html#login';
     }
 
-    // Pricing data
-    const packs = {
-      starter: { credits: 100, price: 8 },
-      creator: { credits: 500, price: 29 },
-      studio: { credits: 2500, price: 109 }
-    };
-
-    let currentCycle = 'monthly';
     let busyCheckout = null;
-
-    function setCycle(cycle) {
-      currentCycle = cycle;
-
-      // Update button states
-      document.getElementById('monthly-btn').classList.toggle('active', cycle === 'monthly');
-      document.getElementById('yearly-btn').classList.toggle('active', cycle === 'yearly');
-
-      // Update prices
-      updatePrices();
-    }
-
-    function updatePrices() {
-      const yearlyDiscount = 0.15;
-
-      Object.keys(packs).forEach(packId => {
-        const pack = packs[packId];
-        const element = document.querySelector(`[data-pack="${packId}"]`);
-        if (!element) return;
-
-        const priceEl = element.querySelector('.price-value');
-        const suffixEl = element.querySelector('.package-price-suffix');
-        const savingsEl = element.querySelector('.savings-text');
-        const btnEl = element.querySelector('.package-btn');
-
-        if (currentCycle === 'monthly') {
-          priceEl.textContent = pack.price;
-          suffixEl.textContent = ' / mo';
-          savingsEl.style.display = 'none';
-          btnEl.textContent = 'Subscribe';
-        } else {
-          const yearlyPrice = Math.round(pack.price * 12 * (1 - yearlyDiscount));
-          priceEl.textContent = yearlyPrice;
-          suffixEl.textContent = ' / yr';
-          savingsEl.style.display = 'block';
-          btnEl.textContent = 'Buy Yearly';
-        }
-      });
-
-      // Update ad-free price
-      const adfreePrice = document.querySelector('.adfree-price');
-      if (currentCycle === 'monthly') {
-        adfreePrice.textContent = '$3 / mo';
-      } else {
-        const yearlyPrice = Math.round(3 * 12 * (1 - yearlyDiscount));
-        adfreePrice.textContent = `$${yearlyPrice} / yr`;
-      }
-    }
 
     async function checkout(packId) {
       if (busyCheckout) return;
@@ -331,15 +241,12 @@
       // Simulate checkout
       await new Promise(r => setTimeout(r, 700));
 
-      alert(`Checkout (demo): ${packId} – ${currentCycle}\n\nIn production, this would open a Stripe checkout session.`);
+      alert(`Checkout (demo): ${packId}\n\nIn production, this would open a Stripe checkout session.`);
 
       btn.disabled = false;
       btn.textContent = originalText;
       busyCheckout = null;
     }
-
-    // Initialize
-    updatePrices();
   </script>
 </body>
 </html>
