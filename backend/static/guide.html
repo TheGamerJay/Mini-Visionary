@@ -91,7 +91,7 @@
       <a href="#store">B - Store</a>
       <a href="#policies">C - Policies</a>
       <a href="#support">D - Support</a>
-      <a href="#faq">FAQ</a>
+      <a href="/static/faq.html">FAQ</a>
     </div>
 
     <div id="getting-started" class="nav-guide-section">
@@ -200,7 +200,7 @@
         <div class="nav-links">
           <div class="nav-link-item">
             <span class="nav-link-label">FAQ</span>
-            <a href="#faq" class="nav-link-path">#faq</a>
+            <a href="/static/faq.html" class="nav-link-path">/static/faq.html</a>
           </div>
         </div>
         <div class="support-card">
@@ -214,136 +214,9 @@
       </div>
     </div>
 
-    <div id="faq" class="faq-section">
-      <h1>❓ Frequently Asked Questions</h1>
-      <p style="margin-bottom:32px;">Quick answers to common questions</p>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>How does the credit system work?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>Each generated image costs 10 credits, no matter the size or features. This keeps things simple and predictable.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>Can I get a refund for unused credits?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>Credits never expire and can be used anytime. Refunds are not typically available unless required by law, but if you have specific concerns, please contact support and we'll review your case.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>What image formats are supported?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>By default, generated images are provided in PNG format. You can also request:</p>
-          <ul>
-            <li>Transparent background PNGs (for logos or cutouts)</li>
-            <li>JPG versions (smaller file size, web-friendly)</li>
-            <li>Favicon or custom sizes for apps or websites</li>
-          </ul>
-          <p>If a different format is supported, we'll provide it directly. Otherwise, PNG files can be easily converted with external tools.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>How do I write effective prompts?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>Be specific and descriptive. For best results, include:</p>
-          <ul>
-            <li><strong>Style</strong> → photorealistic, watercolor, digital art, anime, etc.</li>
-            <li><strong>Composition</strong> → subject focus, background details, perspective</li>
-            <li><strong>Colors & mood</strong> → warm, vibrant, dark, cinematic</li>
-            <li><strong>Lighting</strong> → soft glow, dramatic shadows, natural sunlight</li>
-          </ul>
-          <p>The more detail you give, the closer the result will be to your vision.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>Can I use generated images commercially?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>Yes ✅ — you have rights to use the images you generate for both personal and commercial purposes, as long as they follow our content policy and don't infringe on others' rights.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>Why was my image generation rejected?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>An image may be rejected if it:</p>
-          <ul>
-            <li>Violates our content policy</li>
-            <li>Attempts to generate copyrighted or trademarked material</li>
-            <li>Contains inappropriate or restricted content</li>
-          </ul>
-          <p>If this happens, adjust your prompt to fit the guidelines and try again.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>How can I improve image quality?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <ul>
-            <li>Be more <strong>descriptive in your prompts</strong> (style, lighting, mood, perspective)</li>
-            <li>Use <strong>transparent backgrounds</strong> if you plan to edit later</li>
-            <li>Request custom sizes when needed</li>
-            <li>Regenerate with small tweaks until you get the best result</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          <span>Still have questions?</span>
-          <span class="faq-toggle">▼</span>
-        </div>
-        <div class="faq-answer">
-          <p>📧 Contact our support team at <a href="mailto:minivisionary.contactus@gmail.com">minivisionary.contactus@gmail.com</a> — we'll be happy to help!</p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script>
-    function toggleFaq(element) {
-      const answer = element.nextElementSibling;
-      const toggle = element.querySelector('.faq-toggle');
-      const isActive = answer.classList.contains('active');
-
-      // Close all other FAQs
-      document.querySelectorAll('.faq-answer').forEach(item => {
-        item.classList.remove('active');
-      });
-      document.querySelectorAll('.faq-toggle').forEach(item => {
-        item.style.transform = 'rotate(0deg)';
-      });
-
-      // Toggle current FAQ
-      if (!isActive) {
-        answer.classList.add('active');
-        toggle.style.transform = 'rotate(180deg)';
-      }
-    }
 
     function copyEmail() {
       const email = 'minivisionary.contactus@gmail.com';
