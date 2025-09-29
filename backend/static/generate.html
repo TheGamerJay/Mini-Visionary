@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Visionary — AI Poster Generator</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); height:100vh; display:flex; flex-direction:column;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring); position:relative; z-index:100}
+    .header-left{display:flex; align-items:center; gap:12px}
+    .sidebar-toggle{display:none; background:none; border:none; color:var(--text); font-size:18px; cursor:pointer; padding:8px}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px; align-items:center}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover{color:var(--text); background:var(--sunken)}
+    .credits-display{color:var(--text); font-weight:600; padding:8px 12px; font-size:14px}
+    .logout-btn{background:none; border:1px solid var(--ring); color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px}
+    .logout-btn:hover{color:var(--text); border-color:var(--text)}
+
+    /* Sidebar */
+    .sidebar{position:fixed; top:0; left:0; width:320px; height:100vh; background:var(--card); border-right:1px solid var(--ring); z-index:200; transform:translateX(-100%); transition:transform 0.3s ease; display:flex; flex-direction:column}
+    .sidebar.open{transform:translateX(0)}
+    .sidebar-header{padding:16px; border-bottom:1px solid var(--ring)}
+    .new-chat-btn{width:100%; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.2s}
+    .new-chat-btn:hover{transform:translateY(-1px)}
+    .sidebar-title{padding:16px 16px 8px; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted)}
+    .chat-sessions{flex:1; overflow-y:auto; padding:0 12px}
+    .session-item{display:flex; align-items:center; justify-content:space-between; padding:12px; margin:4px 0; border-radius:12px; cursor:pointer; transition:all 0.2s; border:1px solid transparent}
+    .session-item:hover{background:var(--sunken)}
+    .session-item.active{background:var(--sunken); border:1px solid var(--ring)}
+    .session-content{flex:1; display:flex; flex-direction:column; gap:2px}
+    .session-title{color:var(--text); font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .session-date{color:var(--muted); font-size:12px}
+    .session-actions{display:flex; gap:4px; opacity:0; transition:opacity 0.2s}
+    .session-item:hover .session-actions{opacity:1}
+    .session-action{background:none; border:none; color:var(--muted); padding:4px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center}
+    .session-action:hover{color:var(--text); background:var(--sunken)}
+    .session-action.delete:hover{color:#ef4444}
+    .sidebar-footer{padding:16px; border-top:1px solid var(--ring); margin-top:auto; text-align:center}
+    .sidebar-brand{font-weight:700; color:var(--text); margin-bottom:8px}
+    .sidebar-logo{width:288px; height:288px; border-radius:48px; margin:24px auto; display:block}
+    .sidebar-tagline{font-size:12px; color:var(--muted)}
+    .sidebar-overlay{position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:150; opacity:0; visibility:hidden; transition:all 0.3s ease}
+    .sidebar-overlay.show{opacity:1; visibility:visible}
+
+    @media (max-width: 768px) {
+      .sidebar-toggle{display:block}
+      .main-content{margin-left:0}
+    }
+    @media (min-width: 769px) {
+      .sidebar{transform:translateX(0)}
+      .main-content{margin-left:320px}
+      .sidebar-overlay{display:none}
+    }
+
+    .main-content{flex:1; display:flex; flex-direction:column; max-width:1000px; margin:0 auto; padding:24px; transition:margin-left 0.3s ease}
+
+    .welcome-section{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:40px 20px}
+    .welcome-title{font-size:2.5rem; font-weight:800; margin-bottom:32px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+
+    .input-container{display:flex; align-items:end; gap:12px; background:var(--sunken); border:1px solid var(--ring); border-radius:16px; padding:12px; margin-bottom:16px; min-width:600px}
+    .main-textarea, .chat-textarea{flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:inherit; resize:none; min-height:44px; max-height:120px}
+    .generate-btn{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; padding:12px 24px; cursor:pointer; transition:all 0.2s}
+    .generate-btn:hover{transform:translateY(-1px)}
+    .generate-btn:disabled{opacity:0.6; cursor:not-allowed; transform:none}
+
+    .upload-btn{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; margin-bottom:16px}
+    .upload-btn:hover{background:var(--sunken); border-color:var(--line)}
+    .upload-btn input{display:none}
+    .reference-indicator{background:var(--btn-start); color:#081018; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600; margin-bottom:16px; display:none}
+    .remove-ref-btn{background:var(--sunken); border:1px solid var(--ring); color:var(--muted); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:12px; margin-left:8px}
+    .remove-ref-btn:hover{color:var(--text); border-color:var(--text)}
+
+    /* MiniPlusMenu styles */
+    .mini-plus-btn{width:40px; height:40px; border-radius:50%; background:var(--card); border:1px solid var(--ring); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:300; transition:all 0.2s; margin:0 auto 16px}
+    .mini-plus-btn:hover{background:var(--sunken); border-color:var(--line); transform:scale(1.05)}
+    .mini-plus-menu{position:relative; display:inline-block}
+    .mini-plus-dropdown{position:absolute; top:100%; left:50%; transform:translateX(-50%); background:var(--card); border:1px solid var(--ring); border-radius:12px; padding:8px; min-width:200px; box-shadow:0 8px 32px rgba(0,0,0,0.3); z-index:1000; display:none}
+    .mini-plus-dropdown.active{display:block}
+
+    /* Generated Images Grid */
+    .generated-images-section{margin-top:32px; padding:20px 40px; text-align:center}
+    .generated-images-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-top:16px}
+    .grid-image-item{position:relative; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--ring); transition:transform 0.2s ease, box-shadow 0.2s ease}
+    .grid-image-item:hover{transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+    .grid-image-item img{width:100%; height:150px; object-fit:cover; display:block}
+    .image-overlay{position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:12px; color:white}
+    .image-overlay p{margin:0 0 8px 0; font-size:12px; line-height:1.4}
+    .image-overlay button{padding:4px 8px; font-size:10px; border:none; border-radius:4px; background:var(--btn-start); color:black; cursor:pointer; transition:background 0.2s ease}
+    .image-overlay button:hover{background:var(--btn-end)}
+    @media (max-width: 768px) {
+      .generated-images-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px}
+    }
+    .mini-plus-item{padding:12px 16px; cursor:pointer; border-radius:8px; transition:all 0.2s; display:flex; align-items:center; gap:12px; color:var(--text)}
+    .mini-plus-item:hover{background:var(--sunken)}
+    .mini-plus-item-icon{width:20px; text-align:center}
+    .generated-image-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; margin-top:24px}
+    .generated-image-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; transition:all 0.2s}
+    .generated-image-item:hover{border-color:var(--line)}
+    .generated-image-item img{width:100%; height:150px; object-fit:cover}
+    .generated-image-info{padding:12px}
+    .generated-image-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px}
+    .generated-image-date{font-size:12px; color:var(--muted)}
+
+    .quick-actions{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; max-width:600px}
+    .action-chip{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:14px; transition:all 0.2s}
+    .action-chip:hover{background:var(--sunken); border-color:var(--line)}
+
+    .chat-section{flex:1; overflow-y:auto; padding:20px 0}
+    .chat-messages{display:flex; flex-direction:column; gap:16px}
+    .message{display:flex; max-width:85%}
+    .message.user{margin-left:auto}
+    .message.assistant{margin-right:auto}
+    .message-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px}
+    .message.user .message-content{background:var(--sunken)}
+    .message-header{font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px}
+    .message-text{color:var(--text); white-space:pre-wrap; word-break:break-word}
+    .message-image{max-width:100%; border-radius:8px; margin-top:12px}
+    .message-actions{margin-top:12px; display:flex; gap:8px}
+    .save-btn{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; transition:all 0.2s; display:inline-flex; align-items:center; gap:4px}
+    .save-btn:hover{background:var(--sunken); border-color:var(--line)}
+    .save-btn:disabled{opacity:0.6; cursor:not-allowed}
+
+    .bottom-input{border-top:1px solid var(--ring); padding:16px 0; background:var(--bg-0)}
+    .bottom-input .input-container{min-width:auto; margin-bottom:0}
+
+    h1{margin:0 0 8px; font-size:28px; font-weight:800}
+    .subtitle{color:var(--muted); margin-bottom:24px}
+
+    .form-group{margin-bottom:20px}
+    .label{display:block; margin-bottom:8px; font-weight:600; color:var(--text)}
+    .input, .textarea{width:100%; padding:12px; border:1px solid var(--ring); border-radius:8px; background:var(--sunken); color:var(--text); font-family:inherit}
+    .input:focus, .textarea:focus{outline:none; border-color:var(--line)}
+    .textarea{min-height:120px; resize:vertical}
+
+    .btn{display:inline-block; padding:12px 24px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; text-decoration:none; transition:all 0.2s}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:0.6; cursor:not-allowed; transform:none}
+
+    .preview-area{width:100%; height:400px; background:var(--bg-0); border:2px dashed var(--ring); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--muted)}
+
+
+    .msg{padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:14px}
+    .msg.success{background:#0f2b22; color:#bbf7d0; border:1px solid #14532d}
+    .msg.error{background:#3b1a1a; color:#fecaca; border:1px solid #7f1d1d}
+    .msg.info{background:#1e293b; color:#cbd5e1; border:1px solid #475569}
+
+    /* Hide all built-in password reveal/clear buttons across browsers - Updated */
+    input::-ms-reveal,
+    input::-ms-clear,
+    input::-webkit-credentials-auto-fill-button,
+    input::-webkit-password-toggle-button,
+    input::-webkit-textfield-decoration-container {
+      display: none !important;
+      visibility: hidden !important;
+      width: 0 !important;
+      height: 0 !important;
+      opacity: 0 !important;
+      position: absolute !important;
+      left: -9999px !important;
+      pointer-events: none !important;
+      -webkit-appearance: none !important;
+    }
+
+    /* Extra iOS Safari coverage */
+    input[type="password"] {
+      -webkit-appearance: none !important;
+      -webkit-text-security: disc !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+      <a href="/" class="logo">
+        <img src="/logo.png" alt="Mini Visionary Logo">
+        Mini Visionary
+      </a>
+    </div>
+    <nav class="nav">
+      <a href="#" onclick="navigateTo('guide')">Guide</a>
+      <a href="#" onclick="navigateTo('gallery')">Gallery</a>
+      <a href="#" onclick="navigateTo('library')">Library</a>
+      <span class="credits-display">Credits: <span id="user-credits">Loading...</span></span>
+      <a href="#" onclick="navigateTo('store')">💎 Store</a>
+      <a href="#" onclick="navigateTo('wallet')">💰 Wallet</a>
+      <a href="#" onclick="navigateTo('profile')">🧑 Profile</a>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </nav>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <button id="new-chat-btn" class="new-chat-btn">+ New Chat</button>
+    </div>
+    <div class="sidebar-title">Chats</div>
+    <div id="chat-sessions" class="chat-sessions"></div>
+    <div class="sidebar-footer">
+      <img src="/logo.png" alt="Mini Visionary Logo" class="sidebar-logo">
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Hidden file inputs for reference upload -->
+  <input type="file" id="main-reference-input" accept="image/*" style="display: none;">
+  <input type="file" id="chat-reference-input" accept="image/*" style="display: none;">
+
+  <div class="main-content">
+    <!-- Welcome Section (shown when no chat history) -->
+    <div id="welcome-section" class="welcome-section">
+      <h1 class="welcome-title">How can I help you create today, <span id="display-name">User</span>?</h1>
+      <div class="input-container">
+        <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
+        <button id="main-generate-btn" class="generate-btn">Generate</button>
+      </div>
+      <div class="reference-indicator" id="main-reference-indicator">
+        📷 Reference image uploaded
+        <button class="remove-ref-btn" id="main-remove-ref">Remove</button>
+      </div>
+
+      <!-- MiniPlusMenu moved under generate button -->
+      <div class="mini-plus-menu" id="main-plus-menu">
+        <button class="mini-plus-btn" id="main-plus-btn">+</button>
+        <div class="mini-plus-dropdown" id="main-plus-dropdown">
+          <div class="mini-plus-item" id="from-library-btn">
+            <span class="mini-plus-item-icon">📁</span>
+            <span>From Library</span>
+          </div>
+          <div class="mini-plus-item" id="templates-btn">
+            <span class="mini-plus-item-icon">📋</span>
+            <span>Templates</span>
+          </div>
+          <div class="mini-plus-item" id="upload-image-btn">
+            <span class="mini-plus-item-icon">📤</span>
+            <span>Upload Image</span>
+          </div>
+          <div class="mini-plus-item" id="add-reference-btn">
+            <span class="mini-plus-item-icon">📎</span>
+            <span>Add Reference Image</span>
+          </div>
+          <div class="mini-plus-item" id="text-prompts-btn">
+            <span class="mini-plus-item-icon">💬</span>
+            <span>Text Prompts</span>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="quick-actions">
+        <button class="action-chip" data-prompt="Create a movie poster: ">Movie Poster</button>
+        <button class="action-chip" data-prompt="Create a vintage poster: ">Vintage Style</button>
+        <button class="action-chip" data-prompt="Create a horror poster: ">Horror Theme</button>
+        <button class="action-chip" data-prompt="Create a minimalist poster: ">Minimalist</button>
+        <button class="action-chip" data-prompt="Create an action poster: ">Action Style</button>
+        <button class="action-chip" data-prompt="Create a comedy poster: ">Comedy Theme</button>
+      </div>
+    </div>
+
+    <!-- Chat Section (shown when there's conversation history) -->
+    <div id="chat-section" class="chat-section" style="display: none;">
+      <div id="chat-messages" class="chat-messages"></div>
+    </div>
+
+    <!-- Bottom Input (always visible when in chat mode) -->
+    <div id="bottom-input" class="bottom-input" style="display: none;">
+      <div class="input-container">
+        <textarea id="chat-input" class="chat-textarea" placeholder="Describe another poster idea..." rows="1"></textarea>
+        <button id="chat-generate-btn" class="generate-btn">Generate</button>
+      </div>
+      <div class="reference-indicator" id="chat-reference-indicator">
+        📷 Reference image uploaded
+        <button class="remove-ref-btn" id="chat-remove-ref">Remove</button>
+      </div>
+    </div>
+
+    <!-- Generated Images Grid -->
+    <div id="generated-images-section" class="generated-images-section" style="margin-top: 32px;">
+      <h3 style="margin-bottom: 16px; color: var(--text);">Recent Generations</h3>
+      <div id="generated-images-grid" class="generated-images-grid"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    console.log('Retrieved token from localStorage:', token ? `${token.substring(0, 20)}...` : 'null');
+    console.log('Current page URL:', window.location.href);
+    console.log('localStorage contents:', Object.keys(localStorage));
+
+    if (!token) {
+      console.log('No token found, redirecting to login');
+      window.location.href = '/auth.html#login';
+    } else {
+      console.log('Token found, attempting auth check...');
+
+      // Try to load cached user data first to prevent username and credits flash
+      try {
+        const cachedUser = localStorage.getItem('cached_user_data');
+        if (cachedUser) {
+          const userData = JSON.parse(cachedUser);
+          const displayNameEl = document.getElementById('display-name');
+          const userCreditsEl = document.getElementById('user-credits');
+          if (displayNameEl && userData.display_name) {
+            displayNameEl.textContent = userData.display_name;
+          }
+          if (userCreditsEl && userData.credits !== undefined) {
+            userCreditsEl.textContent = userData.credits;
+          }
+        }
+      } catch (e) {
+        console.log('Error loading cached user data:', e);
+      }
+
+      // Load user info - with better error handling
+      setTimeout(() => {
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(r => {
+        console.log('Auth check response status:', r.status);
+        console.log('Auth check response headers:', r.headers);
+        if (!r.ok) {
+          throw new Error(`HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then(data => {
+        console.log('Auth check response data:', data);
+        if (data.ok && data.user) {
+          // Cache user data to prevent username flash on refresh
+          try {
+            localStorage.setItem('cached_user_data', JSON.stringify(data.user));
+          } catch (e) {
+            console.log('Error caching user data:', e);
+          }
+
+          // Safely update DOM elements if they exist
+          const userNameEl = document.getElementById('user-name');
+          const userCreditsEl = document.getElementById('user-credits');
+          const displayNameEl = document.getElementById('display-name');
+
+          if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
+          if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
+          if (displayNameEl) displayNameEl.textContent = data.user.display_name || 'User';
+
+          // Update cached credits to prevent flash on next refresh
+          try {
+            const cachedData = JSON.parse(localStorage.getItem('cached_user_data') || '{}');
+            cachedData.credits = data.user.credits;
+            localStorage.setItem('cached_user_data', JSON.stringify(cachedData));
+          } catch (e) {
+            console.log('Error updating cached credits:', e);
+          }
+
+          console.log('Authentication successful, staying on generate page');
+        } else {
+          console.log('Auth check failed, response not ok:', data);
+          logout();
+        }
+      })
+      .catch(err => {
+        console.log('Auth check error:', err);
+        logout();
+      });
+    }, 500); // Small delay to ensure page is fully loaded
+    }
+
+    // Navigation function
+    function navigateTo(page) {
+      console.log('Navigation to:', page);
+      // For now, show a message that these pages are coming soon
+      switch(page) {
+        case 'guide':
+          addMessage('assistant', '📚 Guide page is coming soon! For now, you can use the quick action chips below to get started.');
+          break;
+        case 'gallery':
+          addMessage('assistant', '🇺️ Gallery page is coming soon! Your generated images appear in the "Recent Generations" section below.');
+          break;
+        case 'library':
+          addMessage('assistant', '📁 Library page is coming soon! You can access your saved images through the + menu > "From Library".');
+          break;
+        case 'store':
+          addMessage('assistant', '💎 Store page is coming soon! Stay tuned for credit packages and premium features.');
+          break;
+        case 'wallet':
+          addMessage('assistant', '💰 Wallet page is coming soon! Your current credits are shown in the header.');
+          break;
+        case 'profile':
+          addMessage('assistant', '🧑 Profile page is coming soon! You can logout using the button in the top right.');
+          break;
+        default:
+          addMessage('assistant', '⚠️ Page not found.');
+      }
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('cached_user_data');
+      window.location.href = '/auth.html#login';
+    }
+
+    // Show message
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.className = `msg ${type}`;
+      msg.textContent = text;
+      msg.style.display = 'block';
+    }
+
+    // Hide message
+    function hideMessage() {
+      document.getElementById('message').style.display = 'none';
+    }
+
+    // Multi-session chat state
+    let sessions = JSON.parse(localStorage.getItem('mv_sessions') || '[]');
+    let activeSessionId = null;
+    let chatHistory = [];
+    let isGenerating = false;
+
+    // Session management
+    function generateSessionId() {
+      return crypto.randomUUID();
+    }
+
+    function createNewSession() {
+      const sessionId = generateSessionId();
+      const session = {
+        id: sessionId,
+        title: 'New chat',
+        titleChanged: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      sessions.unshift(session); // Add to beginning
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      localStorage.setItem(`mv_chat_${sessionId}`, JSON.stringify([]));
+
+      setActiveSession(sessionId);
+      renderSessions();
+      showWelcomeMode();
+    }
+
+    function setActiveSession(sessionId) {
+      activeSessionId = sessionId;
+      chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+
+      if (chatHistory.length > 0) {
+        showChatMode();
+        renderChatHistory();
+      } else {
+        showWelcomeMode();
+      }
+    }
+
+    function updateSessionTitle(sessionId, title) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session && !session.titleChanged) {
+        session.title = title;
+        session.titleChanged = true;
+        session.updatedAt = new Date().toISOString();
+        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        renderSessions();
+      }
+    }
+
+    function deleteSession(sessionId) {
+      if (sessions.length <= 1) return; // Keep at least one session
+
+      sessions = sessions.filter(s => s.id !== sessionId);
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      localStorage.removeItem(`mv_chat_${sessionId}`);
+
+      if (activeSessionId === sessionId) {
+        setActiveSession(sessions[0].id);
+      }
+      renderSessions();
+    }
+
+    function renameSession(sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (!session) return;
+
+      const newTitle = prompt('Rename chat', session.title);
+      if (newTitle && newTitle.trim()) {
+        session.title = newTitle.trim();
+        session.titleChanged = true;
+        session.updatedAt = new Date().toISOString();
+        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        renderSessions();
+      }
+    }
+
+    function renderSessions() {
+      const container = document.getElementById('chat-sessions');
+      container.innerHTML = sessions.map(session => `
+        <div class="chat-session ${session.id === activeSessionId ? 'active' : ''}" data-session-id="${session.id}">
+          <div class="chat-session-title">${session.title}</div>
+          <div class="chat-session-actions">
+            <button class="session-btn" onclick="renameSession('${session.id}')" title="Rename">✏️</button>
+            <button class="session-btn" onclick="deleteSession('${session.id}')" title="Delete">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Add click listeners to session items
+      document.querySelectorAll('.chat-session').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (!e.target.closest('.chat-session-actions')) {
+            const sessionId = item.dataset.sessionId;
+            setActiveSession(sessionId);
+            renderSessions();
+          }
+        });
+      });
+    }
+
+    // Sidebar functionality
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+
+    // Initialize interface
+    function initInterface() {
+      if (chatHistory.length > 0) {
+        showChatMode();
+        renderChatHistory();
+      } else {
+        showWelcomeMode();
+      }
+    }
+
+    function showWelcomeMode() {
+      document.getElementById('welcome-section').style.display = 'flex';
+      document.getElementById('chat-section').style.display = 'none';
+      document.getElementById('bottom-input').style.display = 'none';
+    }
+
+    function showChatMode() {
+      document.getElementById('welcome-section').style.display = 'none';
+      document.getElementById('chat-section').style.display = 'flex';
+      document.getElementById('bottom-input').style.display = 'block';
+    }
+
+    function addMessage(role, content, imageUrl = null) {
+      const message = {
+        id: crypto.randomUUID(),
+        role,
+        content,
+        imageUrl,
+        timestamp: new Date().toISOString()
+      };
+      chatHistory.push(message);
+      localStorage.setItem('mv_chat', JSON.stringify(chatHistory));
+
+      if (chatHistory.length === 1) {
+        showChatMode();
+      }
+      renderChatHistory();
+      scrollToBottom();
+    }
+
+    function renderChatHistory() {
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = chatHistory.map((msg, index) => `
+        <div class="message ${msg.role}">
+          <div class="message-content">
+            <div class="message-header">${msg.role === 'user' ? 'You' : 'Mini Visionary'} · ${new Date(msg.timestamp).toLocaleTimeString()}</div>
+            <div class="message-text">${msg.content}</div>
+            ${msg.imageUrl ? `<img src="${msg.imageUrl}" alt="Generated poster" class="message-image">` : ''}
+            ${msg.imageUrl ? `<div class="message-actions"><button class="save-btn" onclick="saveToLibrary('${msg.imageUrl}', ${index})">💾 Save to Library</button></div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function scrollToBottom() {
+      const container = document.getElementById('chat-messages');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function generatePoster(prompt) {
+      if (!prompt.trim() || isGenerating) return;
+
+      addMessage('user', prompt);
+      isGenerating = true;
+
+      // Update button states
+      const buttons = document.querySelectorAll('.generate-btn');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+      });
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ prompt, style: 'cinematic' })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          addMessage('assistant', '✨ Here\'s your generated poster!', data.image_url);
+          addToImageGrid(data.image_url, prompt);
+        } else {
+          addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
+        }
+      } catch (error) {
+        addMessage('assistant', `⚠️ Network error: ${error.message}`);
+      } finally {
+        isGenerating = false;
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = 'Generate';
+        });
+
+        // Clear inputs
+        const mainInput = document.getElementById('main-input');
+        const chatInput = document.getElementById('chat-input');
+        if (mainInput) mainInput.value = '';
+        if (chatInput) chatInput.value = '';
+      }
+    }
+
+    // Event listeners
+    const mainBtn = document.getElementById('main-generate-btn');
+    const chatBtn = document.getElementById('chat-generate-btn');
+
+    if (mainBtn) {
+      mainBtn.addEventListener('click', () => {
+        const prompt = document.getElementById('main-input').value.trim();
+        if (prompt) generatePoster(prompt);
+      });
+    }
+
+    if (chatBtn) {
+      chatBtn.addEventListener('click', () => {
+        const prompt = document.getElementById('chat-input').value.trim();
+        if (prompt) generatePoster(prompt);
+      });
+    }
+
+    // Enter key handling
+    function handleEnterKey(e, inputId) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const prompt = document.getElementById(inputId).value.trim();
+        if (prompt) generatePoster(prompt);
+      }
+    }
+
+    const mainInput = document.getElementById('main-input');
+    const chatInput = document.getElementById('chat-input');
+
+    if (mainInput) mainInput.addEventListener('keydown', (e) => handleEnterKey(e, 'main-input'));
+    if (chatInput) chatInput.addEventListener('keydown', (e) => handleEnterKey(e, 'chat-input'));
+
+    // Quick action chips
+    document.querySelectorAll('.action-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const prompt = chip.dataset.prompt;
+        const mainInput = document.getElementById('main-input');
+        if (mainInput) {
+          mainInput.value = prompt;
+          mainInput.focus();
+        }
+      });
+    });
+
+    // Multi-session management (using existing variables from line 326)
+
+    function generateSessionId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function createNewSession() {
+      // First, ensure current session is saved and updated
+      if (activeSessionId && chatHistory.length > 0) {
+        // Save current chat history
+        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
+
+        // Update current session title if it hasn't been changed and has messages
+        updateSessionTitle(activeSessionId);
+
+        // Update current session's updatedAt timestamp
+        const currentSession = sessions.find(s => s.id === activeSessionId);
+        if (currentSession) {
+          currentSession.updatedAt = new Date().toISOString();
+        }
+      }
+
+      // Create new session
+      const sessionId = generateSessionId();
+      const session = {
+        id: sessionId,
+        title: 'New chat',
+        titleChanged: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Add new session to the beginning of the list
+      sessions.unshift(session);
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+
+      // Switch to new session (this will clear chatHistory and show welcome screen)
+      switchToSession(sessionId);
+      renderSessions();
+
+      // Clear reference image for new session
+      removeReference();
+    }
+
+    function switchToSession(sessionId) {
+      // Save current chat history to session-specific storage
+      if (activeSessionId && chatHistory.length > 0) {
+        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
+      }
+
+      activeSessionId = sessionId;
+      localStorage.setItem('mv_current_session', sessionId);
+
+      // Load chat history for this session
+      chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+
+      if (chatHistory.length === 0) {
+        showWelcomeMode();
+      } else {
+        showChatMode();
+      }
+
+      renderChatHistory();
+      renderSessions();
+    }
+
+    function deleteSession(sessionId) {
+      if (sessions.length <= 1) return; // Keep at least one session
+
+      sessions = sessions.filter(s => s.id !== sessionId);
+      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      localStorage.removeItem(`mv_chat_${sessionId}`);
+
+      if (activeSessionId === sessionId) {
+        switchToSession(sessions[0].id);
+      }
+
+      renderSessions();
+    }
+
+    function renameSession(sessionId, newTitle) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session) {
+        session.title = newTitle.trim() || 'Untitled';
+        session.titleChanged = true;
+        session.updatedAt = new Date().toISOString();
+        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        renderSessions();
+      }
+    }
+
+    function updateSessionTitle(sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      const sessionMessages = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+
+      if (session && !session.titleChanged && sessionMessages.length > 0) {
+        const firstUserMessage = sessionMessages.find(m => m.role === 'user');
+        if (firstUserMessage) {
+          session.title = firstUserMessage.content.slice(0, 30) + (firstUserMessage.content.length > 30 ? '...' : '');
+          session.updatedAt = new Date().toISOString();
+          localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        }
+      }
+    }
+
+    function renderSessions() {
+      const container = document.getElementById('chat-sessions');
+      container.innerHTML = sessions.map(session => `
+        <div class="session-item ${session.id === activeSessionId ? 'active' : ''}" data-session-id="${session.id}">
+          <div class="session-content" onclick="switchToSession('${session.id}')">
+            <div class="session-title">${session.title}</div>
+            <div class="session-date">${new Date(session.updatedAt).toLocaleDateString()}</div>
+          </div>
+          <div class="session-actions">
+            <button class="session-action" onclick="event.stopPropagation(); promptRename('${session.id}')" title="Rename">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="m18.5 2.5-8 8v4h4l8-8a2 2 0 0 0 0-2.83z"></path>
+              </svg>
+            </button>
+            <button class="session-action delete" onclick="event.stopPropagation(); deleteSession('${session.id}')" title="Delete" ${sessions.length <= 1 ? 'disabled' : ''}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"></polyline>
+                <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function promptRename(sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session) {
+        const newTitle = prompt('Enter new chat name:', session.title);
+        if (newTitle !== null) {
+          renameSession(sessionId, newTitle);
+        }
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isOpen = sidebar.classList.contains('open');
+
+      if (isOpen) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+      }
+    }
+
+    // Override addMessage to update session title
+    const originalAddMessage = addMessage;
+    addMessage = function(role, content, imageUrl) {
+      originalAddMessage(role, content, imageUrl);
+
+      if (activeSessionId && role === 'user') {
+        updateSessionTitle(activeSessionId);
+        renderSessions();
+      }
+
+      // Save to session-specific storage
+      if (activeSessionId) {
+        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
+      }
+    };
+
+    // Initialize sessions
+    function initSessions() {
+      if (sessions.length === 0) {
+        createNewSession();
+      } else {
+        if (!activeSessionId || !sessions.find(s => s.id === activeSessionId)) {
+          activeSessionId = sessions[0].id;
+          localStorage.setItem('mv_current_session', activeSessionId);
+        }
+        switchToSession(activeSessionId);
+      }
+      renderSessions();
+    }
+
+    // Reference image upload functionality
+    let referenceImage = null;
+
+    function setupReferenceUpload() {
+      // Main reference input (hidden file input)
+      const mainFileInput = document.getElementById('main-reference-input');
+      const mainIndicator = document.getElementById('main-reference-indicator');
+      const mainRemoveBtn = document.getElementById('main-remove-ref');
+
+      // Chat reference input (hidden file input)
+      const chatFileInput = document.getElementById('chat-reference-input');
+      const chatIndicator = document.getElementById('chat-reference-indicator');
+      const chatRemoveBtn = document.getElementById('chat-remove-ref');
+
+      // Setup main upload if elements exist
+      if (mainFileInput) {
+        mainFileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) handleImageUpload(file);
+        });
+      }
+
+      if (mainRemoveBtn) {
+        mainRemoveBtn.addEventListener('click', removeReference);
+      }
+
+      // Setup chat upload if elements exist
+      if (chatFileInput) {
+        chatFileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) handleImageUpload(file);
+        });
+      }
+
+      if (chatRemoveBtn) {
+        chatRemoveBtn.addEventListener('click', removeReference);
+      }
+    }
+
+    function handleImageUpload(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        referenceImage = e.target.result;
+        updateReferenceIndicators(true);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeReference() {
+      referenceImage = null;
+      updateReferenceIndicators(false);
+      const mainInput = document.getElementById('main-reference-input');
+      const chatInput = document.getElementById('chat-reference-input');
+      if (mainInput) mainInput.value = '';
+      if (chatInput) chatInput.value = '';
+    }
+
+    function updateReferenceIndicators(show) {
+      const mainIndicator = document.getElementById('main-reference-indicator');
+      const chatIndicator = document.getElementById('chat-reference-indicator');
+
+      if (show) {
+        mainIndicator.style.display = 'block';
+        chatIndicator.style.display = 'block';
+      } else {
+        mainIndicator.style.display = 'none';
+        chatIndicator.style.display = 'none';
+      }
+    }
+
+    // Update generatePoster function to include reference image
+    const originalGeneratePoster = generatePoster;
+    generatePoster = async function(prompt) {
+      if (!prompt.trim() || isGenerating) return;
+
+      addMessage('user', prompt);
+      isGenerating = true;
+
+      // Update button states
+      const buttons = document.querySelectorAll('.generate-btn');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+      });
+
+      try {
+        const requestBody = {
+          prompt,
+          style: 'cinematic'
+        };
+
+        // Include reference image if uploaded
+        if (referenceImage) {
+          requestBody.reference_image = referenceImage;
+        }
+
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          addMessage('assistant', '✨ Here\'s your generated poster!', data.image_url);
+          addToImageGrid(data.image_url, prompt);
+        } else {
+          addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
+        }
+      } catch (error) {
+        addMessage('assistant', `⚠️ Network error: ${error.message}`);
+      } finally {
+        isGenerating = false;
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = 'Generate';
+        });
+
+        // Clear inputs
+        const mainInput = document.getElementById('main-input');
+        const chatInput = document.getElementById('chat-input');
+        if (mainInput) mainInput.value = '';
+        if (chatInput) chatInput.value = '';
+      }
+    };
+
+    // Save to library functionality
+    async function saveToLibrary(imageUrl, messageIndex) {
+      const saveBtn = event.target;
+      const originalText = saveBtn.innerHTML;
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '⏳ Saving...';
+
+      try {
+        const response = await fetch('/api/library/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            prompt: chatHistory[messageIndex-1]?.content || 'Generated poster',
+            session_id: activeSessionId
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          saveBtn.innerHTML = '✅ Saved';
+          setTimeout(() => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+          }, 2000);
+        } else {
+          saveBtn.innerHTML = '❌ Error';
+          setTimeout(() => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+          }, 2000);
+        }
+      } catch (error) {
+        saveBtn.innerHTML = '❌ Error';
+        setTimeout(() => {
+          saveBtn.innerHTML = originalText;
+          saveBtn.disabled = false;
+        }, 2000);
+      }
+    }
+
+    // Event listeners for sidebar
+    document.getElementById('new-chat-btn').addEventListener('click', createNewSession);
+    document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+    document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
+
+    // MiniPlusMenu functionality
+    let generatedImages = [];
+
+    function initMiniPlusMenu() {
+      const plusBtn = document.getElementById('main-plus-btn');
+      const dropdown = document.getElementById('main-plus-dropdown');
+
+      console.log('Initializing MiniPlusMenu:', plusBtn, dropdown);
+
+      if (plusBtn && dropdown) {
+        // Remove any existing listeners
+        plusBtn.removeEventListener('click', handlePlusClick);
+
+        // Add click listener
+        plusBtn.addEventListener('click', handlePlusClick);
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.mini-plus-menu')) {
+            dropdown.classList.remove('active');
+          }
+        });
+
+        // Menu item handlers
+        document.getElementById('from-library-btn')?.addEventListener('click', openFromLibrary);
+        document.getElementById('templates-btn')?.addEventListener('click', openTemplates);
+        document.getElementById('upload-image-btn')?.addEventListener('click', openUploadDialog);
+        document.getElementById('add-reference-btn')?.addEventListener('click', openAddReference);
+        document.getElementById('text-prompts-btn')?.addEventListener('click', openTextPrompts);
+      } else {
+        console.error('Plus button or dropdown not found:', plusBtn, dropdown);
+      }
+    }
+
+    function handlePlusClick(e) {
+      e.stopPropagation();
+      console.log('Plus button clicked, toggling dropdown');
+      const dropdown = document.getElementById('main-plus-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('active');
+        console.log('Dropdown active state:', dropdown.classList.contains('active'));
+      }
+    }
+
+    function openFromLibrary() {
+      // Close dropdown
+      document.querySelector('.mini-plus-dropdown').classList.remove('active');
+
+      // Fetch user's library images
+      fetch('/api/library', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.ok && data.images) {
+          showLibraryModal(data.images);
+        } else {
+          addMessage('assistant', '📚 Your library is empty. Generate some posters first!');
+        }
+      })
+      .catch(error => {
+        addMessage('assistant', '⚠️ Failed to load library');
+      });
+    }
+
+    function openTemplates() {
+      document.querySelector('.mini-plus-dropdown').classList.remove('active');
+
+      const templates = [
+        'Vintage poster style',
+        'Modern minimalist design',
+        'Retro 80s aesthetic',
+        'Abstract art style',
+        'Movie poster layout',
+        'Concert poster design',
+        'Event announcement style',
+        'Typography-focused poster'
+      ];
+
+      showTemplatesModal(templates);
+    }
+
+    function openUploadDialog() {
+      document.querySelector('.mini-plus-dropdown').classList.remove('active');
+
+      // Trigger the existing reference upload
+      const fileInput = document.getElementById('reference-upload');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    function openAddReference() {
+      console.log('openAddReference called');
+      document.querySelector('.mini-plus-dropdown').classList.remove('active');
+
+      // Trigger the main reference upload
+      const fileInput = document.getElementById('main-reference-input');
+      console.log('File input found:', fileInput);
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    function openTextPrompts() {
+      document.querySelector('.mini-plus-dropdown').classList.remove('active');
+
+      const prompts = [
+        'Create a poster for a jazz festival',
+        'Design a movie poster for a sci-fi thriller',
+        'Make a vintage travel poster for Paris',
+        'Create a minimalist concert poster',
+        'Design a poster for a food festival',
+        'Make a retro gaming tournament poster',
+        'Create an art exhibition announcement',
+        'Design a motivational quote poster'
+      ];
+
+      showTextPromptsModal(prompts);
+    }
+
+    function showLibraryModal(images) {
+      const modal = createModal('Your Library',
+        images.map(img => `
+          <div class="library-item" onclick="useLibraryImage('${img.url}', '${img.prompt}')">
+            <img src="${img.url}" alt="${img.prompt}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">
+            <p style="font-size:12px;margin:4px 0;">${img.prompt}</p>
+          </div>
+        `).join('')
+      );
+
+      document.body.appendChild(modal);
+    }
+
+    function showTemplatesModal(templates) {
+      const modal = createModal('Choose Template',
+        templates.map(template => `
+          <div class="template-item" onclick="useTemplate('${template}')">
+            <p>${template}</p>
+          </div>
+        `).join('')
+      );
+
+      document.body.appendChild(modal);
+    }
+
+    function showTextPromptsModal(prompts) {
+      const modal = createModal('Quick Prompts',
+        prompts.map(prompt => `
+          <div class="prompt-item" onclick="usePrompt('${prompt}')">
+            <p>${prompt}</p>
+          </div>
+        `).join('')
+      );
+
+      document.body.appendChild(modal);
+    }
+
+    function createModal(title, content) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>${title}</h3>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;max-height:400px;overflow-y:auto;">
+            ${content}
+          </div>
+        </div>
+      `;
+
+      // Add modal styles
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8); z-index: 1000;
+        display: flex; align-items: center; justify-content: center;
+      `;
+
+      const modalContent = modal.querySelector('.modal-content');
+      modalContent.style.cssText = `
+        background: var(--card); border-radius: 16px; padding: 24px;
+        max-width: 600px; width: 90%; max-height: 80vh;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      `;
+
+      return modal;
+    }
+
+    function useLibraryImage(url, prompt) {
+      document.querySelector('.modal-overlay').remove();
+      referenceImage = url;
+      updateReferenceIndicators(true);
+      addMessage('assistant', `📚 Using library image as reference: "${prompt}"`);
+    }
+
+    function useTemplate(template) {
+      document.querySelector('.modal-overlay').remove();
+      const input = document.getElementById('main-input') || document.getElementById('chat-input');
+      if (input) {
+        input.value = template;
+        input.focus();
+      }
+      addMessage('assistant', `🎨 Template selected: "${template}"`);
+    }
+
+    function usePrompt(prompt) {
+      document.querySelector('.modal-overlay').remove();
+      const input = document.getElementById('main-input') || document.getElementById('chat-input');
+      if (input) {
+        input.value = prompt;
+        input.focus();
+      }
+      addMessage('assistant', `💭 Prompt selected: "${prompt}"`);
+    }
+
+    // Add generated images to the grid
+    function addToImageGrid(imageUrl, prompt) {
+      generatedImages.unshift({
+        id: Date.now(),
+        url: imageUrl,
+        prompt: prompt,
+        timestamp: new Date().toISOString()
+      });
+
+      // Keep only last 20 images
+      if (generatedImages.length > 20) {
+        generatedImages = generatedImages.slice(0, 20);
+      }
+
+      // Save to localStorage
+      localStorage.setItem('mv_generated_images', JSON.stringify(generatedImages));
+      updateImageGrid();
+    }
+
+    function updateImageGrid() {
+      const gridContainer = document.getElementById('generated-images-grid');
+      if (!gridContainer) return;
+
+      gridContainer.innerHTML = generatedImages.map(img => `
+        <div class="grid-image-item" style="position:relative;">
+          <img src="${img.url}" alt="${img.prompt}" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">
+          <div class="image-overlay" style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:8px;border-radius:0 0 8px 8px;">
+            <p style="font-size:12px;color:white;margin:0;">${img.prompt}</p>
+            <button onclick="saveToLibrary('${img.url}', 0)" style="margin-top:4px;padding:4px 8px;font-size:10px;border:none;border-radius:4px;background:var(--btn-start);color:black;">Save</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load generated images from localStorage
+    function loadGeneratedImages() {
+      const stored = localStorage.getItem('mv_generated_images');
+      if (stored) {
+        try {
+          generatedImages = JSON.parse(stored);
+          updateImageGrid();
+        } catch (e) {
+          console.error('Failed to load generated images:', e);
+          generatedImages = [];
+        }
+      }
+    }
+
+    // Initialize
+    setupReferenceUpload();
+    initSessions();
+    initInterface();
+    initMiniPlusMenu();
+    loadGeneratedImages();
+  </script>
+</body>
+</html>

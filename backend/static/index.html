@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Visionary — You Envision it, We Generate it</title>
+  <link rel="icon" href="/logo.png" />
+  <meta name="description" content="Mini Visionary - AI-powered poster generation platform. Create custom posters and visual content with ease." />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); display:grid; place-items:center;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .content{text-align:center; max-width:500px}
+    .brand{font-size:34px; font-weight:800; letter-spacing:.5px; margin-bottom:16px}
+    .logo{width:450px; height:450px; margin-bottom:32px; border-radius:48px; box-shadow:0 20px 80px rgba(0,0,0,.6); image-rendering:high-quality; image-rendering:-webkit-optimize-contrast}
+    .tagline{color:var(--muted); margin-bottom:24px}
+    .btn{display:inline-block; padding:12px 24px; font-weight:700; color:#081018;
+         background:linear-gradient(90deg, var(--btn-start), var(--btn-end));
+         border-radius:12px; text-decoration:none; margin:8px;
+         box-shadow:0 8px 30px rgba(34,211,238,.25), 0 8px 30px rgba(236,72,153,.25)}
+    .btn:hover{transform:translateY(-2px)}
+  </style>
+</head>
+<body>
+  <div class="content">
+    <img src="/home-logo.png" alt="Mini Visionary Logo" class="logo">
+    <a href="/auth.html#login" class="btn">Login</a>
+    <a href="/auth.html#register" class="btn">Create Account</a>
+  </div>
+</body>
+</html>

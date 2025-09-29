@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Visionary — Terms of Service</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    a{color:#a5b4fc; text-decoration:none} a:hover{text-decoration:underline}
+    .wrap{min-height:100%; display:grid; place-items:center; padding:24px}
+    .stack{width:min(860px, 92vw); display:grid; gap:18px}
+    .brand{display:grid; gap:10px; justify-items:center; text-align:center}
+    .brand .name{font-size:28px; font-weight:800; letter-spacing:.5px}
+    .banner{height:2px; width:min(700px, 96%); background:var(--line); border-radius:2px; opacity:.9}
+    .card{background:color-mix(in srgb, var(--card) 90%, black 10%); border:1px solid var(--ring);
+          border-radius:18px; padding:22px; box-shadow:0 10px 40px rgba(0,0,0,.35)}
+    h1{margin:0 0 .25rem; font-size:24px; font-weight:800; text-align:center}
+    .sub{color:var(--muted); text-align:center; margin-bottom:10px}
+    h2{margin:1.25rem 0 .5rem; font-size:18px}
+    p,li{color:#dbe3ef}
+    .back{display:inline-block; margin-top:16px; padding:10px 14px; font-weight:700; color:#081018;
+          background:linear-gradient(90deg, var(--btn-start), var(--btn-end));
+          border-radius:12px; box-shadow:0 8px 30px rgba(34,211,238,.25), 0 8px 30px rgba(236,72,153,.25)}
+    footer{color:var(--muted); text-align:center; font-size:12px; margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="stack">
+      <div class="brand">
+        <div class="name">MINI VISIONARY</div>
+        <div class="banner" aria-hidden="true"></div>
+      </div>
+
+      <div class="card">
+        <h1>Terms of Service</h1>
+        <div class="sub">Please read these terms carefully.</div>
+
+        <p><strong>Effective date:</strong> <span id="today"></span></p>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing or using Mini Visionary, you agree to be bound by these Terms of Service.</p>
+
+        <h2>2. Service Description</h2>
+        <p>Mini Visionary is an AI-powered poster generation platform for creating custom posters and visual content.</p>
+
+        <h2>3. User Accounts</h2>
+        <ul>
+          <li>You must create an account to access certain features.</li>
+          <li>You are responsible for safeguarding your credentials and for activity on your account.</li>
+        </ul>
+
+        <h2>4. Content Usage</h2>
+        <p>You retain ownership of content you create. You grant us a limited license to host, process, and display your content as necessary to operate and improve the service.</p>
+
+        <h2>5. Prohibited Uses</h2>
+        <p>You may not use the service for illegal activities, harassment, spam, or to generate harmful or inappropriate content.</p>
+
+        <h2>6. Service Availability</h2>
+        <p>We aim for high availability but do not guarantee uninterrupted access. Scheduled maintenance or outages may occur.</p>
+
+        <h2>7. Payments (if applicable)</h2>
+        <p>Paid features may be offered. Fees, billing terms, and refund eligibility (if any) will be disclosed at purchase time.</p>
+
+        <h2>8. Limitation of Liability</h2>
+        <p>Mini Visionary is not liable for indirect, incidental, special, consequential, or punitive damages.</p>
+
+        <h2>9. Changes to Terms</h2>
+        <p>We may update these terms. Material changes will be communicated, and continued use constitutes acceptance.</p>
+
+        <h2>10. Contact</h2>
+        <p>Questions? Email us at <a href="mailto:MiniVisionary.contactus@gmail.com">MiniVisionary.contactus@gmail.com</a>.</p>
+
+        <a class="back" href="/auth.html#register">Back to Registration</a>
+      </div>
+
+      <div class="brand">
+        <div class="banner" aria-hidden="true"></div>
+        <div class="sub">You Envision it, We Generate it.</div>
+      </div>
+
+      <footer>© <span id="y"></span> Mini Visionary</footer>
+    </div>
+  </div>
+
+  <script>
+    const d=new Date(); document.getElementById("today").textContent=d.toLocaleDateString();
+    document.getElementById("y").textContent=d.getFullYear();
+  </script>
+</body>
+</html>

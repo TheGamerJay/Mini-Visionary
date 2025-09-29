@@ -5,30 +5,20 @@ set -e
 
 echo "Starting Mini-Visionary application..."
 
-# Debug: show current directory and structure
+# Navigate to the application directory if needed
+cd /app 2>/dev/null || cd "$(dirname "$0")" || true
+
 echo "Current directory: $(pwd)"
 echo "Directory contents:"
 ls -la
-
-# Navigate to the application directory if needed
-cd /app 2>/dev/null || cd "$(dirname "$0")" || true
 
 # Install Python dependencies if requirements.txt exists
 if [ -f "requirements.txt" ]; then
     echo "Installing Python dependencies..."
     pip install --no-cache-dir -r requirements.txt
-elif [ -f "Mini-Visionary-main/requirements.txt" ]; then
-    echo "Installing Python dependencies from Mini-Visionary-main..."
-    pip install --no-cache-dir -r Mini-Visionary-main/requirements.txt
-fi
-
-# Navigate to the actual app directory
-if [ -d "Mini-Visionary-main" ]; then
-    echo "Entering Mini-Visionary-main directory..."
-    cd Mini-Visionary-main
-    echo "Now in: $(pwd)"
-    echo "Contents:"
-    ls -la
+elif [ -f "backend/requirements.txt" ]; then
+    echo "Installing Python dependencies from backend..."
+    pip install --no-cache-dir -r backend/requirements.txt
 fi
 
 # Build frontend if not already built

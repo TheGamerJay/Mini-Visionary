@@ -1,0 +1,20 @@
+# Core Flask application
+flask>=3.0.0
+flask-cors>=6.0.0
+werkzeug>=3.0.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# HTTP requests for email service
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Production server
+gunicorn>=21.2.0
+gevent>=23.0.0
+
+# Optional: OpenAI for poster generation (install separately if needed)
+# openai>=1.0.0

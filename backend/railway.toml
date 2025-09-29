@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "gunicorn -w 2 -k gevent -b 0.0.0.0:8080 app:app"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+
+[env]
+PORT = "8080"

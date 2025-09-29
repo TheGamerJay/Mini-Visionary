@@ -1,0 +1,38 @@
+# --- Core web ---
+flask==3.0.3
+flask-cors==4.0.1
+
+# --- Auth ---
+flask-bcrypt==1.0.1
+pyjwt==2.9.0
+
+# --- DB / ORM ---
+sqlalchemy==2.0.32
+psycopg2-binary==2.9.10
+
+# --- Utilities ---
+python-dotenv==1.0.1
+requests==2.32.3
+
+# --- Images ---
+pillow==10.4.0
+
+# --- OpenAI SDK (new 1.x client) ---
+openai==1.43.0
+
+# --- Payments ---
+stripe==12.3.0
+
+# --- Storage ---
+boto3==1.35.24
+botocore==1.35.24
+
+# --- Compression ---
+Flask-Compress==1.15
+brotli==1.1.0
+
+# --- Observability ---
+sentry-sdk[flask]==2.14.0
+python-json-logger==2.0.7
+
+# --- Prod server ---
