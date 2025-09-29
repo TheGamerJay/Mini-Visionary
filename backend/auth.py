@@ -215,7 +215,8 @@ def me():
         "email": g.user.email,
         "display_name": g.user.display_name,
         "credits": g.user.credits,
-        "avatar_url": getattr(g.user, 'avatar_url', None),
+        "avatar_image_url": getattr(g.user, 'avatar_image_url', None),
+        "avatar_video_url": getattr(g.user, 'avatar_video_url', None),
         "ad_free": getattr(g.user, 'ad_free', False)
     })
 
