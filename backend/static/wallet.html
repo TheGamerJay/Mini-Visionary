@@ -26,26 +26,59 @@
     .nav{display:flex; gap:16px; align-items:center}
     .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
     .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
-    .container{max-width:900px; margin:0 auto; padding:40px 24px}
-    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
-    .balance-card{background:linear-gradient(135deg, var(--card), var(--sunken)); border:2px solid var(--ring); border-radius:20px; padding:40px; text-align:center; margin-bottom:32px}
-    .balance-label{color:var(--muted); font-size:14px; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px}
-    .balance-amount{font-size:64px; font-weight:800; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent; margin-bottom:20px}
-    .buy-more-btn{display:inline-block; padding:14px 32px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border-radius:8px; text-decoration:none; transition:all 0.2s}
-    .buy-more-btn:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(34, 211, 238, 0.3)}
-    .section-title{font-size:24px; font-weight:700; color:var(--text); margin-bottom:20px}
-    .transaction-list{background:var(--card); border:1px solid var(--ring); border-radius:16px; overflow:hidden}
-    .transaction-item{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--ring)}
-    .transaction-item:last-child{border-bottom:none}
-    .transaction-info{display:flex; align-items:center; gap:12px}
-    .transaction-icon{width:40px; height:40px; background:var(--sunken); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px}
-    .transaction-details{display:flex; flex-direction:column; gap:4px}
-    .transaction-desc{color:var(--text); font-weight:600; font-size:14px}
-    .transaction-date{color:var(--muted); font-size:12px}
-    .transaction-amount{font-weight:700; font-size:16px}
-    .transaction-amount.positive{color:#10b981}
-    .transaction-amount.negative{color:#ef4444}
-    .empty-state{text-align:center; padding:60px 20px; color:var(--muted)}
+    .container{max-width:1200px; margin:0 auto; padding:40px 24px}
+
+    /* Hero */
+    .hero{background:var(--card); border:1px solid var(--ring); border-radius:24px; padding:32px; margin-bottom:32px}
+    .hero h1{font-size:36px; font-weight:800; margin:0 0 8px 0; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .hero-subtitle{color:var(--muted); font-size:16px}
+
+    /* Layout */
+    .wallet-grid{display:grid; grid-template-columns:1fr 420px; gap:24px; margin-bottom:32px}
+    @media (max-width: 1024px) { .wallet-grid{grid-template-columns:1fr} }
+
+    /* Balance card */
+    .balance-card{background:var(--sunken); border:1px solid var(--ring); border-radius:16px; padding:24px}
+    .balance-grid{display:grid; grid-template-columns:2fr 1fr; gap:16px; align-items:center}
+    @media (max-width: 640px) { .balance-grid{grid-template-columns:1fr} }
+    .balance-label{font-size:13px; color:var(--muted); margin-bottom:8px}
+    .balance-display{display:flex; align-items:end; gap:12px}
+    .balance-amount{font-size:48px; font-weight:800; color:var(--text); line-height:1}
+    .balance-unit{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding-bottom:4px}
+    .balance-status{font-size:13px; color:#10b981; margin-top:8px}
+    .balance-actions{display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap}
+    @media (max-width: 640px) { .balance-actions{justify-content:flex-start} }
+    .btn{padding:10px 20px; border-radius:8px; font-size:14px; cursor:pointer; transition:all 0.2s; border:none; font-weight:700}
+    .btn-primary{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018}
+    .btn-primary:hover{transform:translateY(-2px)}
+    .btn-secondary{background:var(--sunken); border:1px solid var(--ring); color:var(--text)}
+    .btn-secondary:hover{background:var(--card); border-color:var(--line)}
+
+    /* Info card */
+    .info-card{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px}
+    .info-title{font-size:18px; font-weight:700; color:var(--text); margin-bottom:16px}
+    .info-list{list-style:none; padding:0; margin:0}
+    .info-list li{padding:8px 0; color:var(--muted); font-size:14px; line-height:1.6}
+
+    /* Sections */
+    .sections-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px}
+    @media (max-width: 1024px) { .sections-grid{grid-template-columns:1fr} }
+    .section-card{background:var(--sunken); border:1px solid var(--ring); border-radius:16px; padding:24px}
+    .section-title{font-size:20px; font-weight:700; color:var(--text); margin-bottom:20px}
+    .items-list{display:grid; gap:12px}
+
+    /* Transaction items */
+    .txn-item, .purchase-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center}
+    .item-left .item-type{font-weight:600; color:var(--text); font-size:14px; margin-bottom:4px; text-transform:capitalize}
+    .item-left .item-time{font-size:11px; color:var(--muted)}
+    .item-right{text-align:right}
+    .item-amount{font-weight:700; font-size:16px}
+    .item-amount.positive{color:#10b981}
+    .item-amount.negative{color:#ef4444}
+    .item-price{color:var(--muted); font-size:14px; margin-bottom:4px}
+    .item-status{font-size:11px; color:var(--muted); text-transform:capitalize}
+
+    .empty-state{text-align:center; padding:40px 20px; color:var(--muted); font-size:14px}
   </style>
 </head>
 <body>
@@ -65,19 +98,54 @@
   </div>
 
   <div class="container">
-    <h1>💰 Wallet</h1>
-    <p style="color:var(--muted); margin-bottom:32px;">Manage your credits and view transaction history.</p>
-
-    <div class="balance-card">
-      <div class="balance-label">Available Credits</div>
-      <div class="balance-amount" id="credit-balance">0</div>
-      <a href="/static/store.html" class="buy-more-btn">Buy More Credits</a>
+    <!-- Hero -->
+    <div class="hero">
+      <h1>💰 Your Wallet</h1>
+      <p class="hero-subtitle">Manage credits and review purchases & usage for Mini Visionary.</p>
     </div>
 
-    <div class="section-title">Transaction History</div>
-    <div id="transaction-list" class="transaction-list">
-      <div class="empty-state">
-        <p>No transactions yet</p>
+    <!-- Balance & Info -->
+    <div class="wallet-grid">
+      <div class="balance-card">
+        <div class="balance-grid">
+          <div>
+            <div class="balance-label">💎 Current Balance</div>
+            <div class="balance-display">
+              <div class="balance-amount" id="balance-amount">0</div>
+              <div class="balance-unit">Credits</div>
+            </div>
+            <div class="balance-status">✓ Ready to use</div>
+          </div>
+          <div class="balance-actions">
+            <button class="btn btn-primary" onclick="window.location.href='/static/store.html'">Add Credits</button>
+            <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-title">💡 What can you do with credits?</div>
+        <ul class="info-list">
+          <li>🖼️ Generate images (standard & hi-res)</li>
+          <li>🔍 Upscale to 4K</li>
+          <li>✂️ Background removal</li>
+          <li>🎨 Style transfer / variations</li>
+          <li>🚀 Priority queue for faster renders</li>
+          <li>📥 Save & organize in Library</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Purchases & Transactions -->
+    <div class="sections-grid">
+      <div class="section-card">
+        <div class="section-title">🧾 Recent Purchases</div>
+        <div id="purchases-list" class="items-list"></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">📜 Recent Transactions</div>
+        <div id="transactions-list" class="items-list"></div>
       </div>
     </div>
   </div>
@@ -89,56 +157,117 @@
       window.location.href = '/auth.html#login';
     }
 
-    // Load user credits
-    async function loadCredits() {
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+    // Demo data
+    const STARTING_BALANCE = 20;
 
-        const data = await response.json();
+    const demoTransactions = [
+      { id: "t1", time: "2025-09-24T14:12:00Z", desc: "Upscale to 4K", delta: -8 },
+      { id: "t2", time: "2025-09-24T13:40:00Z", desc: "Background removal", delta: -2 },
+      { id: "t3", time: "2025-09-23T22:54:00Z", desc: "Purchased 1200 credits", delta: +1200 },
+      { id: "t4", time: "2025-09-23T21:10:00Z", desc: "Image generation (Hi-Res)", delta: -4 },
+      { id: "t5", time: "2025-09-21T20:28:00Z", desc: "Purchased 500 credits", delta: +500 },
+    ];
 
-        if (data.ok && data.user) {
-          document.getElementById('credit-balance').textContent = data.user.credits || 0;
-        }
-      } catch (error) {
-        console.error('Failed to load credits:', error);
-      }
+    const demoPurchases = [
+      { id: "p1", credits: 1200, price: 9.99, time: "2025-09-23T22:54:00Z", status: "paid" },
+      { id: "p2", credits: 500, price: 4.99, time: "2025-09-21T20:28:00Z", status: "paid" },
+    ];
+
+    let transactions = [];
+    let purchases = [];
+
+    // Load from localStorage or use demo data
+    function loadData() {
+      const savedTxns = localStorage.getItem('mv_transactions');
+      const savedPurchases = localStorage.getItem('mv_purchases');
+
+      transactions = savedTxns ? JSON.parse(savedTxns) : demoTransactions;
+      purchases = savedPurchases ? JSON.parse(savedPurchases) : demoPurchases;
     }
 
-    // Load transaction history (placeholder)
-    async function loadTransactions() {
-      // This would call an API endpoint in a real implementation
-      // For now, showing empty state
-      const list = document.getElementById('transaction-list');
+    // Calculate balance
+    function calculateBalance() {
+      const totalDelta = transactions.reduce((sum, txn) => sum + txn.delta, 0);
+      return STARTING_BALANCE + totalDelta;
+    }
 
-      // Example transactions (would come from API)
-      const transactions = [];
+    // Render balance
+    function renderBalance() {
+      const balance = calculateBalance();
+      document.getElementById('balance-amount').textContent = balance.toLocaleString();
+    }
+
+    // Render transactions
+    function renderTransactions() {
+      const list = document.getElementById('transactions-list');
 
       if (transactions.length === 0) {
-        list.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>';
-      } else {
-        list.innerHTML = transactions.map(tx => `
-          <div class="transaction-item">
-            <div class="transaction-info">
-              <div class="transaction-icon">${tx.type === 'purchase' ? '💎' : '🎨'}</div>
-              <div class="transaction-details">
-                <div class="transaction-desc">${tx.description}</div>
-                <div class="transaction-date">${new Date(tx.date).toLocaleDateString()}</div>
-              </div>
+        list.innerHTML = '<div class="empty-state">No transactions yet.</div>';
+        return;
+      }
+
+      list.innerHTML = transactions.map(txn => {
+        const amountClass = txn.delta > 0 ? 'positive' : 'negative';
+        const amountText = txn.delta > 0 ? `+${txn.delta}` : `${txn.delta}`;
+
+        return `
+          <div class="txn-item">
+            <div class="item-left">
+              <div class="item-type">${txn.desc}</div>
+              <div class="item-time">${new Date(txn.time).toLocaleString()}</div>
             </div>
-            <div class="transaction-amount ${tx.amount > 0 ? 'positive' : 'negative'}">
-              ${tx.amount > 0 ? '+' : ''}${tx.amount}
+            <div class="item-right">
+              <div class="item-amount ${amountClass}">${amountText} Credits</div>
             </div>
           </div>
-        `).join('');
-      }
+        `;
+      }).join('');
     }
 
-    loadCredits();
-    loadTransactions();
+    // Render purchases
+    function renderPurchases() {
+      const list = document.getElementById('purchases-list');
+
+      if (purchases.length === 0) {
+        list.innerHTML = '<div class="empty-state">No purchases yet.</div>';
+        return;
+      }
+
+      list.innerHTML = purchases.map(purchase => `
+        <div class="purchase-item">
+          <div class="item-left">
+            <div class="item-type">${purchase.credits} Credits</div>
+            <div class="item-time">${new Date(purchase.time).toLocaleString()}</div>
+          </div>
+          <div class="item-right">
+            <div class="item-price">$${purchase.price.toFixed(2)}</div>
+            <div class="item-status">${purchase.status}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Export CSV
+    function exportCSV() {
+      const header = "time,description,delta\n";
+      const body = transactions.map(txn =>
+        `${new Date(txn.time).toISOString()},${txn.desc},${txn.delta}`
+      ).join("\n");
+
+      const blob = new Blob([header + body], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mini-visionary-transactions.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Initialize
+    loadData();
+    renderBalance();
+    renderTransactions();
+    renderPurchases();
   </script>
 </body>
 </html>
