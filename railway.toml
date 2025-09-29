@@ -1,0 +1,7 @@
+# =========================================
+# railway.toml  (repo root)
+# =========================================
+[services.web]
+builder = "Dockerfile"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120000

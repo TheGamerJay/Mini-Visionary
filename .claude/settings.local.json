@@ -1,7 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:minivisionary.soulbridgeai.com)"
+      "WebFetch(domain:minivisionary.soulbridgeai.com)",
+      "Bash(tasklist:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(.Start-FlaskClean.ps1)",
+      "Bash(powershell:*)",
+      "Bash(python:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(git fetch:*)",
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(pip install:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(curl -s http://localhost:8080/static/generate.html)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(rm:*)",
+      "Bash(docker build:*)"
     ],
     "deny": [],
     "ask": []
