@@ -108,7 +108,7 @@
               <button class="btn-action" onclick="openMediaModal()">🎬 Change Image/Media</button>
               <button class="btn-action" onclick="openPasswordModal()">🔒 Change Password</button>
             </div>
-            <div class="upload-note">Supports: PNG, JPG, JPEG, GIF, WebP, MP4<br>Max: 10MB • Videos: 11 seconds max</div>
+            <div class="upload-note">Supports: PNG, JPG, JPEG, GIF, WebP, MP4<br>Max: 20MB • Videos: 11 seconds max</div>
           </div>
         </section>
 
@@ -163,7 +163,7 @@
           <span id="file-name">No file chosen</span>
         </label>
         <input type="file" id="media-input" class="file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,video/mp4" onchange="handleMediaSelect(event)">
-        <div class="helper-text">Supports: PNG, JPG, JPEG, GIF, WebP, MP4 • Max: 10MB • Videos: 11 seconds max</div>
+        <div class="helper-text">Supports: PNG, JPG, JPEG, GIF, WebP, MP4 • Max: 20MB • Videos: 11 seconds max</div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeModal('media-modal')">Cancel</button>
@@ -282,8 +282,8 @@
       }
 
       try {
-        const response = await fetch('/api/library/profile/update', {
-          method: 'POST',
+        const response = await fetch('/api/library/profile', {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -310,10 +310,25 @@
       const file = event.target.files[0];
       if (!file) return;
 
-      // Check file size (10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File size exceeds 10MB');
+      // Check file size (20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        alert('File size exceeds 20MB');
         return;
+      }
+
+      // Check video duration if it's a video
+      if (file.type.startsWith('video/')) {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = function() {
+          window.URL.revokeObjectURL(video.src);
+          if (video.duration > 11) {
+            alert('Video duration exceeds 11 seconds');
+            document.getElementById('media-input').value = '';
+            return;
+          }
+        };
+        video.src = URL.createObjectURL(file);
       }
 
       selectedMedia = file;
@@ -332,8 +347,8 @@
 
         try {
           // Save to database
-          const response = await fetch('/api/library/profile/update', {
-            method: 'POST',
+          const response = await fetch('/api/library/profile', {
+            method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
