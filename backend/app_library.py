@@ -235,7 +235,7 @@ def get_profile():
             }
         })
 
-@library_bp.put("/profile")
+@library_bp.route("/profile", methods=["PUT", "POST"])
 @auth_required
 def update_profile():
     """
