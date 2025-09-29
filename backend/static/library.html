@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Library — Mini Visionary</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px; align-items:center}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
+    .container{max-width:1400px; margin:0 auto; padding:40px 24px}
+    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .library-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:32px}
+    .library-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; transition:all 0.2s; position:relative}
+    .library-item:hover{transform:translateY(-4px); border-color:var(--line); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+    .library-item img{width:100%; height:280px; object-fit:cover}
+    .library-info{padding:16px}
+    .library-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .library-meta{font-size:12px; color:var(--muted); margin-bottom:12px}
+    .library-actions{display:flex; gap:8px}
+    .btn-small{padding:6px 12px; font-size:12px; border:1px solid var(--ring); border-radius:6px; background:var(--sunken); color:var(--text); cursor:pointer; transition:all 0.2s}
+    .btn-small:hover{background:var(--card); border-color:var(--line)}
+    .empty-state{text-align:center; padding:80px 20px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/static/generate.html" class="logo">
+      <img src="/logo.png" alt="Mini Visionary Logo">
+      Mini Visionary
+    </a>
+    <nav class="nav">
+      <a href="/static/guide.html">Guide</a>
+      <a href="/static/gallery.html">Gallery</a>
+      <a href="/static/library.html" class="active">Library</a>
+      <a href="/static/store.html">💎 Store</a>
+      <a href="/static/wallet.html">💰 Wallet</a>
+      <a href="/static/profile.html">🧑 Profile</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>📁 Your Library</h1>
+    <p style="color:var(--muted);">All your saved posters in one place.</p>
+
+    <div id="library-grid" class="library-grid">
+      <div class="empty-state">
+        <h2 style="color:var(--text); margin-bottom:16px;">Your library is empty</h2>
+        <p>Start generating posters and save your favorites to see them here!</p>
+        <a href="/static/generate.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border-radius:8px; text-decoration:none;">Start Creating</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      window.location.href = '/auth.html#login';
+    }
+
+    // Load library from API
+    async function loadLibrary() {
+      try {
+        const response = await fetch('/api/library', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.ok && data.images && data.images.length > 0) {
+          renderLibrary(data.images);
+        }
+      } catch (error) {
+        console.error('Failed to load library:', error);
+      }
+    }
+
+    function renderLibrary(images) {
+      const grid = document.getElementById('library-grid');
+      grid.innerHTML = images.map(img => `
+        <div class="library-item">
+          <img src="${img.url}" alt="${img.prompt}">
+          <div class="library-info">
+            <div class="library-title">${img.prompt}</div>
+            <div class="library-meta">${new Date(img.created_at).toLocaleDateString()}</div>
+            <div class="library-actions">
+              <button class="btn-small" onclick="downloadImage('${img.url}', '${img.prompt}')">⬇️ Download</button>
+              <button class="btn-small" onclick="deleteFromLibrary('${img.id}')">🗑️ Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function downloadImage(url, prompt) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${prompt.slice(0, 30)}.png`;
+      a.click();
+    }
+
+    async function deleteFromLibrary(id) {
+      if (!confirm('Delete this poster from your library?')) return;
+
+      try {
+        const response = await fetch(`/api/library/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          loadLibrary();
+        }
+      } catch (error) {
+        console.error('Failed to delete:', error);
+      }
+    }
+
+    loadLibrary();
+  </script>
+</body>
+</html>

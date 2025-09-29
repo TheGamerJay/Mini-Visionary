@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile — Mini Visionary</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px; align-items:center}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
+    .container{max-width:800px; margin:0 auto; padding:40px 24px}
+    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .profile-header{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:32px; text-align:center; margin-bottom:32px}
+    .profile-avatar{width:120px; height:120px; background:linear-gradient(135deg, var(--btn-start), var(--btn-end)); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:800; color:#081018; margin:0 auto 20px}
+    .profile-name{font-size:28px; font-weight:700; color:var(--text); margin-bottom:8px}
+    .profile-email{color:var(--muted); font-size:14px; margin-bottom:20px}
+    .profile-stats{display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-top:24px}
+    .stat-item{text-align:center}
+    .stat-value{font-size:32px; font-weight:800; color:var(--text)}
+    .stat-label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px}
+    .section{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px; margin-bottom:24px}
+    .section-title{font-size:20px; font-weight:700; color:var(--text); margin-bottom:16px}
+    .form-group{margin-bottom:20px}
+    .label{display:block; margin-bottom:8px; font-weight:600; color:var(--text); font-size:14px}
+    .input{width:100%; padding:12px; border:1px solid var(--ring); border-radius:8px; background:var(--sunken); color:var(--text); font-family:inherit; font-size:14px}
+    .input:focus{outline:none; border-color:var(--line)}
+    .btn{padding:12px 24px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-secondary{background:var(--sunken); border:1px solid var(--ring); color:var(--text)}
+    .btn-secondary:hover{background:var(--card); border-color:var(--line)}
+    .logout-btn{background:#ef4444; color:white}
+    .logout-btn:hover{background:#dc2626}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/static/generate.html" class="logo">
+      <img src="/logo.png" alt="Mini Visionary Logo">
+      Mini Visionary
+    </a>
+    <nav class="nav">
+      <a href="/static/guide.html">Guide</a>
+      <a href="/static/gallery.html">Gallery</a>
+      <a href="/static/library.html">Library</a>
+      <a href="/static/store.html">💎 Store</a>
+      <a href="/static/wallet.html">💰 Wallet</a>
+      <a href="/static/profile.html" class="active">🧑 Profile</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>🧑 Profile</h1>
+
+    <div class="profile-header">
+      <div class="profile-avatar" id="avatar-initial">U</div>
+      <div class="profile-name" id="profile-name">Loading...</div>
+      <div class="profile-email" id="profile-email">Loading...</div>
+
+      <div class="profile-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-credits">0</div>
+          <div class="stat-label">Credits</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-generated">0</div>
+          <div class="stat-label">Generated</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-saved">0</div>
+          <div class="stat-label">Saved</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Account Information</div>
+      <div class="form-group">
+        <label class="label">Display Name</label>
+        <input type="text" class="input" id="display-name" placeholder="Your display name">
+      </div>
+      <div class="form-group">
+        <label class="label">Email</label>
+        <input type="email" class="input" id="email" disabled>
+      </div>
+      <button class="btn" onclick="updateProfile()">Save Changes</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Account Actions</div>
+      <button class="btn logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      window.location.href = '/auth.html#login';
+    }
+
+    // Load profile data
+    async function loadProfile() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.ok && data.user) {
+          const user = data.user;
+
+          // Update profile display
+          document.getElementById('profile-name').textContent = user.display_name || user.username || 'User';
+          document.getElementById('profile-email').textContent = user.email || 'No email';
+          document.getElementById('display-name').value = user.display_name || user.username || '';
+          document.getElementById('email').value = user.email || '';
+          document.getElementById('stat-credits').textContent = user.credits || 0;
+
+          // Set avatar initial
+          const initial = (user.display_name || user.username || 'U').charAt(0).toUpperCase();
+          document.getElementById('avatar-initial').textContent = initial;
+
+          // Load additional stats
+          loadStats();
+        } else {
+          logout();
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        logout();
+      }
+    }
+
+    async function loadStats() {
+      // Load generated images count
+      const generatedImages = JSON.parse(localStorage.getItem('mv_generated_images') || '[]');
+      document.getElementById('stat-generated').textContent = generatedImages.length;
+
+      // Load library count from API
+      try {
+        const response = await fetch('/api/library', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.ok && data.images) {
+          document.getElementById('stat-saved').textContent = data.images.length;
+        }
+      } catch (error) {
+        console.error('Failed to load library stats:', error);
+      }
+    }
+
+    async function updateProfile() {
+      const displayName = document.getElementById('display-name').value.trim();
+
+      if (!displayName) {
+        alert('Display name cannot be empty');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/profile/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            display_name: displayName
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          alert('Profile updated successfully!');
+          loadProfile();
+        } else {
+          alert('Failed to update profile: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        alert('Network error: ' + error.message);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('cached_user_data');
+      window.location.href = '/auth.html#login';
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

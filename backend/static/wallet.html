@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wallet — Mini Visionary</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px; align-items:center}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
+    .container{max-width:900px; margin:0 auto; padding:40px 24px}
+    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .balance-card{background:linear-gradient(135deg, var(--card), var(--sunken)); border:2px solid var(--ring); border-radius:20px; padding:40px; text-align:center; margin-bottom:32px}
+    .balance-label{color:var(--muted); font-size:14px; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px}
+    .balance-amount{font-size:64px; font-weight:800; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent; margin-bottom:20px}
+    .buy-more-btn{display:inline-block; padding:14px 32px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border-radius:8px; text-decoration:none; transition:all 0.2s}
+    .buy-more-btn:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(34, 211, 238, 0.3)}
+    .section-title{font-size:24px; font-weight:700; color:var(--text); margin-bottom:20px}
+    .transaction-list{background:var(--card); border:1px solid var(--ring); border-radius:16px; overflow:hidden}
+    .transaction-item{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--ring)}
+    .transaction-item:last-child{border-bottom:none}
+    .transaction-info{display:flex; align-items:center; gap:12px}
+    .transaction-icon{width:40px; height:40px; background:var(--sunken); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px}
+    .transaction-details{display:flex; flex-direction:column; gap:4px}
+    .transaction-desc{color:var(--text); font-weight:600; font-size:14px}
+    .transaction-date{color:var(--muted); font-size:12px}
+    .transaction-amount{font-weight:700; font-size:16px}
+    .transaction-amount.positive{color:#10b981}
+    .transaction-amount.negative{color:#ef4444}
+    .empty-state{text-align:center; padding:60px 20px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/static/generate.html" class="logo">
+      <img src="/logo.png" alt="Mini Visionary Logo">
+      Mini Visionary
+    </a>
+    <nav class="nav">
+      <a href="/static/guide.html">Guide</a>
+      <a href="/static/gallery.html">Gallery</a>
+      <a href="/static/library.html">Library</a>
+      <a href="/static/store.html">💎 Store</a>
+      <a href="/static/wallet.html" class="active">💰 Wallet</a>
+      <a href="/static/profile.html">🧑 Profile</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>💰 Wallet</h1>
+    <p style="color:var(--muted); margin-bottom:32px;">Manage your credits and view transaction history.</p>
+
+    <div class="balance-card">
+      <div class="balance-label">Available Credits</div>
+      <div class="balance-amount" id="credit-balance">0</div>
+      <a href="/static/store.html" class="buy-more-btn">Buy More Credits</a>
+    </div>
+
+    <div class="section-title">Transaction History</div>
+    <div id="transaction-list" class="transaction-list">
+      <div class="empty-state">
+        <p>No transactions yet</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      window.location.href = '/auth.html#login';
+    }
+
+    // Load user credits
+    async function loadCredits() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.ok && data.user) {
+          document.getElementById('credit-balance').textContent = data.user.credits || 0;
+        }
+      } catch (error) {
+        console.error('Failed to load credits:', error);
+      }
+    }
+
+    // Load transaction history (placeholder)
+    async function loadTransactions() {
+      // This would call an API endpoint in a real implementation
+      // For now, showing empty state
+      const list = document.getElementById('transaction-list');
+
+      // Example transactions (would come from API)
+      const transactions = [];
+
+      if (transactions.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>';
+      } else {
+        list.innerHTML = transactions.map(tx => `
+          <div class="transaction-item">
+            <div class="transaction-info">
+              <div class="transaction-icon">${tx.type === 'purchase' ? '💎' : '🎨'}</div>
+              <div class="transaction-details">
+                <div class="transaction-desc">${tx.description}</div>
+                <div class="transaction-date">${new Date(tx.date).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div class="transaction-amount ${tx.amount > 0 ? 'positive' : 'negative'}">
+              ${tx.amount > 0 ? '+' : ''}${tx.amount}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    loadCredits();
+    loadTransactions();
+  </script>
+</body>
+</html>

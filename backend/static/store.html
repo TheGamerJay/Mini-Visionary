@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Store — Mini Visionary</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px; align-items:center}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
+    .container{max-width:1200px; margin:0 auto; padding:40px 24px}
+    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .packages-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px; margin-top:32px}
+    .package{background:var(--card); border:2px solid var(--ring); border-radius:16px; padding:32px; text-align:center; transition:all 0.3s}
+    .package:hover{transform:translateY(-8px); border-color:var(--line); box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+    .package.featured{border-color:var(--btn-start); background:linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(236, 72, 153, 0.1))}
+    .package-badge{display:inline-block; padding:4px 12px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-size:11px; font-weight:700; border-radius:12px; text-transform:uppercase; margin-bottom:16px}
+    .package-credits{font-size:48px; font-weight:800; color:var(--text); margin:16px 0}
+    .package-price{font-size:32px; font-weight:700; color:var(--text); margin-bottom:8px}
+    .package-description{color:var(--muted); font-size:14px; margin-bottom:24px}
+    .buy-btn{width:100%; padding:14px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:16px; transition:all 0.2s}
+    .buy-btn:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(34, 211, 238, 0.3)}
+    .buy-btn:disabled{opacity:0.5; cursor:not-allowed}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/static/generate.html" class="logo">
+      <img src="/logo.png" alt="Mini Visionary Logo">
+      Mini Visionary
+    </a>
+    <nav class="nav">
+      <a href="/static/guide.html">Guide</a>
+      <a href="/static/gallery.html">Gallery</a>
+      <a href="/static/library.html">Library</a>
+      <a href="/static/store.html" class="active">💎 Store</a>
+      <a href="/static/wallet.html">💰 Wallet</a>
+      <a href="/static/profile.html">🧑 Profile</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>💎 Credit Store</h1>
+    <p style="color:var(--muted);">Purchase credits to generate more AI posters.</p>
+
+    <div class="packages-grid">
+      <div class="package">
+        <div class="package-credits">10</div>
+        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
+        <div class="package-price">$5</div>
+        <div class="package-description">Perfect for trying out the platform</div>
+        <button class="buy-btn" onclick="purchasePackage(10, 5)">Buy Now</button>
+      </div>
+
+      <div class="package featured">
+        <div class="package-badge">Most Popular</div>
+        <div class="package-credits">50</div>
+        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
+        <div class="package-price">$20</div>
+        <div class="package-description">Best value for regular users</div>
+        <button class="buy-btn" onclick="purchasePackage(50, 20)">Buy Now</button>
+      </div>
+
+      <div class="package">
+        <div class="package-credits">100</div>
+        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
+        <div class="package-price">$35</div>
+        <div class="package-description">For power users and teams</div>
+        <button class="buy-btn" onclick="purchasePackage(100, 35)">Buy Now</button>
+      </div>
+
+      <div class="package">
+        <div class="package-credits">250</div>
+        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
+        <div class="package-price">$75</div>
+        <div class="package-description">Maximum savings for professionals</div>
+        <button class="buy-btn" onclick="purchasePackage(250, 75)">Buy Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      window.location.href = '/auth.html#login';
+    }
+
+    function purchasePackage(credits, price) {
+      alert(`Credit purchasing is coming soon!\n\nPackage: ${credits} credits for $${price}\n\nStay tuned for payment integration.`);
+    }
+  </script>
+</body>
+</html>

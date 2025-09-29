@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gallery — Mini Visionary</title>
+  <link rel="icon" href="/logo.png" />
+  <style>
+    :root{
+      --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
+      --line:#3b82f6; --text:#e6eaf2; --muted:#9aa4b2; --ring:rgba(148,163,184,.25);
+      --btn-start:#22d3ee; --btn-end:#ec4899;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #16213a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 110% 110%, #1b2a4b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;
+    }
+    .header{display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--ring)}
+    .logo{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; text-decoration:none; color:var(--text)}
+    .logo img{width:32px; height:32px; border-radius:8px}
+    .nav{display:flex; gap:16px; align-items:center}
+    .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
+    .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
+    .container{max-width:1400px; margin:0 auto; padding:40px 24px}
+    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .gallery-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:32px}
+    .gallery-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; transition:all 0.2s; cursor:pointer}
+    .gallery-item:hover{transform:translateY(-4px); border-color:var(--line); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+    .gallery-item img{width:100%; height:280px; object-fit:cover}
+    .gallery-info{padding:16px}
+    .gallery-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px}
+    .gallery-meta{font-size:12px; color:var(--muted)}
+    .empty-state{text-align:center; padding:80px 20px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/static/generate.html" class="logo">
+      <img src="/logo.png" alt="Mini Visionary Logo">
+      Mini Visionary
+    </a>
+    <nav class="nav">
+      <a href="/static/guide.html">Guide</a>
+      <a href="/static/gallery.html" class="active">Gallery</a>
+      <a href="/static/library.html">Library</a>
+      <a href="/static/store.html">💎 Store</a>
+      <a href="/static/wallet.html">💰 Wallet</a>
+      <a href="/static/profile.html">🧑 Profile</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>🎨 Gallery</h1>
+    <p style="color:var(--muted);">Explore community creations and get inspired.</p>
+
+    <div id="gallery-grid" class="gallery-grid">
+      <div class="empty-state">
+        <h2 style="color:var(--text); margin-bottom:16px;">Coming Soon!</h2>
+        <p>The community gallery is under construction. Soon you'll be able to browse and get inspired by posters created by other users.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      window.location.href = '/auth.html#login';
+    }
+  </script>
+</body>
+</html>
