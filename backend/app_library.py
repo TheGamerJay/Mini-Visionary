@@ -257,7 +257,7 @@ def update_profile():
 
         if "avatar_url" in data:
             avatar_url = (data["avatar_url"] or "").strip()
-            db_user.avatar_url = (avatar_url[:512] if avatar_url else None)
+            db_user.avatar_url = avatar_url if avatar_url else None
 
         db_user.updated_at = datetime.utcnow()
         s.commit()

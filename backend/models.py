@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum as PyEnum
 
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, ForeignKey, Enum, Index, func, event
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, ForeignKey, Enum, Index, func, event, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, mapped_column
 from sqlalchemy.pool import StaticPool
@@ -78,7 +78,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[Optional[str]] = mapped_column(String(255))
     display_name: Mapped[Optional[str]] = mapped_column(String(100))
-    avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
+    avatar_url: Mapped[Optional[str]] = mapped_column(Text)
     credits: Mapped[int] = mapped_column(Integer, default=0)
     ad_free: Mapped[bool] = mapped_column(Boolean, default=False)
     stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(255))
