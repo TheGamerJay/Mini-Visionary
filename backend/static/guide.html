@@ -43,6 +43,27 @@
     .faq-answer ul{margin:12px 0; padding-left:20px; list-style:disc}
     .faq-answer li{margin-bottom:8px}
     .faq-answer a{color:var(--btn-start); text-decoration:underline}
+    .nav-guide-section{margin-top:48px; margin-bottom:48px}
+    .nav-block{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px; margin-bottom:24px; position:relative; overflow:hidden}
+    .nav-block::before{content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg, rgba(34,211,238,0.05), rgba(236,72,153,0.05)); pointer-events:none}
+    .nav-block-title{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px}
+    .nav-block h2{font-size:20px; font-weight:700; color:var(--text); margin-bottom:16px}
+    .nav-links{display:grid; gap:12px}
+    .nav-link-item{display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px; background:var(--sunken); border:1px solid var(--ring); border-radius:8px; transition:all 0.2s}
+    .nav-link-item:hover{background:var(--card); border-color:var(--line)}
+    .nav-link-label{color:var(--text); font-size:14px}
+    .nav-link-path{padding:6px 12px; background:var(--card); border:1px solid var(--ring); border-radius:8px; font-size:13px; color:var(--muted); font-family:monospace}
+    .nav-link-path:hover{border-color:var(--line); color:var(--text)}
+    .quick-nav{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px}
+    .quick-nav a{padding:8px 16px; background:var(--card); border:1px solid var(--ring); border-radius:8px; color:var(--text); text-decoration:none; font-size:14px; transition:all 0.2s}
+    .quick-nav a:hover{background:var(--sunken); border-color:var(--line)}
+    .support-card{background:var(--sunken); border:1px solid var(--ring); border-radius:12px; padding:20px; margin-top:12px}
+    .support-email{color:var(--text); font-weight:600; margin-top:8px; word-break:break-all}
+    .support-actions{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap}
+    .btn-copy{padding:8px 16px; background:var(--card); border:1px solid var(--ring); border-radius:8px; color:var(--text); cursor:pointer; font-size:14px; transition:all 0.2s}
+    .btn-copy:hover{background:var(--sunken); border-color:var(--line)}
+    .btn-mail{padding:8px 16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; text-decoration:none; display:inline-block; font-size:14px; transition:all 0.2s}
+    .btn-mail:hover{transform:translateY(-1px)}
   </style>
 </head>
 <body>
@@ -62,8 +83,21 @@
   </div>
 
   <div class="container">
-    <h1>📚 User Guide</h1>
-    <p>Learn how to create amazing posters with Mini Visionary AI.</p>
+    <h1>📖 Mini Visionary — Site Navigation Guide</h1>
+    <p>Quick links for users and navigation reference.</p>
+    <div class="quick-nav">
+      <a href="#getting-started">Getting Started</a>
+      <a href="#account">A - Account</a>
+      <a href="#store">B - Store</a>
+      <a href="#policies">C - Policies</a>
+      <a href="#support">D - Support</a>
+      <a href="#faq">FAQ</a>
+    </div>
+
+    <div id="getting-started" class="nav-guide-section">
+      <h1>📚 User Guide</h1>
+      <p>Learn how to create amazing posters with Mini Visionary AI.</p>
+    </div>
 
     <div class="guide-section">
       <h2>Getting Started</h2>
@@ -102,7 +136,89 @@
       <p>Each poster generation costs 1 credit. You can view your remaining credits in the header and purchase more in the Store.</p>
     </div>
 
-    <div class="faq-section">
+    <div class="nav-guide-section">
+      <div id="account" class="nav-block">
+        <div class="nav-block-title">Block A</div>
+        <h2>🔑 Account & Access</h2>
+        <div class="nav-links">
+          <div class="nav-link-item">
+            <span class="nav-link-label">Login Page</span>
+            <a href="/auth.html#login" class="nav-link-path">/auth.html#login</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Register / Create Account</span>
+            <a href="/auth.html#register" class="nav-link-path">/auth.html#register</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Forgot Password</span>
+            <a href="/auth.html#reset" class="nav-link-path">/auth.html#reset</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Profile Settings (requires login)</span>
+            <a href="/static/profile.html" class="nav-link-path">/static/profile.html</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="store" class="nav-block">
+        <div class="nav-block-title">Block B</div>
+        <h2>🛒 Store & Wallet</h2>
+        <div class="nav-links">
+          <div class="nav-link-item">
+            <span class="nav-link-label">Store (Buy Credits) — requires login</span>
+            <a href="/static/store.html" class="nav-link-path">/static/store.html</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Wallet / Balance — requires login</span>
+            <a href="/static/wallet.html" class="nav-link-path">/static/wallet.html</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Profile View — requires login</span>
+            <a href="/static/profile.html" class="nav-link-path">/static/profile.html</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="policies" class="nav-block">
+        <div class="nav-block-title">Block C</div>
+        <h2>📜 Policies & Legal</h2>
+        <div class="nav-links">
+          <div class="nav-link-item">
+            <span class="nav-link-label">Terms of Service</span>
+            <a href="/static/terms.html" class="nav-link-path">/static/terms.html</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Privacy Policy</span>
+            <a href="/static/privacy.html" class="nav-link-path">/static/privacy.html</a>
+          </div>
+          <div class="nav-link-item">
+            <span class="nav-link-label">Site Guide (this page)</span>
+            <a href="/static/guide.html" class="nav-link-path">/static/guide.html</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="support" class="nav-block">
+        <div class="nav-block-title">Block D</div>
+        <h2>📂 Support & Help</h2>
+        <div class="nav-links">
+          <div class="nav-link-item">
+            <span class="nav-link-label">FAQ</span>
+            <a href="#faq" class="nav-link-path">#faq</a>
+          </div>
+        </div>
+        <div class="support-card">
+          <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Contact Support</div>
+          <div class="support-email">minivisionary.contactus@gmail.com</div>
+          <div class="support-actions">
+            <button class="btn-copy" onclick="copyEmail()">Copy Email</button>
+            <a href="mailto:minivisionary.contactus@gmail.com" class="btn-mail">Open Mail</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="faq" class="faq-section">
       <h1>❓ Frequently Asked Questions</h1>
       <p style="margin-bottom:32px;">Quick answers to common questions</p>
 
@@ -231,6 +347,20 @@
         answer.classList.add('active');
         toggle.style.transform = 'rotate(180deg)';
       }
+    }
+
+    function copyEmail() {
+      const email = 'minivisionary.contactus@gmail.com';
+      navigator.clipboard.writeText(email).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
     }
   </script>
 </body>
