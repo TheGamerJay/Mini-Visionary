@@ -1,8 +1,11 @@
 # app_library.py
 from __future__ import annotations
 from datetime import datetime
+import os
+import uuid
+from werkzeug.utils import secure_filename
 
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g, current_app
 from sqlalchemy import func, or_
 
 from models import (
@@ -12,6 +15,39 @@ from models import (
 from auth import auth_required
 
 library_bp = Blueprint("library", __name__, url_prefix="/api")
+
+# File upload configuration
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'}
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_VIDEO_EXTENSIONS = {'mp4'}
+MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+
+def allowed_file(filename, allowed_exts=ALLOWED_EXTENSIONS):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_exts
+
+def save_upload_file(file, subdir="profiles/avatars"):
+    """Save uploaded file and return relative URL"""
+    if not file or not file.filename:
+        return None
+
+    filename = secure_filename(file.filename)
+    if not allowed_file(filename):
+        raise ValueError("File type not allowed")
+
+    # Generate unique filename
+    ext = filename.rsplit('.', 1)[1].lower()
+    unique_filename = f"{uuid.uuid4().hex}.{ext}"
+
+    # Create upload directory if it doesn't exist
+    upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', subdir)
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # Save file
+    filepath = os.path.join(upload_dir, unique_filename)
+    file.save(filepath)
+
+    # Return URL path
+    return f"/static/uploads/{subdir}/{unique_filename}"
 
 @library_bp.get("/library")
 @auth_required
@@ -235,48 +271,96 @@ def get_profile():
             }
         })
 
-@library_bp.route("/profile", methods=["PUT", "POST"])
+@library_bp.route("/profile", methods=["PUT", "POST", "PATCH", "OPTIONS"])
 @auth_required
 def update_profile():
     """
     Update user profile
-    Body: {display_name?, avatar_image_url?, avatar_video_url?}
+    Supports both multipart/form-data (file uploads) and application/json
     """
-    data = request.get_json()
-    if not data:
-        return jsonify({"ok": False, "error": "JSON body required"}), 400
+    # Handle OPTIONS for CORS preflight
+    if request.method == "OPTIONS":
+        return jsonify({"ok": True}), 200
 
-    with get_session() as s:
-        db_user = s.query(User).filter_by(id=g.user.id).first()
-        if not db_user:
-            return jsonify({"ok": False, "error": "User not found"}), 404
+    try:
+        with get_session() as s:
+            db_user = s.query(User).filter_by(id=g.user.id).first()
+            if not db_user:
+                return jsonify({"ok": False, "error": "User not found"}), 404
 
-        if "display_name" in data:
-            display_name = (data["display_name"] or "").strip()
-            if not display_name:
-                return jsonify({"ok": False, "error": "Display name cannot be empty"}), 400
-            db_user.display_name = display_name[:120]
+            # Check if this is a multipart upload or JSON
+            is_multipart = request.content_type and 'multipart/form-data' in request.content_type
 
-        # Handle avatar uploads - store in single avatar_url column
-        if "avatar_image_url" in data:
-            avatar_image_url = (data["avatar_image_url"] or "").strip()
-            db_user.avatar_url = avatar_image_url if avatar_image_url else None
+            if is_multipart:
+                # Handle file uploads
+                display_name = request.form.get("display_name", "").strip()
+                avatar_file = request.files.get("avatar")
 
-        if "avatar_video_url" in data:
-            avatar_video_url = (data["avatar_video_url"] or "").strip()
-            db_user.avatar_url = avatar_video_url if avatar_video_url else None
+                if display_name:
+                    if len(display_name) == 0:
+                        return jsonify({"ok": False, "error": "Display name cannot be empty"}), 400
+                    db_user.display_name = display_name[:120]
 
-        db_user.updated_at = datetime.utcnow()
-        s.commit()
+                if avatar_file and avatar_file.filename:
+                    # Check file size
+                    avatar_file.seek(0, os.SEEK_END)
+                    file_size = avatar_file.tell()
+                    avatar_file.seek(0)
 
-        avatar = getattr(db_user, 'avatar_url', None)
-        return jsonify({
-            "ok": True,
-            "profile": {
-                "id": db_user.id,
-                "display_name": db_user.display_name,
-                "avatar_image_url": avatar if avatar and not avatar.startswith('data:video/') else None,
-                "avatar_video_url": avatar if avatar and avatar.startswith('data:video/') else None,
-                "updated_at": db_user.updated_at.isoformat()
-            }
-        })
+                    if file_size > MAX_FILE_SIZE:
+                        return jsonify({"ok": False, "error": f"File too large. Max {MAX_FILE_SIZE // (1024*1024)}MB"}), 413
+
+                    # Check file type
+                    ext = avatar_file.filename.rsplit('.', 1)[1].lower() if '.' in avatar_file.filename else ''
+                    if ext not in ALLOWED_EXTENSIONS:
+                        return jsonify({"ok": False, "error": "Only png/jpg/jpeg/gif/webp/mp4 allowed"}), 415
+
+                    # Save file
+                    avatar_url = save_upload_file(avatar_file, "profiles/avatars")
+                    db_user.avatar_url = avatar_url
+
+            else:
+                # Handle JSON (backward compatibility with data URLs)
+                data = request.get_json()
+                if not data:
+                    return jsonify({"ok": False, "error": "Request body required"}), 400
+
+                if "display_name" in data:
+                    display_name = (data["display_name"] or "").strip()
+                    if not display_name:
+                        return jsonify({"ok": False, "error": "Display name cannot be empty"}), 400
+                    db_user.display_name = display_name[:120]
+
+                # Handle data URL uploads (fallback)
+                if "avatar_image_url" in data:
+                    avatar_image_url = (data["avatar_image_url"] or "").strip()
+                    db_user.avatar_url = avatar_image_url if avatar_image_url else None
+
+                if "avatar_video_url" in data:
+                    avatar_video_url = (data["avatar_video_url"] or "").strip()
+                    db_user.avatar_url = avatar_video_url if avatar_video_url else None
+
+            db_user.updated_at = datetime.utcnow()
+            s.commit()
+
+            avatar = getattr(db_user, 'avatar_url', None)
+            # Determine if it's a video or image
+            is_video = avatar and (avatar.startswith('data:video/') or avatar.endswith('.mp4'))
+
+            return jsonify({
+                "ok": True,
+                "profile": {
+                    "id": db_user.id,
+                    "display_name": db_user.display_name,
+                    "avatar_image_url": avatar if avatar and not is_video else None,
+                    "avatar_video_url": avatar if avatar and is_video else None,
+                    "avatar_url": avatar,
+                    "updated_at": db_user.updated_at.isoformat()
+                }
+            })
+
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.exception("Profile update failed")
+        return jsonify({"ok": False, "error": "Server error"}), 500

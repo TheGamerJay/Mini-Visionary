@@ -339,57 +339,82 @@
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const dataUrl = e.target.result;
+      try {
+        // Use FormData for proper file upload
+        const formData = new FormData();
+        formData.append('avatar', selectedMedia);
 
-        try {
-          // Determine if image or video
-          const isVideo = selectedMedia.type.startsWith('video/');
-          const isImage = selectedMedia.type.startsWith('image/');
+        const isVideo = selectedMedia.type.startsWith('video/');
+        const isImage = selectedMedia.type.startsWith('image/');
 
-          // Save to database in appropriate column
-          const body = {};
-          if (isImage) {
-            body.avatar_image_url = dataUrl;
-          } else if (isVideo) {
-            body.avatar_video_url = dataUrl;
-          }
+        // Try PATCH first, then POST, then PUT
+        const methods = ['PATCH', 'POST', 'PUT'];
+        let response = null;
+        let lastError = null;
 
-          const response = await fetch('/api/library/profile', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(body)
-          });
+        for (const method of methods) {
+          try {
+            response = await fetch('/api/library/profile', {
+              method: method,
+              headers: {
+                'Authorization': `Bearer ${token}`
+                // Don't set Content-Type - browser will set it with boundary
+              },
+              body: formData
+            });
 
-          const data = await response.json();
-
-          if (data.ok) {
-            // Update display
-            const avatarDisplay = document.getElementById('avatar-display');
-            if (isImage) {
-              avatarDisplay.innerHTML = `<img src="${dataUrl}" alt="profile">`;
-              userData.avatar_image_url = dataUrl;
-            } else if (isVideo) {
-              avatarDisplay.innerHTML = `<video src="${dataUrl}" autoplay loop muted></video>`;
-              userData.avatar_video_url = dataUrl;
+            if (response.status === 405) {
+              // Method not allowed, try next one
+              continue;
             }
 
-            closeModal('media-modal');
-            alert('Profile media updated successfully!');
-            selectedMedia = null;
-            document.getElementById('file-name').textContent = 'No file chosen';
-          } else {
-            alert('Failed to upload: ' + (data.error || 'Unknown error'));
+            if (response.status === 413) {
+              alert('File too large. Maximum size is 20MB.');
+              return;
+            }
+
+            if (response.status === 415) {
+              alert('File type not supported. Use PNG, JPG, GIF, WebP, or MP4.');
+              return;
+            }
+
+            break; // Success or other error, exit loop
+          } catch (err) {
+            lastError = err;
+            continue; // Try next method
           }
-        } catch (error) {
-          alert('Network error: ' + error.message);
         }
-      };
-      reader.readAsDataURL(selectedMedia);
+
+        if (!response) {
+          throw lastError || new Error('All upload methods failed');
+        }
+
+        const data = await response.json();
+
+        if (data.ok) {
+          // Update display with the uploaded file URL
+          const avatarDisplay = document.getElementById('avatar-display');
+          const avatarUrl = data.profile.avatar_url;
+
+          if (isVideo) {
+            avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
+            userData.avatar_video_url = avatarUrl;
+          } else if (isImage) {
+            avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
+            userData.avatar_image_url = avatarUrl;
+          }
+
+          closeModal('media-modal');
+          alert('Profile media updated successfully!');
+          selectedMedia = null;
+          document.getElementById('file-name').textContent = 'No file chosen';
+        } else {
+          alert('Failed to upload: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('Network error: ' + error.message);
+      }
     }
 
     function togglePassword(inputId) {
