@@ -648,6 +648,11 @@ def test_logging():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+# Serve logo from root path for backward compatibility
+@app.route('/logo.png')
+def serve_logo():
+    return send_from_directory(app.static_folder, 'logo.png')
+
 # Import SPA routing to register catch-all routes
 import serve_spa
 
