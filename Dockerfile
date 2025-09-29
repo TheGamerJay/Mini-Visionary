@@ -1,8 +1,8 @@
 # --- Frontend build ---
 FROM node:20-alpine AS frontend
 WORKDIR /frontend
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm install --frozen-lockfile
+COPY frontend/package*.json ./
+RUN npm install
 COPY frontend/ .
 # Clean any existing builds and create fresh build to dist folder
 RUN rm -rf dist && npm run build:docker
