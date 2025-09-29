@@ -233,14 +233,12 @@
           document.getElementById('display-name').textContent = userData.display_name || 'User';
           document.getElementById('new-name').value = userData.display_name || '';
 
-          // Update avatar if exists
-          if (userData.avatar_url) {
-            const avatarDisplay = document.getElementById('avatar-display');
-            if (userData.avatar_url.endsWith('.mp4')) {
-              avatarDisplay.innerHTML = `<video src="${userData.avatar_url}" autoplay loop muted></video>`;
-            } else {
-              avatarDisplay.innerHTML = `<img src="${userData.avatar_url}" alt="profile">`;
-            }
+          // Update avatar - prioritize video over image
+          const avatarDisplay = document.getElementById('avatar-display');
+          if (userData.avatar_video_url) {
+            avatarDisplay.innerHTML = `<video src="${userData.avatar_video_url}" autoplay loop muted></video>`;
+          } else if (userData.avatar_image_url) {
+            avatarDisplay.innerHTML = `<img src="${userData.avatar_image_url}" alt="profile">`;
           }
 
           // Update info grid
@@ -346,14 +344,25 @@
         const dataUrl = e.target.result;
 
         try {
-          // Save to database
+          // Determine if image or video
+          const isVideo = selectedMedia.type.startsWith('video/');
+          const isImage = selectedMedia.type.startsWith('image/');
+
+          // Save to database in appropriate column
+          const body = {};
+          if (isImage) {
+            body.avatar_image_url = dataUrl;
+          } else if (isVideo) {
+            body.avatar_video_url = dataUrl;
+          }
+
           const response = await fetch('/api/library/profile', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ avatar_url: dataUrl })
+            body: JSON.stringify(body)
           });
 
           const data = await response.json();
@@ -361,13 +370,14 @@
           if (data.ok) {
             // Update display
             const avatarDisplay = document.getElementById('avatar-display');
-            if (selectedMedia.type.startsWith('image/')) {
+            if (isImage) {
               avatarDisplay.innerHTML = `<img src="${dataUrl}" alt="profile">`;
-            } else if (selectedMedia.type.startsWith('video/')) {
+              userData.avatar_image_url = dataUrl;
+            } else if (isVideo) {
               avatarDisplay.innerHTML = `<video src="${dataUrl}" autoplay loop muted></video>`;
+              userData.avatar_video_url = dataUrl;
             }
 
-            userData.avatar_url = dataUrl;
             closeModal('media-modal');
             alert('Profile media updated successfully!');
             selectedMedia = null;

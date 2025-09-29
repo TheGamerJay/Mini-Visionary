@@ -31,7 +31,8 @@ def migrate():
                     email VARCHAR(255) NOT NULL,
                     password_hash VARCHAR(255),
                     display_name VARCHAR(100),
-                    avatar_url TEXT,
+                    avatar_image_url TEXT,
+                    avatar_video_url TEXT,
                     credits INTEGER NOT NULL,
                     ad_free BOOLEAN DEFAULT 0,
                     stripe_customer_id VARCHAR(255),
@@ -43,9 +44,9 @@ def migrate():
                 )
             """))
 
-            # Step 2: Copy data from old table
+            # Step 2: Copy data from old table (avatar_url becomes avatar_image_url)
             conn.execute(text("""
-                INSERT INTO users_new (id, email, password_hash, display_name, avatar_url,
+                INSERT INTO users_new (id, email, password_hash, display_name, avatar_image_url,
                                        credits, ad_free, stripe_customer_id, is_active,
                                        created_at, updated_at)
                 SELECT id, email, password_hash, display_name, avatar_url,
@@ -61,37 +62,26 @@ def migrate():
             conn.execute(text("ALTER TABLE users_new RENAME TO users"))
 
             conn.commit()
-            print("Migration complete - avatar_url is now TEXT type")
+            print("Migration complete - split avatar_url into avatar_image_url and avatar_video_url")
             print("Please restart the Flask app for changes to take effect")
             return
 
         # PostgreSQL migration
-        # Check current column type
-        result = conn.execute(text("""
-            SELECT data_type, character_maximum_length
-            FROM information_schema.columns
-            WHERE table_name = 'users' AND column_name = 'avatar_url'
-        """))
+        print("PostgreSQL detected - migrating columns...")
 
-        current = result.fetchone()
-        if current:
-            print(f"Current avatar_url type: {current[0]} ({current[1]})")
+        # Add new columns
+        conn.execute(text("ALTER TABLE users ADD COLUMN avatar_image_url TEXT"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN avatar_video_url TEXT"))
 
-        # Alter column to TEXT
-        print("Changing avatar_url to TEXT type...")
-        conn.execute(text("ALTER TABLE users ALTER COLUMN avatar_url TYPE TEXT"))
+        # Copy existing avatar_url data to avatar_image_url
+        conn.execute(text("UPDATE users SET avatar_image_url = avatar_url WHERE avatar_url IS NOT NULL"))
+
+        # Drop old column
+        conn.execute(text("ALTER TABLE users DROP COLUMN avatar_url"))
+
         conn.commit()
-
-        print("✅ Successfully migrated avatar_url column to TEXT")
-
-        # Verify
-        result = conn.execute(text("""
-            SELECT data_type
-            FROM information_schema.columns
-            WHERE table_name = 'users' AND column_name = 'avatar_url'
-        """))
-        new_type = result.fetchone()
-        print(f"New avatar_url type: {new_type[0]}")
+        print("Migration complete - split avatar_url into avatar_image_url and avatar_video_url")
+        print("Please restart the Flask app for changes to take effect")
 
 if __name__ == "__main__":
     migrate()

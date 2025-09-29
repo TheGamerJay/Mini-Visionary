@@ -238,7 +238,7 @@ def get_profile():
 def update_profile():
     """
     Update user profile
-    Body: {display_name?, avatar_url?}
+    Body: {display_name?, avatar_image_url?, avatar_video_url?}
     """
     data = request.get_json()
     if not data:
@@ -255,9 +255,13 @@ def update_profile():
                 return jsonify({"ok": False, "error": "Display name cannot be empty"}), 400
             db_user.display_name = display_name[:120]
 
-        if "avatar_url" in data:
-            avatar_url = (data["avatar_url"] or "").strip()
-            db_user.avatar_url = avatar_url if avatar_url else None
+        if "avatar_image_url" in data:
+            avatar_image_url = (data["avatar_image_url"] or "").strip()
+            db_user.avatar_image_url = avatar_image_url if avatar_image_url else None
+
+        if "avatar_video_url" in data:
+            avatar_video_url = (data["avatar_video_url"] or "").strip()
+            db_user.avatar_video_url = avatar_video_url if avatar_video_url else None
 
         db_user.updated_at = datetime.utcnow()
         s.commit()
@@ -267,7 +271,8 @@ def update_profile():
             "profile": {
                 "id": db_user.id,
                 "display_name": db_user.display_name,
-                "avatar_url": db_user.avatar_url,
+                "avatar_image_url": db_user.avatar_image_url,
+                "avatar_video_url": db_user.avatar_video_url,
                 "updated_at": db_user.updated_at.isoformat()
             }
         })
