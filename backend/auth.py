@@ -85,7 +85,7 @@ def maybe_upgrade_hash_to_bcrypt(user: User, plain_password: str) -> None:
 def sign_jwt(user_id, email: str) -> str:
     now = int(time.time())
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "email": email,
         "iat": now,
         "exp": now + TTL,
@@ -120,7 +120,8 @@ def auth_required(fn):
             raise Unauthorized("Invalid token")
 
         with get_session() as s:
-            user = s.query(User).filter_by(id=payload.get("sub")).first()
+            user_id = int(payload.get("sub"))
+            user = s.query(User).filter_by(id=user_id).first()
             if not user:
                 current_app.logger.warning("[auth_required] User not found: %s", payload.get("sub"))
                 raise Unauthorized("User not found")
@@ -235,7 +236,7 @@ def forgot():
         try:
             now = int(time.time())
             reset_payload = {
-                "sub": user.id,
+                "sub": str(user.id),
                 "email": user.email,
                 "type": "password_reset",
                 "iat": now,
@@ -266,7 +267,7 @@ def reset_password():
         if payload.get("type") != "password_reset":
             raise jwt.InvalidTokenError("Invalid token type")
 
-        user_id = payload["sub"]
+        user_id = int(payload["sub"])
         email = payload["email"]
 
         with get_session() as s:
