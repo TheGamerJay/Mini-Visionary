@@ -27,18 +27,73 @@
     .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
     .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
     .container{max-width:1200px; margin:0 auto; padding:40px 24px}
-    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
-    .packages-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px; margin-top:32px}
-    .package{background:var(--card); border:2px solid var(--ring); border-radius:16px; padding:32px; text-align:center; transition:all 0.3s}
-    .package:hover{transform:translateY(-8px); border-color:var(--line); box-shadow:0 16px 48px rgba(0,0,0,0.4)}
-    .package.featured{border-color:var(--btn-start); background:linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(236, 72, 153, 0.1))}
-    .package-badge{display:inline-block; padding:4px 12px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-size:11px; font-weight:700; border-radius:12px; text-transform:uppercase; margin-bottom:16px}
-    .package-credits{font-size:48px; font-weight:800; color:var(--text); margin:16px 0}
-    .package-price{font-size:32px; font-weight:700; color:var(--text); margin-bottom:8px}
-    .package-description{color:var(--muted); font-size:14px; margin-bottom:24px}
-    .buy-btn{width:100%; padding:14px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:16px; transition:all 0.2s}
-    .buy-btn:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(34, 211, 238, 0.3)}
-    .buy-btn:disabled{opacity:0.5; cursor:not-allowed}
+
+    /* Hero section */
+    .hero{background:var(--card); border:1px solid var(--ring); border-radius:24px; padding:32px; margin-bottom:32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px}
+    .hero-content{flex:1}
+    .hero-title{display:flex; align-items:center; gap:12px; margin-bottom:12px}
+    .hero-icon{width:32px; height:32px; background:linear-gradient(135deg, var(--btn-start), var(--btn-end)); border-radius:12px}
+    .hero-title h1{font-size:32px; font-weight:800; margin:0; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .hero-subtitle{color:var(--muted); font-size:16px}
+    .hero-subtitle span{background:linear-gradient(90deg, #a5b4fc, #f0abfc, #67e8f9); background-clip:text; -webkit-background-clip:text; color:transparent}
+
+    /* Cycle toggle */
+    .cycle-toggle{display:flex; gap:4px; background:var(--sunken); border:1px solid var(--ring); border-radius:50px; padding:4px}
+    .cycle-btn{padding:8px 16px; background:transparent; border:none; color:var(--muted); border-radius:50px; cursor:pointer; font-size:14px; transition:all 0.2s}
+    .cycle-btn.active{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700}
+    .cycle-btn:hover:not(.active){background:var(--card)}
+
+    /* Sections */
+    .section{margin-bottom:48px}
+    .section-title{font-size:24px; font-weight:700; color:var(--text); margin-bottom:24px}
+
+    /* Packages */
+    .packages-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px}
+    .package{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px; transition:all 0.3s; display:flex; flex-direction:column}
+    .package:hover{border-color:var(--line); transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.3)}
+    .package.popular{border:2px solid var(--line); box-shadow:0 0 0 1px rgba(148,163,184,0.25)}
+    .package-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px}
+    .package-name{font-size:20px; font-weight:700; color:var(--text)}
+    .package-badge{padding:4px 10px; background:var(--sunken); border:1px solid var(--ring); border-radius:20px; font-size:11px; color:var(--muted)}
+    .package-credits{color:var(--muted); font-size:14px; margin-bottom:16px}
+    .package-price{font-size:36px; font-weight:800; color:var(--text); margin-bottom:4px}
+    .package-price-suffix{font-size:14px; font-weight:400; color:var(--muted)}
+    .package-savings{font-size:12px; color:#10b981; margin-bottom:16px}
+    .package-features{list-style:none; padding:0; margin:16px 0; flex:1}
+    .package-features li{padding:8px 0; color:var(--muted); font-size:14px}
+    .package-features li:before{content:"•"; color:var(--btn-start); font-weight:700; display:inline-block; width:1em; margin-left:-1em}
+    .package-btn{width:100%; padding:12px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:14px; transition:all 0.2s}
+    .package-btn:hover:not(:disabled){transform:translateY(-2px)}
+    .package-btn:disabled{opacity:0.6; cursor:not-allowed}
+
+    /* One-time & extras */
+    .extras-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(400px, 1fr)); gap:24px}
+    @media (max-width: 768px) { .extras-grid{grid-template-columns:1fr} }
+    .extra-card{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px}
+    .extra-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+    .extra-title{font-size:18px; font-weight:700; color:var(--text)}
+    .extra-badge{padding:4px 10px; background:var(--sunken); border:1px solid var(--ring); border-radius:20px; font-size:11px; color:var(--muted)}
+    .extra-desc{color:var(--muted); font-size:14px; margin-bottom:16px}
+    .onetime-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:16px}
+    @media (max-width: 640px) { .onetime-grid{grid-template-columns:1fr} }
+    .onetime-btn{background:var(--sunken); border:1px solid var(--ring); border-radius:12px; padding:12px; text-align:left; cursor:pointer; transition:all 0.2s}
+    .onetime-btn:hover{background:var(--card); border-color:var(--line)}
+    .onetime-credits{font-size:18px; font-weight:700; color:var(--text)}
+    .onetime-price{font-size:14px; color:var(--muted); margin-top:4px}
+    .extra-features{list-style:none; padding:0; margin:16px 0}
+    .extra-features li{padding:6px 0; color:var(--muted); font-size:14px}
+    .extra-features li:before{content:"•"; color:var(--btn-start); font-weight:700; display:inline-block; width:1em; margin-left:-1em}
+    .extra-action{display:flex; align-items:center; gap:12px; margin-top:16px}
+    .extra-btn{padding:10px 20px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:14px; transition:all 0.2s}
+    .extra-btn:hover:not(:disabled){transform:translateY(-2px)}
+    .extra-btn:disabled{opacity:0.6; cursor:not-allowed}
+    .extra-note{font-size:12px; color:var(--muted)}
+
+    /* FAQ */
+    .faq-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-top:20px}
+    .faq-item{color:var(--muted)}
+    .faq-question{font-weight:600; color:var(--text); margin-bottom:8px}
+    .faq-answer{font-size:14px; line-height:1.6}
   </style>
 </head>
 <body>
@@ -58,41 +113,143 @@
   </div>
 
   <div class="container">
-    <h1>💎 Credit Store</h1>
-    <p style="color:var(--muted);">Purchase credits to generate more AI posters.</p>
-
-    <div class="packages-grid">
-      <div class="package">
-        <div class="package-credits">10</div>
-        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
-        <div class="package-price">$5</div>
-        <div class="package-description">Perfect for trying out the platform</div>
-        <button class="buy-btn" onclick="purchasePackage(10, 5)">Buy Now</button>
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-title">
+          <div class="hero-icon"></div>
+          <h1>Mini Visionary — Store</h1>
+        </div>
+        <p class="hero-subtitle">Create boldly. <span>Believe everything except your eyes.</span></p>
       </div>
-
-      <div class="package featured">
-        <div class="package-badge">Most Popular</div>
-        <div class="package-credits">50</div>
-        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
-        <div class="package-price">$20</div>
-        <div class="package-description">Best value for regular users</div>
-        <button class="buy-btn" onclick="purchasePackage(50, 20)">Buy Now</button>
+      <div class="cycle-toggle">
+        <button class="cycle-btn active" id="monthly-btn" onclick="setCycle('monthly')">Monthly</button>
+        <button class="cycle-btn" id="yearly-btn" onclick="setCycle('yearly')">Yearly <span style="font-weight:400">(–15%)</span></button>
       </div>
+    </div>
 
-      <div class="package">
-        <div class="package-credits">100</div>
-        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
-        <div class="package-price">$35</div>
-        <div class="package-description">For power users and teams</div>
-        <button class="buy-btn" onclick="purchasePackage(100, 35)">Buy Now</button>
+    <!-- Credit Packs -->
+    <div class="section">
+      <h2 class="section-title">Credit Packs</h2>
+      <div class="packages-grid">
+        <div class="package" data-pack="starter">
+          <div class="package-header">
+            <div class="package-name">Starter</div>
+          </div>
+          <div class="package-credits">100 credits</div>
+          <div>
+            <div class="package-price">$<span class="price-value">8</span><span class="package-price-suffix"> / mo</span></div>
+            <div class="package-savings savings-text" style="display:none;">You save 15% with yearly billing</div>
+          </div>
+          <ul class="package-features">
+            <li>High-res generations</li>
+            <li>Priority queue</li>
+            <li>Commercial license</li>
+          </ul>
+          <button class="package-btn" onclick="checkout('starter')">Subscribe</button>
+        </div>
+
+        <div class="package popular" data-pack="creator">
+          <div class="package-header">
+            <div class="package-name">Creator</div>
+            <div class="package-badge">Popular</div>
+          </div>
+          <div class="package-credits">500 credits</div>
+          <div>
+            <div class="package-price">$<span class="price-value">29</span><span class="package-price-suffix"> / mo</span></div>
+            <div class="package-savings savings-text" style="display:none;">You save 15% with yearly billing</div>
+          </div>
+          <ul class="package-features">
+            <li>High-res generations</li>
+            <li>Priority queue</li>
+            <li>Commercial license</li>
+          </ul>
+          <button class="package-btn" onclick="checkout('creator')">Subscribe</button>
+        </div>
+
+        <div class="package" data-pack="studio">
+          <div class="package-header">
+            <div class="package-name">Studio</div>
+          </div>
+          <div class="package-credits">2500 credits</div>
+          <div>
+            <div class="package-price">$<span class="price-value">109</span><span class="package-price-suffix"> / mo</span></div>
+            <div class="package-savings savings-text" style="display:none;">You save 15% with yearly billing</div>
+          </div>
+          <ul class="package-features">
+            <li>High-res generations</li>
+            <li>Priority queue</li>
+            <li>Commercial license</li>
+          </ul>
+          <button class="package-btn" onclick="checkout('studio')">Subscribe</button>
+        </div>
       </div>
+    </div>
 
-      <div class="package">
-        <div class="package-credits">250</div>
-        <div style="color:var(--muted); font-size:14px; margin-bottom:16px;">Credits</div>
-        <div class="package-price">$75</div>
-        <div class="package-description">Maximum savings for professionals</div>
-        <button class="buy-btn" onclick="purchasePackage(250, 75)">Buy Now</button>
+    <!-- One-time & Extras -->
+    <div class="section">
+      <div class="extras-grid">
+        <div class="extra-card">
+          <div class="extra-header">
+            <div class="extra-title">One-time Credits (Stripe)</div>
+            <div class="extra-badge">Ad-free</div>
+          </div>
+          <p class="extra-desc">Top up whenever you need more. No subscription required.</p>
+          <div class="onetime-grid">
+            <button class="onetime-btn" onclick="checkout('one100')">
+              <div class="onetime-credits">100 credits</div>
+              <div class="onetime-price">$10</div>
+            </button>
+            <button class="onetime-btn" onclick="checkout('one400')">
+              <div class="onetime-credits">400 credits</div>
+              <div class="onetime-price">$35</div>
+            </button>
+            <button class="onetime-btn" onclick="checkout('one1200')">
+              <div class="onetime-credits">1200 credits</div>
+              <div class="onetime-price">$90</div>
+            </button>
+          </div>
+          <div class="extra-note">Checkout opens a secure Stripe session.</div>
+        </div>
+
+        <div class="extra-card">
+          <div class="extra-title">Ad-Free Workspace</div>
+          <p class="extra-desc">Remove promotional banners and sponsored templates. Cleaner UI, faster focus.</p>
+          <ul class="extra-features">
+            <li>No ads or promos</li>
+            <li>Compact header</li>
+            <li>Early access to new layouts</li>
+          </ul>
+          <div class="extra-action">
+            <button class="extra-btn" onclick="checkout('adfree')">Enable Ad-Free</button>
+            <span class="extra-note adfree-price">$3 / mo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section">
+      <div style="background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px">
+        <h3 class="section-title" style="margin-bottom:20px">Questions</h3>
+        <div class="faq-grid">
+          <div class="faq-item">
+            <div class="faq-question">What payment methods do you support?</div>
+            <div class="faq-answer">Stripe checkout supports major cards, Apple Pay, and Google Pay.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">Do credits expire?</div>
+            <div class="faq-answer">Credits never expire while your account remains active.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">Refund policy</div>
+            <div class="faq-answer">We'll happily refund unused one-time credit purchases within 7 days.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">Invoices</div>
+            <div class="faq-answer">Every purchase generates a downloadable receipt in your Wallet.</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -104,9 +261,85 @@
       window.location.href = '/auth.html#login';
     }
 
-    function purchasePackage(credits, price) {
-      alert(`Credit purchasing is coming soon!\n\nPackage: ${credits} credits for $${price}\n\nStay tuned for payment integration.`);
+    // Pricing data
+    const packs = {
+      starter: { credits: 100, price: 8 },
+      creator: { credits: 500, price: 29 },
+      studio: { credits: 2500, price: 109 }
+    };
+
+    let currentCycle = 'monthly';
+    let busyCheckout = null;
+
+    function setCycle(cycle) {
+      currentCycle = cycle;
+
+      // Update button states
+      document.getElementById('monthly-btn').classList.toggle('active', cycle === 'monthly');
+      document.getElementById('yearly-btn').classList.toggle('active', cycle === 'yearly');
+
+      // Update prices
+      updatePrices();
     }
+
+    function updatePrices() {
+      const yearlyDiscount = 0.15;
+
+      Object.keys(packs).forEach(packId => {
+        const pack = packs[packId];
+        const element = document.querySelector(`[data-pack="${packId}"]`);
+        if (!element) return;
+
+        const priceEl = element.querySelector('.price-value');
+        const suffixEl = element.querySelector('.package-price-suffix');
+        const savingsEl = element.querySelector('.savings-text');
+        const btnEl = element.querySelector('.package-btn');
+
+        if (currentCycle === 'monthly') {
+          priceEl.textContent = pack.price;
+          suffixEl.textContent = ' / mo';
+          savingsEl.style.display = 'none';
+          btnEl.textContent = 'Subscribe';
+        } else {
+          const yearlyPrice = Math.round(pack.price * 12 * (1 - yearlyDiscount));
+          priceEl.textContent = yearlyPrice;
+          suffixEl.textContent = ' / yr';
+          savingsEl.style.display = 'block';
+          btnEl.textContent = 'Buy Yearly';
+        }
+      });
+
+      // Update ad-free price
+      const adfreePrice = document.querySelector('.adfree-price');
+      if (currentCycle === 'monthly') {
+        adfreePrice.textContent = '$3 / mo';
+      } else {
+        const yearlyPrice = Math.round(3 * 12 * (1 - yearlyDiscount));
+        adfreePrice.textContent = `$${yearlyPrice} / yr`;
+      }
+    }
+
+    async function checkout(packId) {
+      if (busyCheckout) return;
+
+      busyCheckout = packId;
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      // Simulate checkout
+      await new Promise(r => setTimeout(r, 700));
+
+      alert(`Checkout (demo): ${packId} – ${currentCycle}\n\nIn production, this would open a Stripe checkout session.`);
+
+      btn.disabled = false;
+      btn.textContent = originalText;
+      busyCheckout = null;
+    }
+
+    // Initialize
+    updatePrices();
   </script>
 </body>
 </html>
