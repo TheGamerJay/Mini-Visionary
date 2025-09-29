@@ -112,65 +112,13 @@
   </div>
 
   <div class="container">
-    <h1>🌟 Your Gallery Library</h1>
-    <p class="subtitle">Manage and organize all your AI-generated images. Search by text, date, or time.</p>
+    <h1>🎨 Community Gallery</h1>
+    <p class="subtitle">Explore masterpieces from the Mini Visionary community. Share your art and react to others.</p>
 
     <div class="filter-section">
-      <div class="filter-grid">
-        <div>
-          <div class="filter-label">
-            <span class="filter-number">1</span>
-            <span>Search (prompt, tag, or date text)</span>
-          </div>
-          <input type="text" id="search-input" class="filter-input" placeholder="e.g. neon, poster, concert">
-        </div>
-        <div>
-          <div class="filter-label">
-            <span class="filter-number">2</span>
-            <span>From date</span>
-          </div>
-          <input type="date" id="from-date" class="filter-input">
-        </div>
-        <div>
-          <div class="filter-label">
-            <span class="filter-number">3</span>
-            <span>To date</span>
-          </div>
-          <input type="date" id="to-date" class="filter-input">
-        </div>
-        <div>
-          <div class="filter-label">
-            <span class="filter-number">4</span>
-            <span>Sort</span>
-          </div>
-          <select id="sort-select" class="filter-select">
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="time-window">
-        <div class="filter-label">
-          <span class="filter-number">5</span>
-          <span>Time window (optional)</span>
-        </div>
-        <div class="time-inputs">
-          <div>
-            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">From time</label>
-            <input type="time" id="from-time" class="filter-input">
-          </div>
-          <div>
-            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">To time</label>
-            <input type="time" id="to-time" class="filter-input">
-          </div>
-        </div>
-      </div>
-
       <div class="filter-actions">
-        <button class="btn btn-upload" onclick="openUploadModal()">📤 Upload Image</button>
-        <button class="btn btn-clear" onclick="clearFilters()">Clear filters</button>
-        <button class="btn btn-primary" onclick="scrollToTop()">Back to top</button>
+        <button class="btn btn-primary" onclick="openUploadModal()">📤 Post Your Masterpiece</button>
+        <button class="btn btn-clear" onclick="scrollToTop()">Back to top</button>
       </div>
     </div>
 
@@ -209,8 +157,12 @@
           <input type="file" id="upload-file" class="file-input" accept="image/*" required>
         </div>
         <div class="form-group">
-          <label>Prompt / Description</label>
-          <textarea id="upload-prompt" placeholder="Describe your image..." required></textarea>
+          <label>Title</label>
+          <input type="text" id="upload-prompt" placeholder="Give your masterpiece a title..." required>
+        </div>
+        <div class="form-group">
+          <label>Story / Inspiration (optional)</label>
+          <textarea id="upload-story" placeholder="Share the story behind your art..."></textarea>
         </div>
         <div class="form-group">
           <label>Tags (comma-separated)</label>
@@ -218,7 +170,7 @@
         </div>
         <div class="upload-actions">
           <button type="button" class="btn btn-clear" onclick="closeUploadModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Upload</button>
+          <button type="submit" class="btn btn-primary">Post</button>
         </div>
       </form>
     </div>
@@ -244,6 +196,7 @@
         id: `img_${i+1}`,
         url: `https://picsum.photos/seed/mv_${i+1}/600/${800 + i*50}`,
         prompt: prompts[i % 4],
+        story: "",
         createdAt: new Date(Date.now() - i * 3600000).toISOString(),
         tags: tags[i % 4],
         reactions: {likes: 0, love: 0, fire: 0},
@@ -264,50 +217,27 @@
       renderGallery();
     }
 
-    // Filter and render gallery
+    // Render gallery - simple community showcase
     function renderGallery() {
-      const searchQuery = document.getElementById('search-input').value.toLowerCase();
-      const fromDate = document.getElementById('from-date').value;
-      const toDate = document.getElementById('to-date').value;
-      const fromTime = document.getElementById('from-time').value;
-      const toTime = document.getElementById('to-time').value;
-      const sortKey = document.getElementById('sort-select').value;
-
-      let filtered = galleryItems.filter(item => {
-        // Date/time filtering
-        if (!withinDateTime(item.createdAt, fromDate, toDate, fromTime, toTime)) return false;
-
-        // Search filtering
-        if (searchQuery) {
-          const matchPrompt = item.prompt.toLowerCase().includes(searchQuery);
-          const matchTags = item.tags.some(t => t.toLowerCase().includes(searchQuery));
-          const matchDate = new Date(item.createdAt).toLocaleString().toLowerCase().includes(searchQuery);
-          if (!matchPrompt && !matchTags && !matchDate) return false;
-        }
-
-        return true;
-      });
-
-      // Sort
-      filtered.sort((a, b) => {
-        const aTime = new Date(a.createdAt).getTime();
-        const bTime = new Date(b.createdAt).getTime();
-        return sortKey === 'newest' ? bTime - aTime : aTime - bTime;
+      // Sort by newest first
+      const sorted = [...galleryItems].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
 
       const grid = document.getElementById('gallery-grid');
       const empty = document.getElementById('empty-state');
 
-      if (filtered.length === 0) {
+      if (sorted.length === 0) {
         grid.innerHTML = '';
         empty.style.display = 'block';
       } else {
         empty.style.display = 'none';
-        grid.innerHTML = filtered.map(item => `
+        grid.innerHTML = sorted.map(item => `
           <div class="gallery-item" data-id="${item.id}">
             <img src="${item.url}" alt="${item.prompt}" onclick="openModal('${item.id}')">
             <div class="gallery-info">
               <div class="gallery-title" title="${item.prompt}">${item.prompt}</div>
+              ${item.story ? `<div style="font-size:13px; color:var(--muted); margin:8px 0; line-height:1.4;">${item.story}</div>` : ''}
               <div class="gallery-meta">
                 <div class="gallery-date">${new Date(item.createdAt).toLocaleString()}</div>
               </div>
@@ -332,33 +262,6 @@
           </div>
         `).join('');
       }
-    }
-
-    function withinDateTime(createdAtISO, fromDate, toDate, fromTime, toTime) {
-      const ts = new Date(createdAtISO);
-
-      if (fromDate) {
-        const start = new Date(fromDate + 'T00:00:00');
-        if (ts < start) return false;
-      }
-
-      if (toDate) {
-        const end = new Date(toDate + 'T23:59:59');
-        if (ts > end) return false;
-      }
-
-      if (fromTime || toTime) {
-        const mins = ts.getHours() * 60 + ts.getMinutes();
-        const parseHM = (t) => {
-          const [hh, mm] = t.split(':').map(Number);
-          return (hh || 0) * 60 + (mm || 0);
-        };
-        const a = fromTime ? parseHM(fromTime) : 0;
-        const b = toTime ? parseHM(toTime) : 24 * 60 - 1;
-        if (mins < a || mins > b) return false;
-      }
-
-      return true;
     }
 
     function toggleReaction(id, type) {
@@ -415,6 +318,7 @@
       document.getElementById('upload-modal').classList.remove('active');
       document.getElementById('upload-file').value = '';
       document.getElementById('upload-prompt').value = '';
+      document.getElementById('upload-story').value = '';
       document.getElementById('upload-tags').value = '';
     }
 
@@ -423,6 +327,7 @@
 
       const fileInput = document.getElementById('upload-file');
       const prompt = document.getElementById('upload-prompt').value;
+      const story = document.getElementById('upload-story').value;
       const tagsInput = document.getElementById('upload-tags').value;
       const tags = tagsInput.split(',').map(t => t.trim()).filter(t => t);
 
@@ -434,6 +339,7 @@
           id: `uploaded_${Date.now()}`,
           url: e.target.result,
           prompt: prompt,
+          story: story,
           createdAt: new Date().toISOString(),
           tags: tags.length > 0 ? tags : ['custom'],
           reactions: {likes: 0, love: 0, fire: 0},
@@ -454,27 +360,9 @@
       localStorage.setItem('mv_gallery_items', JSON.stringify(userUploads));
     }
 
-    function clearFilters() {
-      document.getElementById('search-input').value = '';
-      document.getElementById('from-date').value = '';
-      document.getElementById('to-date').value = '';
-      document.getElementById('from-time').value = '';
-      document.getElementById('to-time').value = '';
-      document.getElementById('sort-select').value = 'newest';
-      renderGallery();
-    }
-
     function scrollToTop() {
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
-
-    // Event listeners
-    document.getElementById('search-input').addEventListener('input', renderGallery);
-    document.getElementById('from-date').addEventListener('change', renderGallery);
-    document.getElementById('to-date').addEventListener('change', renderGallery);
-    document.getElementById('from-time').addEventListener('change', renderGallery);
-    document.getElementById('to-time').addEventListener('change', renderGallery);
-    document.getElementById('sort-select').addEventListener('change', renderGallery);
 
     // Initialize
     loadDemoData();
