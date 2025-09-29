@@ -27,15 +27,72 @@
     .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
     .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
     .container{max-width:1400px; margin:0 auto; padding:40px 24px}
-    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
-    .gallery-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:32px}
-    .gallery-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; transition:all 0.2s; cursor:pointer}
-    .gallery-item:hover{transform:translateY(-4px); border-color:var(--line); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
-    .gallery-item img{width:100%; height:280px; object-fit:cover}
-    .gallery-info{padding:16px}
-    .gallery-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px}
-    .gallery-meta{font-size:12px; color:var(--muted)}
-    .empty-state{text-align:center; padding:80px 20px; color:var(--muted)}
+    h1{font-size:36px; font-weight:800; margin-bottom:8px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .subtitle{color:var(--muted); margin-bottom:24px}
+
+    /* Filter section */
+    .filter-section{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:20px; margin-bottom:32px}
+    .filter-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px}
+    .filter-label{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-bottom:6px}
+    .filter-number{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; background:var(--sunken); border:1px solid var(--ring); border-radius:50%; font-size:11px}
+    .filter-input, .filter-select{width:100%; padding:10px 12px; background:var(--sunken); border:1px solid var(--ring); border-radius:8px; color:var(--text); font-size:14px}
+    .filter-input:focus, .filter-select:focus{outline:none; border-color:var(--line)}
+    .time-window{background:var(--sunken); border:1px solid var(--ring); border-radius:12px; padding:16px; margin-bottom:16px}
+    .time-inputs{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
+    .filter-actions{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{padding:10px 20px; border-radius:8px; font-size:14px; cursor:pointer; transition:all 0.2s; border:none}
+    .btn-clear{background:var(--sunken); border:1px solid var(--ring); color:var(--text)}
+    .btn-clear:hover{background:var(--card); border-color:var(--line)}
+    .btn-primary{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700}
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-upload{background:var(--card); border:1px solid var(--ring); color:var(--text)}
+    .btn-upload:hover{border-color:var(--line)}
+
+    /* Gallery grid - masonry layout */
+    .gallery-grid{column-count:3; column-gap:16px; margin-top:32px}
+    @media (max-width: 1024px) { .gallery-grid{column-count:2} }
+    @media (max-width: 640px) { .gallery-grid{column-count:1} }
+
+    .gallery-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; margin-bottom:16px; break-inside:avoid; transition:all 0.2s; position:relative}
+    .gallery-item:hover{border-color:var(--line); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+    .gallery-item img{width:100%; height:auto; display:block; cursor:pointer}
+    .gallery-info{padding:12px; position:relative}
+    .gallery-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .gallery-meta{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px}
+    .gallery-date{font-size:11px; color:var(--muted)}
+    .gallery-tags{display:flex; gap:4px; flex-wrap:wrap}
+    .tag{padding:3px 8px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:11px; color:var(--muted)}
+    .gallery-actions{display:flex; gap:8px; margin-top:8px}
+    .gallery-reactions{display:flex; gap:4px}
+    .reaction-btn{padding:4px 8px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:12px; cursor:pointer; transition:all 0.2s}
+    .reaction-btn:hover{background:var(--card); border-color:var(--line)}
+    .reaction-btn.active{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; border:none}
+    .btn-delete{padding:4px 8px; background:#ef4444; border:none; border-radius:6px; font-size:11px; color:white; cursor:pointer; transition:all 0.2s}
+    .btn-delete:hover{background:#dc2626}
+
+    /* Modal */
+    .modal{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding:20px}
+    .modal.active{display:flex}
+    .modal-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; max-width:900px; width:100%; max-height:90vh; overflow:hidden; display:flex; flex-direction:column}
+    .modal-header{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--ring)}
+    .modal-title{font-weight:600; color:var(--text); font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1}
+    .modal-actions{display:flex; gap:8px}
+    .modal-img{width:100%; max-height:60vh; object-fit:contain; background:#000}
+    .modal-footer{padding:16px 20px; border-top:1px solid var(--ring); display:flex; justify-content:space-between; align-items:center}
+
+    .empty-state{text-align:center; padding:80px 20px; color:var(--muted); background:var(--card); border:1px solid var(--ring); border-radius:16px}
+
+    /* Upload modal */
+    .upload-modal{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1001; align-items:center; justify-content:center; padding:20px}
+    .upload-modal.active{display:flex}
+    .upload-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; max-width:500px; width:100%; padding:24px}
+    .upload-title{font-size:20px; font-weight:700; color:var(--text); margin-bottom:16px}
+    .upload-form{display:grid; gap:16px}
+    .form-group label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
+    .form-group input, .form-group textarea{width:100%; padding:10px 12px; background:var(--sunken); border:1px solid var(--ring); border-radius:8px; color:var(--text); font-size:14px; font-family:inherit}
+    .form-group textarea{min-height:80px; resize:vertical}
+    .file-input{cursor:pointer}
+    .upload-actions{display:flex; gap:8px; justify-content:flex-end}
   </style>
 </head>
 <body>
@@ -55,14 +112,115 @@
   </div>
 
   <div class="container">
-    <h1>🎨 Gallery</h1>
-    <p style="color:var(--muted);">Explore community creations and get inspired.</p>
+    <h1>🌟 Your Gallery Library</h1>
+    <p class="subtitle">Manage and organize all your AI-generated images. Search by text, date, or time.</p>
 
-    <div id="gallery-grid" class="gallery-grid">
-      <div class="empty-state">
-        <h2 style="color:var(--text); margin-bottom:16px;">Coming Soon!</h2>
-        <p>The community gallery is under construction. Soon you'll be able to browse and get inspired by posters created by other users.</p>
+    <div class="filter-section">
+      <div class="filter-grid">
+        <div>
+          <div class="filter-label">
+            <span class="filter-number">1</span>
+            <span>Search (prompt, tag, or date text)</span>
+          </div>
+          <input type="text" id="search-input" class="filter-input" placeholder="e.g. neon, poster, concert">
+        </div>
+        <div>
+          <div class="filter-label">
+            <span class="filter-number">2</span>
+            <span>From date</span>
+          </div>
+          <input type="date" id="from-date" class="filter-input">
+        </div>
+        <div>
+          <div class="filter-label">
+            <span class="filter-number">3</span>
+            <span>To date</span>
+          </div>
+          <input type="date" id="to-date" class="filter-input">
+        </div>
+        <div>
+          <div class="filter-label">
+            <span class="filter-number">4</span>
+            <span>Sort</span>
+          </div>
+          <select id="sort-select" class="filter-select">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
       </div>
+
+      <div class="time-window">
+        <div class="filter-label">
+          <span class="filter-number">5</span>
+          <span>Time window (optional)</span>
+        </div>
+        <div class="time-inputs">
+          <div>
+            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">From time</label>
+            <input type="time" id="from-time" class="filter-input">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">To time</label>
+            <input type="time" id="to-time" class="filter-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-upload" onclick="openUploadModal()">📤 Upload Image</button>
+        <button class="btn btn-clear" onclick="clearFilters()">Clear filters</button>
+        <button class="btn btn-primary" onclick="scrollToTop()">Back to top</button>
+      </div>
+    </div>
+
+    <div id="gallery-grid" class="gallery-grid"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <h2 style="color:var(--text); margin-bottom:16px;">No results</h2>
+      <p>Try a different keyword, date range, or clear filters.</p>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div id="modal" class="modal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="saveImage()">Save</button>
+          <button class="btn btn-clear" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+      <img id="modal-img" class="modal-img" src="" alt="">
+      <div class="modal-footer">
+        <div class="gallery-tags" id="modal-tags"></div>
+        <div class="gallery-date" id="modal-date"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="upload-modal" class="upload-modal" onclick="closeUploadModal()">
+    <div class="upload-content" onclick="event.stopPropagation()">
+      <div class="upload-title">📤 Upload Image to Gallery</div>
+      <form class="upload-form" onsubmit="uploadImage(event)">
+        <div class="form-group">
+          <label>Image File</label>
+          <input type="file" id="upload-file" class="file-input" accept="image/*" required>
+        </div>
+        <div class="form-group">
+          <label>Prompt / Description</label>
+          <textarea id="upload-prompt" placeholder="Describe your image..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tags (comma-separated)</label>
+          <input type="text" id="upload-tags" placeholder="e.g. poster, neon, portrait">
+        </div>
+        <div class="upload-actions">
+          <button type="button" class="btn btn-clear" onclick="closeUploadModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -72,6 +230,254 @@
     if (!token) {
       window.location.href = '/auth.html#login';
     }
+
+    // Gallery state
+    let galleryItems = [];
+    let currentModal = null;
+
+    // Load demo data
+    function loadDemoData() {
+      const prompts = ["concert poster", "vaporwave art", "portrait photography", "product hero"];
+      const tags = [["poster", "neon"], ["art", "retro"], ["portrait"], ["product", "hero"]];
+
+      galleryItems = Array.from({length: 12}).map((_, i) => ({
+        id: `img_${i+1}`,
+        url: `https://picsum.photos/seed/mv_${i+1}/600/${800 + i*50}`,
+        prompt: prompts[i % 4],
+        createdAt: new Date(Date.now() - i * 3600000).toISOString(),
+        tags: tags[i % 4],
+        reactions: {likes: 0, love: 0, fire: 0},
+        userReacted: {likes: false, love: false, fire: false}
+      }));
+
+      // Load from localStorage
+      const saved = localStorage.getItem('mv_gallery_items');
+      if (saved) {
+        try {
+          const savedItems = JSON.parse(saved);
+          galleryItems = [...savedItems, ...galleryItems];
+        } catch(e) {
+          console.error('Failed to load saved items:', e);
+        }
+      }
+
+      renderGallery();
+    }
+
+    // Filter and render gallery
+    function renderGallery() {
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      const fromDate = document.getElementById('from-date').value;
+      const toDate = document.getElementById('to-date').value;
+      const fromTime = document.getElementById('from-time').value;
+      const toTime = document.getElementById('to-time').value;
+      const sortKey = document.getElementById('sort-select').value;
+
+      let filtered = galleryItems.filter(item => {
+        // Date/time filtering
+        if (!withinDateTime(item.createdAt, fromDate, toDate, fromTime, toTime)) return false;
+
+        // Search filtering
+        if (searchQuery) {
+          const matchPrompt = item.prompt.toLowerCase().includes(searchQuery);
+          const matchTags = item.tags.some(t => t.toLowerCase().includes(searchQuery));
+          const matchDate = new Date(item.createdAt).toLocaleString().toLowerCase().includes(searchQuery);
+          if (!matchPrompt && !matchTags && !matchDate) return false;
+        }
+
+        return true;
+      });
+
+      // Sort
+      filtered.sort((a, b) => {
+        const aTime = new Date(a.createdAt).getTime();
+        const bTime = new Date(b.createdAt).getTime();
+        return sortKey === 'newest' ? bTime - aTime : aTime - bTime;
+      });
+
+      const grid = document.getElementById('gallery-grid');
+      const empty = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+      } else {
+        empty.style.display = 'none';
+        grid.innerHTML = filtered.map(item => `
+          <div class="gallery-item" data-id="${item.id}">
+            <img src="${item.url}" alt="${item.prompt}" onclick="openModal('${item.id}')">
+            <div class="gallery-info">
+              <div class="gallery-title" title="${item.prompt}">${item.prompt}</div>
+              <div class="gallery-meta">
+                <div class="gallery-date">${new Date(item.createdAt).toLocaleString()}</div>
+              </div>
+              <div class="gallery-tags">
+                ${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+              </div>
+              <div class="gallery-actions">
+                <div class="gallery-reactions">
+                  <button class="reaction-btn ${item.userReacted.likes ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'likes')">
+                    👍 ${item.reactions.likes}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted.love ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'love')">
+                    ❤️ ${item.reactions.love}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted.fire ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'fire')">
+                    🔥 ${item.reactions.fire}
+                  </button>
+                </div>
+                ${item.id.startsWith('uploaded_') ? `<button class="btn-delete" onclick="deleteImage('${item.id}')">🗑️ Delete</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function withinDateTime(createdAtISO, fromDate, toDate, fromTime, toTime) {
+      const ts = new Date(createdAtISO);
+
+      if (fromDate) {
+        const start = new Date(fromDate + 'T00:00:00');
+        if (ts < start) return false;
+      }
+
+      if (toDate) {
+        const end = new Date(toDate + 'T23:59:59');
+        if (ts > end) return false;
+      }
+
+      if (fromTime || toTime) {
+        const mins = ts.getHours() * 60 + ts.getMinutes();
+        const parseHM = (t) => {
+          const [hh, mm] = t.split(':').map(Number);
+          return (hh || 0) * 60 + (mm || 0);
+        };
+        const a = fromTime ? parseHM(fromTime) : 0;
+        const b = toTime ? parseHM(toTime) : 24 * 60 - 1;
+        if (mins < a || mins > b) return false;
+      }
+
+      return true;
+    }
+
+    function toggleReaction(id, type) {
+      const item = galleryItems.find(i => i.id === id);
+      if (!item) return;
+
+      if (item.userReacted[type]) {
+        item.reactions[type]--;
+        item.userReacted[type] = false;
+      } else {
+        item.reactions[type]++;
+        item.userReacted[type] = true;
+      }
+
+      saveGallery();
+      renderGallery();
+    }
+
+    function deleteImage(id) {
+      if (!confirm('Delete this image from the gallery?')) return;
+
+      galleryItems = galleryItems.filter(i => i.id !== id);
+      saveGallery();
+      renderGallery();
+    }
+
+    function openModal(id) {
+      const item = galleryItems.find(i => i.id === id);
+      if (!item) return;
+
+      currentModal = item;
+      document.getElementById('modal-title').textContent = item.prompt;
+      document.getElementById('modal-img').src = item.url;
+      document.getElementById('modal-tags').innerHTML = item.tags.map(t => `<span class="tag">${t}</span>`).join('');
+      document.getElementById('modal-date').textContent = new Date(item.createdAt).toLocaleString();
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      currentModal = null;
+    }
+
+    function saveImage() {
+      if (!currentModal) return;
+      alert('Image saved to your library! (Feature coming soon)');
+    }
+
+    function openUploadModal() {
+      document.getElementById('upload-modal').classList.add('active');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('upload-modal').classList.remove('active');
+      document.getElementById('upload-file').value = '';
+      document.getElementById('upload-prompt').value = '';
+      document.getElementById('upload-tags').value = '';
+    }
+
+    function uploadImage(event) {
+      event.preventDefault();
+
+      const fileInput = document.getElementById('upload-file');
+      const prompt = document.getElementById('upload-prompt').value;
+      const tagsInput = document.getElementById('upload-tags').value;
+      const tags = tagsInput.split(',').map(t => t.trim()).filter(t => t);
+
+      if (!fileInput.files[0]) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newItem = {
+          id: `uploaded_${Date.now()}`,
+          url: e.target.result,
+          prompt: prompt,
+          createdAt: new Date().toISOString(),
+          tags: tags.length > 0 ? tags : ['custom'],
+          reactions: {likes: 0, love: 0, fire: 0},
+          userReacted: {likes: false, love: false, fire: false}
+        };
+
+        galleryItems.unshift(newItem);
+        saveGallery();
+        renderGallery();
+        closeUploadModal();
+      };
+
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    function saveGallery() {
+      const userUploads = galleryItems.filter(i => i.id.startsWith('uploaded_'));
+      localStorage.setItem('mv_gallery_items', JSON.stringify(userUploads));
+    }
+
+    function clearFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('from-date').value = '';
+      document.getElementById('to-date').value = '';
+      document.getElementById('from-time').value = '';
+      document.getElementById('to-time').value = '';
+      document.getElementById('sort-select').value = 'newest';
+      renderGallery();
+    }
+
+    function scrollToTop() {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    // Event listeners
+    document.getElementById('search-input').addEventListener('input', renderGallery);
+    document.getElementById('from-date').addEventListener('change', renderGallery);
+    document.getElementById('to-date').addEventListener('change', renderGallery);
+    document.getElementById('from-time').addEventListener('change', renderGallery);
+    document.getElementById('to-time').addEventListener('change', renderGallery);
+    document.getElementById('sort-select').addEventListener('change', renderGallery);
+
+    // Initialize
+    loadDemoData();
   </script>
 </body>
 </html>
