@@ -28,68 +28,52 @@
     .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
     .container{max-width:1200px; margin:0 auto; padding:40px 24px}
 
-    /* Grid layout */
     .profile-grid{display:grid; grid-template-columns:1fr; gap:24px}
     @media (min-width: 1024px) {
-      .profile-grid{grid-template-columns:1fr 420px; align-items:start}
+      .profile-grid{grid-template-columns:1fr 400px; align-items:start}
     }
-    .left-column{display:grid; gap:24px}
 
-    /* Section card */
     .section{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px}
     .section-title{font-size:24px; font-weight:700; margin-bottom:16px}
 
-    /* Profile section */
-    .profile-content{display:grid; gap:24px; margin-top:16px}
-    @media (min-width: 640px) {
-      .profile-content{grid-template-columns:auto 1fr; gap:24px}
-    }
-
-    /* Profile picture upload */
-    .picture-upload{padding:1px; background:linear-gradient(135deg, rgba(99,102,241,0.3), rgba(217,70,239,0.3), rgba(34,211,238,0.3)); border-radius:16px}
-    .picture-upload-inner{background:rgba(23,23,23,0.6); border:1px solid var(--ring); border-radius:15px; padding:16px; display:grid; gap:12px; place-items:center}
-    .picture-label{font-size:14px; color:var(--muted); margin-bottom:8px}
-    .avatar-preview{width:160px; height:160px; border-radius:12px; overflow:hidden; border:1px solid var(--ring); background:var(--sunken); display:grid; place-items:center}
-    .avatar-preview img{width:100%; height:100%; object-fit:cover}
+    .profile-center{display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center}
+    .avatar-display{width:120px; height:120px; border-radius:50%; overflow:hidden; border:2px solid var(--ring); background:var(--sunken); display:grid; place-items:center}
+    .avatar-display img,.avatar-display video{width:100%; height:100%; object-fit:cover}
     .avatar-placeholder{font-size:48px}
-    .upload-btn{padding:12px 16px; border-radius:12px; background:linear-gradient(90deg, #818cf8, #f0abfc, #22d3ee); color:#000; font-weight:600; cursor:pointer; border:none; font-size:14px}
-    .upload-btn:hover{transform:translateY(-2px)}
-    .file-input{display:none}
-    .upload-note{font-size:12px; color:var(--muted); text-align:center}
+    .display-name{font-size:20px; font-weight:600; margin-top:8px}
+    .action-buttons{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
+    .btn-action{padding:8px 16px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); color:var(--text); font-size:13px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px}
+    .btn-action:hover{background:rgba(255,255,255,0.15); border-color:var(--line)}
+    .upload-note{font-size:12px; color:var(--muted); margin-top:8px}
 
-    /* Form fields */
-    .form-fields{display:grid; gap:16px}
-    .form-group{display:grid; gap:4px}
-    .form-label{font-size:14px; color:var(--muted)}
-    .form-input{padding:10px 12px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); color:var(--text); font-family:inherit}
+    .info-grid{display:grid; gap:12px; margin-top:16px}
+    .info-item{display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(255,255,255,0.05); border:1px solid var(--ring); border-radius:12px}
+    .info-label{font-size:14px; color:var(--muted)}
+    .info-value{font-size:14px; font-weight:600}
+
+    .logo-sidebar{display:flex; justify-content:center; padding:40px 0}
+    .logo-sidebar img{width:200px; height:auto; opacity:0.8}
+
+    .modal{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding:20px}
+    .modal.active{display:flex}
+    .modal-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; max-width:500px; width:100%; padding:24px}
+    .modal-title{font-size:20px; font-weight:700; margin-bottom:16px}
+    .form-group{margin-bottom:16px}
+    .form-label{display:block; font-size:14px; color:var(--muted); margin-bottom:8px}
+    .form-input{width:100%; padding:10px 12px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); border-radius:12px; color:var(--text); font-family:inherit; font-size:14px}
     .form-input:focus{outline:none; border-color:var(--line)}
-    .form-input:disabled{opacity:0.7}
-    .form-actions{display:flex; gap:8px; margin-top:4px}
-    .btn{padding:10px 16px; border-radius:12px; font-weight:600; cursor:pointer; border:none; font-size:14px; transition:all 0.2s}
-    .btn-primary{background:#fff; color:#000}
+    .password-group{position:relative}
+    .password-toggle{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:18px}
+    .modal-actions{display:flex; gap:8px; justify-content:flex-end; margin-top:20px}
+    .btn{padding:10px 20px; border-radius:12px; font-weight:600; cursor:pointer; border:none; font-size:14px; transition:all 0.2s}
+    .btn-primary{background:linear-gradient(90deg, #818cf8, #f0abfc, #22d3ee); color:#000}
     .btn-primary:hover{transform:translateY(-2px)}
-    .btn-primary:disabled{opacity:0.6; cursor:not-allowed}
     .btn-secondary{background:rgba(255,255,255,0.1); border:1px solid var(--ring); color:var(--text)}
     .btn-secondary:hover{background:var(--card)}
-
-    /* Preferences */
-    .pref-grid{display:grid; gap:16px; margin-top:12px}
-    @media (min-width: 640px) {
-      .pref-grid{grid-template-columns:repeat(2, 1fr)}
-    }
-    .pref-item{border-radius:12px; border:1px solid var(--ring); background:rgba(255,255,255,0.05); padding:16px}
-    .pref-title{font-weight:600; margin-bottom:4px}
-    .pref-value{font-size:14px; color:var(--muted)}
-
-    /* Sessions sidebar */
-    .sessions-title{font-size:18px; font-weight:700; margin-bottom:12px}
-    .sessions-list{display:grid; gap:12px}
-    .session-item{border-radius:12px; border:1px solid var(--ring); background:rgba(255,255,255,0.05); padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px}
-    .session-info{flex:1; min-width:0}
-    .session-agent{font-weight:600; font-size:14px; margin-bottom:2px}
-    .session-meta{font-size:12px; color:rgba(255,255,255,0.6)}
-    .revoke-btn{padding:6px 12px; border-radius:12px; background:linear-gradient(90deg, #818cf8, #f0abfc, #22d3ee); color:#000; font-weight:600; cursor:pointer; border:none; font-size:12px; white-space:nowrap}
-    .revoke-btn:hover{transform:translateY(-2px)}
+    .file-input{display:none}
+    .file-label{display:block; padding:10px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); border-radius:12px; cursor:pointer; text-align:center; margin-bottom:8px}
+    .file-label:hover{background:rgba(255,255,255,0.15)}
+    .helper-text{font-size:12px; color:var(--muted); margin-top:8px}
   </style>
 </head>
 <body>
@@ -101,6 +85,7 @@
     <nav class="nav">
       <a href="/static/guide.html">Guide</a>
       <a href="/static/gallery.html">Gallery</a>
+      <a href="/static/community.html">Community</a>
       <a href="/static/library.html">Library</a>
       <a href="/static/store.html">💎 Store</a>
       <a href="/static/wallet.html">💰 Wallet</a>
@@ -111,149 +96,233 @@
   <div class="container">
     <div class="profile-grid">
       <div class="left-column">
-        <!-- Profile Section -->
         <section class="section">
           <h1 class="section-title">🧑 Profile</h1>
-          <div class="profile-content">
-            <div>
-              <div class="picture-label">Profile Picture</div>
-              <div class="picture-upload">
-                <div class="picture-upload-inner">
-                  <div class="avatar-preview" id="avatar-preview">
-                    <div class="avatar-placeholder">📷</div>
-                  </div>
-                  <button class="upload-btn" onclick="document.getElementById('file-input').click()">Upload Profile Picture</button>
-                  <input type="file" id="file-input" class="file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,video/mp4" onchange="handleFileUpload(event)">
-                  <div class="upload-note">PNG, JPG, JPEG, GIF, WebP, MP4</div>
-                </div>
-              </div>
+          <div class="profile-center">
+            <div class="avatar-display" id="avatar-display">
+              <div class="avatar-placeholder">📷</div>
             </div>
-
-            <div class="form-fields">
-              <div class="form-group">
-                <label class="form-label">Display Name</label>
-                <input type="text" class="form-input" id="display-name" value="Gamer Jay">
-              </div>
-              <div class="form-group">
-                <label class="form-label">User ID</label>
-                <input type="text" class="form-input" value="6" readonly disabled>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-input" id="email" value="aceelnene@gmail.com">
-              </div>
-              <div class="form-actions">
-                <button class="btn btn-primary" id="save-btn" onclick="saveProfile()">Save</button>
-                <button class="btn btn-secondary">Cancel</button>
-              </div>
+            <div class="display-name" id="display-name">Gamer Jay</div>
+            <div class="action-buttons">
+              <button class="btn-action" onclick="openNameModal()">✏️ Change Name</button>
+              <button class="btn-action" onclick="openMediaModal()">🎬 Change Image/Media</button>
+              <button class="btn-action" onclick="openPasswordModal()">🔒 Change Password</button>
             </div>
+            <div class="upload-note">Supports: PNG, JPG, JPEG, GIF, WebP, MP4<br>Max: 10MB • Videos: 11 seconds max</div>
           </div>
         </section>
 
-        <!-- Preferences Section -->
         <section class="section">
-          <h2 class="section-title" style="font-size:20px">Preferences</h2>
-          <div class="pref-grid">
-            <div class="pref-item">
-              <div class="pref-title">Theme</div>
-              <div class="pref-value">Dark</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">User ID</span>
+              <span class="info-value">6</span>
             </div>
-            <div class="pref-item">
-              <div class="pref-title">Plan</div>
-              <div class="pref-value">Creator</div>
+            <div class="info-item">
+              <span class="info-label">Email Address</span>
+              <span class="info-value">aceelnene@gmail.com</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Subscription Status</span>
+              <span class="info-value">Free</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">💎 Credits</span>
+              <span class="info-value">20 credits</span>
             </div>
           </div>
         </section>
       </div>
 
-      <!-- Active Sessions Sidebar -->
-      <div class="section">
-        <div class="sessions-title">Active Sessions</div>
-        <div class="sessions-list" id="sessions-list">
-          <!-- Sessions rendered by JS -->
+      <div class="logo-sidebar">
+        <img src="/logo.png" alt="Mini Visionary Logo">
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Name Modal -->
+  <div id="name-modal" class="modal" onclick="closeModal('name-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-title">Change Display Name</div>
+      <div class="form-group">
+        <input type="text" id="new-name" class="form-input" placeholder="Enter new display name" value="Gamer Jay">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('name-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveName()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Media Modal -->
+  <div id="media-modal" class="modal" onclick="closeModal('media-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-title">Change Profile Image/Media</div>
+      <div class="form-group">
+        <label class="file-label" for="media-input">
+          <span id="file-name">No file chosen</span>
+        </label>
+        <input type="file" id="media-input" class="file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,video/mp4" onchange="handleMediaSelect(event)">
+        <div class="helper-text">Supports: PNG, JPG, JPEG, GIF, WebP, MP4 • Max: 10MB • Videos: 11 seconds max</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('media-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="uploadMedia()">Upload Media</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="password-modal" class="modal" onclick="closeModal('password-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-title">Change Password</div>
+      <div class="helper-text" style="margin-bottom:16px">Enter your current password and choose a new one</div>
+
+      <div class="form-group">
+        <label class="form-label">Current password</label>
+        <div class="password-group">
+          <input type="password" id="current-password" class="form-input">
+          <button class="password-toggle" onclick="togglePassword('current-password')">👁️</button>
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">New password</label>
+        <div class="password-group">
+          <input type="password" id="new-password" class="form-input">
+          <button class="password-toggle" onclick="togglePassword('new-password')">👁️</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm new password</label>
+        <div class="password-group">
+          <input type="password" id="confirm-password" class="form-input">
+          <button class="password-toggle" onclick="togglePassword('confirm-password')">👁️</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('password-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="updatePassword()">Update Password</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Check authentication
     const token = localStorage.getItem('jwt_token');
     if (!token) {
       window.location.href = '/auth.html#login';
     }
 
-    // Demo profile
-    const profile = {
-      name: 'Gamer Jay',
-      email: 'aceelnene@gmail.com',
-      plan: 'Creator'
-    };
+    let selectedMedia = null;
 
-    // Demo sessions
-    let sessions = [
-      { id: 's1', agent: 'Chrome on Windows', ip: '127.0.0.1', last: new Date().toISOString() },
-      { id: 's2', agent: 'Safari on iOS', ip: '10.0.0.5', last: new Date(Date.now() - 7200_000).toISOString() }
-    ];
-
-    let preview = null;
-    let saving = false;
-
-    function handleFileUpload(event) {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
-
-      const file = files[0];
-      const url = URL.createObjectURL(file);
-      preview = url;
-
-      const previewEl = document.getElementById('avatar-preview');
-      previewEl.innerHTML = `<img src="${url}" alt="avatar">`;
+    function openNameModal() {
+      document.getElementById('name-modal').classList.add('active');
     }
 
-    async function saveProfile() {
-      if (saving) return;
+    function openMediaModal() {
+      document.getElementById('media-modal').classList.add('active');
+    }
 
-      saving = true;
-      const btn = document.getElementById('save-btn');
-      const originalText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Saving…';
+    function openPasswordModal() {
+      document.getElementById('password-modal').classList.add('active');
+    }
 
-      try {
-        await new Promise(r => setTimeout(r, 800));
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
 
-        profile.name = document.getElementById('display-name').value;
-        profile.email = document.getElementById('email').value;
+    function saveName() {
+      const newName = document.getElementById('new-name').value.trim();
+      if (!newName) {
+        alert('Please enter a display name');
+        return;
+      }
+      document.getElementById('display-name').textContent = newName;
+      closeModal('name-modal');
+      alert('Display name updated successfully!');
+    }
 
-        alert('Profile saved successfully!');
-      } finally {
-        saving = false;
-        btn.disabled = false;
-        btn.textContent = originalText;
+    function handleMediaSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Check file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds 10MB');
+        return;
+      }
+
+      selectedMedia = file;
+      document.getElementById('file-name').textContent = file.name;
+    }
+
+    function uploadMedia() {
+      if (!selectedMedia) {
+        alert('Please select a file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const avatarDisplay = document.getElementById('avatar-display');
+
+        if (selectedMedia.type.startsWith('image/')) {
+          avatarDisplay.innerHTML = `<img src="${e.target.result}" alt="profile">`;
+        } else if (selectedMedia.type.startsWith('video/')) {
+          avatarDisplay.innerHTML = `<video src="${e.target.result}" autoplay loop muted></video>`;
+        }
+
+        closeModal('media-modal');
+        alert('Profile media updated successfully!');
+        selectedMedia = null;
+        document.getElementById('file-name').textContent = 'No file chosen';
+      };
+      reader.readAsDataURL(selectedMedia);
+    }
+
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      const btn = input.nextElementSibling;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
       }
     }
 
-    function revokeSession(id) {
-      sessions = sessions.filter(s => s.id !== id);
-      renderSessions();
-    }
+    function updatePassword() {
+      const current = document.getElementById('current-password').value;
+      const newPass = document.getElementById('new-password').value;
+      const confirm = document.getElementById('confirm-password').value;
 
-    function renderSessions() {
-      const container = document.getElementById('sessions-list');
-      container.innerHTML = sessions.map(s => `
-        <div class="session-item">
-          <div class="session-info">
-            <div class="session-agent">${s.agent}</div>
-            <div class="session-meta">${s.ip} • ${new Date(s.last).toLocaleString()}</div>
-          </div>
-          <button class="revoke-btn" onclick="revokeSession('${s.id}')">Revoke</button>
-        </div>
-      `).join('');
-    }
+      if (!current || !newPass || !confirm) {
+        alert('Please fill in all password fields');
+        return;
+      }
 
-    // Initialize
-    renderSessions();
+      if (newPass !== confirm) {
+        alert('New passwords do not match');
+        return;
+      }
+
+      if (newPass.length < 8) {
+        alert('Password must be at least 8 characters');
+        return;
+      }
+
+      closeModal('password-modal');
+      alert('Password updated successfully!');
+
+      // Clear fields
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+    }
   </script>
 </body>
 </html>
