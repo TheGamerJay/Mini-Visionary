@@ -126,12 +126,12 @@
       <div class="info-card">
         <div class="info-title">💡 What can you do with credits?</div>
         <ul class="info-list">
-          <li>🖼️ Generate images (standard & hi-res)</li>
-          <li>🔍 Upscale to 4K</li>
-          <li>✂️ Background removal</li>
-          <li>🎨 Style transfer / variations</li>
+          <li>🖼️ Generate images (10 credits each)</li>
+          <li>🎨 All generation types cost the same</li>
           <li>🚀 Priority queue for faster renders</li>
           <li>📥 Save & organize in Library</li>
+          <li>✨ High-quality AI poster generation</li>
+          <li>🔄 Unlimited variations and styles</li>
         </ul>
       </div>
     </div>
@@ -161,16 +161,16 @@
     const STARTING_BALANCE = 20;
 
     const demoTransactions = [
-      { id: "t1", time: "2025-09-24T14:12:00Z", desc: "Upscale to 4K", delta: -8 },
-      { id: "t2", time: "2025-09-24T13:40:00Z", desc: "Background removal", delta: -2 },
-      { id: "t3", time: "2025-09-23T22:54:00Z", desc: "Purchased 1200 credits", delta: +1200 },
-      { id: "t4", time: "2025-09-23T21:10:00Z", desc: "Image generation (Hi-Res)", delta: -4 },
-      { id: "t5", time: "2025-09-21T20:28:00Z", desc: "Purchased 500 credits", delta: +500 },
+      { id: "t1", time: "2025-09-24T14:12:00Z", desc: "Image generation", delta: -10 },
+      { id: "t2", time: "2025-09-24T13:40:00Z", desc: "Image generation", delta: -10 },
+      { id: "t3", time: "2025-09-23T22:54:00Z", desc: "Purchased 400 credits", delta: +400 },
+      { id: "t4", time: "2025-09-23T21:10:00Z", desc: "Image generation", delta: -10 },
+      { id: "t5", time: "2025-09-21T20:28:00Z", desc: "Purchased 100 credits", delta: +100 },
     ];
 
     const demoPurchases = [
-      { id: "p1", credits: 1200, price: 9.99, time: "2025-09-23T22:54:00Z", status: "paid" },
-      { id: "p2", credits: 500, price: 4.99, time: "2025-09-21T20:28:00Z", status: "paid" },
+      { id: "p1", credits: 400, price: 49.00, time: "2025-09-23T22:54:00Z", status: "paid" },
+      { id: "p2", credits: 100, price: 15.00, time: "2025-09-21T20:28:00Z", status: "paid" },
     ];
 
     let transactions = [];
