@@ -12,13 +12,14 @@ def whoami():
     if not user:
         return jsonify({"ok": True, "user": None}), 200
 
+    avatar = getattr(user, "avatar_url", None)
     return jsonify({
         "ok": True,
         "user": {
             "id": user.id,
             "email": user.email,
             "display_name": getattr(user, "display_name", None),
-            "avatar_image_url": getattr(user, "avatar_image_url", None),
-            "avatar_video_url": getattr(user, "avatar_video_url", None),
+            "avatar_image_url": avatar if avatar and not avatar.startswith('data:video/') else None,
+            "avatar_video_url": avatar if avatar and avatar.startswith('data:video/') else None,
         }
     }), 200

@@ -210,13 +210,14 @@ def login():
 @auth_required
 def me():
     current_app.logger.info("[auth.me] Success for user_id=%s email=%s", g.user.id, g.user.email)
+    avatar = getattr(g.user, 'avatar_url', None)
     return jsonify(ok=True, user={
         "id": g.user.id,
         "email": g.user.email,
         "display_name": g.user.display_name,
         "credits": g.user.credits,
-        "avatar_image_url": getattr(g.user, 'avatar_image_url', None),
-        "avatar_video_url": getattr(g.user, 'avatar_video_url', None),
+        "avatar_image_url": avatar if avatar and not avatar.startswith('data:video/') else None,
+        "avatar_video_url": avatar if avatar and avatar.startswith('data:video/') else None,
         "ad_free": getattr(g.user, 'ad_free', False)
     })
 

@@ -215,14 +215,15 @@ def get_profile():
             CreditLedger.event == 'purchase'
         ).scalar() or 0
 
+        avatar = getattr(db_user, 'avatar_url', None)
         return jsonify({
             "ok": True,
             "profile": {
                 "id": db_user.id,
                 "email": db_user.email,
                 "display_name": db_user.display_name,
-                "avatar_image_url": getattr(db_user, 'avatar_image_url', None),
-                "avatar_video_url": getattr(db_user, 'avatar_video_url', None),
+                "avatar_image_url": avatar if avatar and not avatar.startswith('data:video/') else None,
+                "avatar_video_url": avatar if avatar and avatar.startswith('data:video/') else None,
                 "plan": db_user.plan,
                 "credits": db_user.credits,
                 "created_at": db_user.created_at.isoformat(),
@@ -256,26 +257,26 @@ def update_profile():
                 return jsonify({"ok": False, "error": "Display name cannot be empty"}), 400
             db_user.display_name = display_name[:120]
 
+        # Handle avatar uploads - store in single avatar_url column
         if "avatar_image_url" in data:
             avatar_image_url = (data["avatar_image_url"] or "").strip()
-            if hasattr(db_user, 'avatar_image_url'):
-                db_user.avatar_image_url = avatar_image_url if avatar_image_url else None
+            db_user.avatar_url = avatar_image_url if avatar_image_url else None
 
         if "avatar_video_url" in data:
             avatar_video_url = (data["avatar_video_url"] or "").strip()
-            if hasattr(db_user, 'avatar_video_url'):
-                db_user.avatar_video_url = avatar_video_url if avatar_video_url else None
+            db_user.avatar_url = avatar_video_url if avatar_video_url else None
 
         db_user.updated_at = datetime.utcnow()
         s.commit()
 
+        avatar = getattr(db_user, 'avatar_url', None)
         return jsonify({
             "ok": True,
             "profile": {
                 "id": db_user.id,
                 "display_name": db_user.display_name,
-                "avatar_image_url": getattr(db_user, 'avatar_image_url', None),
-                "avatar_video_url": getattr(db_user, 'avatar_video_url', None),
+                "avatar_image_url": avatar if avatar and not avatar.startswith('data:video/') else None,
+                "avatar_video_url": avatar if avatar and avatar.startswith('data:video/') else None,
                 "updated_at": db_user.updated_at.isoformat()
             }
         })
