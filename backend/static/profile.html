@@ -216,6 +216,47 @@
     }
 
     let selectedMedia = null;
+    let userData = null;
+
+    // Load user data on page load
+    async function loadUserData() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.ok && data.user) {
+          userData = data.user;
+
+          // Update display
+          document.getElementById('display-name').textContent = userData.display_name || 'User';
+          document.getElementById('new-name').value = userData.display_name || '';
+
+          // Update avatar if exists
+          if (userData.avatar_url) {
+            const avatarDisplay = document.getElementById('avatar-display');
+            if (userData.avatar_url.endsWith('.mp4')) {
+              avatarDisplay.innerHTML = `<video src="${userData.avatar_url}" autoplay loop muted></video>`;
+            } else {
+              avatarDisplay.innerHTML = `<img src="${userData.avatar_url}" alt="profile">`;
+            }
+          }
+
+          // Update info grid
+          document.querySelector('.info-item:nth-child(2) .info-value').textContent = userData.email || 'N/A';
+          document.querySelector('.info-item:nth-child(3) .info-value').textContent = userData.ad_free ? 'Premium' : 'Free';
+          document.querySelector('.info-item:nth-child(4) .info-value').textContent = `${userData.credits || 0} credits`;
+        } else {
+          console.error('Failed to load user data');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    }
+
+    // Call on page load
+    loadUserData();
 
     function openNameModal() {
       document.getElementById('name-modal').classList.add('active');
@@ -233,15 +274,36 @@
       document.getElementById(id).classList.remove('active');
     }
 
-    function saveName() {
+    async function saveName() {
       const newName = document.getElementById('new-name').value.trim();
       if (!newName) {
         alert('Please enter a display name');
         return;
       }
-      document.getElementById('display-name').textContent = newName;
-      closeModal('name-modal');
-      alert('Display name updated successfully!');
+
+      try {
+        const response = await fetch('/api/library/profile/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ display_name: newName })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          document.getElementById('display-name').textContent = newName;
+          userData.display_name = newName;
+          closeModal('name-modal');
+          alert('Display name updated successfully!');
+        } else {
+          alert('Failed to update: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        alert('Network error: ' + error.message);
+      }
     }
 
     function handleMediaSelect(event) {
@@ -258,26 +320,49 @@
       document.getElementById('file-name').textContent = file.name;
     }
 
-    function uploadMedia() {
+    async function uploadMedia() {
       if (!selectedMedia) {
         alert('Please select a file');
         return;
       }
 
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const avatarDisplay = document.getElementById('avatar-display');
+      reader.onload = async (e) => {
+        const dataUrl = e.target.result;
 
-        if (selectedMedia.type.startsWith('image/')) {
-          avatarDisplay.innerHTML = `<img src="${e.target.result}" alt="profile">`;
-        } else if (selectedMedia.type.startsWith('video/')) {
-          avatarDisplay.innerHTML = `<video src="${e.target.result}" autoplay loop muted></video>`;
+        try {
+          // Save to database
+          const response = await fetch('/api/library/profile/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ avatar_url: dataUrl })
+          });
+
+          const data = await response.json();
+
+          if (data.ok) {
+            // Update display
+            const avatarDisplay = document.getElementById('avatar-display');
+            if (selectedMedia.type.startsWith('image/')) {
+              avatarDisplay.innerHTML = `<img src="${dataUrl}" alt="profile">`;
+            } else if (selectedMedia.type.startsWith('video/')) {
+              avatarDisplay.innerHTML = `<video src="${dataUrl}" autoplay loop muted></video>`;
+            }
+
+            userData.avatar_url = dataUrl;
+            closeModal('media-modal');
+            alert('Profile media updated successfully!');
+            selectedMedia = null;
+            document.getElementById('file-name').textContent = 'No file chosen';
+          } else {
+            alert('Failed to upload: ' + (data.error || 'Unknown error'));
+          }
+        } catch (error) {
+          alert('Network error: ' + error.message);
         }
-
-        closeModal('media-modal');
-        alert('Profile media updated successfully!');
-        selectedMedia = null;
-        document.getElementById('file-name').textContent = 'No file chosen';
       };
       reader.readAsDataURL(selectedMedia);
     }
