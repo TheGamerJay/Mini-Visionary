@@ -157,46 +157,34 @@
       window.location.href = '/auth.html#login';
     }
 
-    // Demo data
-    const STARTING_BALANCE = 20;
-
-    const demoTransactions = [
-      { id: "t1", time: "2025-09-24T14:12:00Z", desc: "Image generation", delta: -10 },
-      { id: "t2", time: "2025-09-24T13:40:00Z", desc: "Image generation", delta: -10 },
-      { id: "t3", time: "2025-09-23T22:54:00Z", desc: "Purchased 400 credits", delta: +400 },
-      { id: "t4", time: "2025-09-23T21:10:00Z", desc: "Image generation", delta: -10 },
-      { id: "t5", time: "2025-09-22T18:30:00Z", desc: "Purchased 100 credits", delta: +100 },
-      { id: "t6", time: "2025-09-21T20:28:00Z", desc: "Purchased 60 credits", delta: +60 },
-    ];
-
-    const demoPurchases = [
-      { id: "p1", credits: 400, price: 49.00, time: "2025-09-23T22:54:00Z", status: "paid" },
-      { id: "p2", credits: 100, price: 15.00, time: "2025-09-22T18:30:00Z", status: "paid" },
-      { id: "p3", credits: 60, price: 9.00, time: "2025-09-21T20:28:00Z", status: "paid" },
-    ];
-
     let transactions = [];
     let purchases = [];
+    let userCredits = 0;
 
-    // Load from localStorage or use demo data
-    function loadData() {
-      const savedTxns = localStorage.getItem('mv_transactions');
-      const savedPurchases = localStorage.getItem('mv_purchases');
+    // Load real data from API
+    async function loadData() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
 
-      transactions = savedTxns ? JSON.parse(savedTxns) : demoTransactions;
-      purchases = savedPurchases ? JSON.parse(savedPurchases) : demoPurchases;
+        if (data.ok && data.user) {
+          userCredits = data.user.credits || 0;
+          // For now, show empty until we have transaction API
+          transactions = [];
+          purchases = [];
+        }
+      } catch (error) {
+        console.error('Error loading wallet data:', error);
+        transactions = [];
+        purchases = [];
+      }
     }
 
-    // Calculate balance
-    function calculateBalance() {
-      const totalDelta = transactions.reduce((sum, txn) => sum + txn.delta, 0);
-      return STARTING_BALANCE + totalDelta;
-    }
-
-    // Render balance
+    // Render balance from real user credits
     function renderBalance() {
-      const balance = calculateBalance();
-      document.getElementById('balance-amount').textContent = balance.toLocaleString();
+      document.getElementById('balance-amount').textContent = userCredits.toLocaleString();
     }
 
     // Render transactions
@@ -265,11 +253,12 @@
       URL.revokeObjectURL(url);
     }
 
-    // Initialize
-    loadData();
-    renderBalance();
-    renderTransactions();
-    renderPurchases();
+    // Initialize - load data then render
+    loadData().then(() => {
+      renderBalance();
+      renderTransactions();
+      renderPurchases();
+    });
   </script>
 </body>
 </html>
