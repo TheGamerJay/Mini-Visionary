@@ -236,9 +236,11 @@
           // Update avatar - prioritize video over image
           const avatarDisplay = document.getElementById('avatar-display');
           if (userData.avatar_video_url) {
-            avatarDisplay.innerHTML = `<video src="${userData.avatar_video_url}" autoplay loop muted></video>`;
+            avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+              <source src="${userData.avatar_video_url}" type="video/mp4">
+            </video>`;
           } else if (userData.avatar_image_url) {
-            avatarDisplay.innerHTML = `<img src="${userData.avatar_image_url}" alt="profile">`;
+            avatarDisplay.innerHTML = `<img src="${userData.avatar_image_url}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
           }
 
           // Update info grid
@@ -393,10 +395,12 @@
               const avatarUrl = data.profile.avatar_url;
 
               if (isVideo) {
-                avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
+                avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+                  <source src="${avatarUrl}" type="video/mp4">
+                </video>`;
                 userData.avatar_video_url = avatarUrl;
               } else if (isImage) {
-                avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
+                avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
                 userData.avatar_image_url = avatarUrl;
               }
 
