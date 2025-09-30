@@ -281,6 +281,19 @@
         const response = await fetch('/api/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+
+        // Only redirect on 401 Unauthorized, not network errors
+        if (response.status === 401) {
+          localStorage.removeItem('jwt_token');
+          window.location.href = '/auth.html#login';
+          return;
+        }
+
+        if (!response.ok) {
+          console.log('Profile auth check failed with status ' + response.status + ', but keeping session');
+          return;
+        }
+
         const data = await response.json();
 
         if (data.ok && data.user) {
@@ -303,11 +316,10 @@
           if (!hasLoadedFromCache || userData.profile_picture_url !== cachedMedia) {
             updateUI(userData);
           }
-        } else {
-          console.error('Failed to load user data');
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        // Network errors - don't logout, just log
+        console.log('Profile auth check network error (keeping session):', error);
       }
     }
 
