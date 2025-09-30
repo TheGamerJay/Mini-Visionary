@@ -55,7 +55,7 @@
 
     .gallery-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; margin-bottom:16px; break-inside:avoid; transition:all 0.2s; position:relative}
     .gallery-item:hover{border-color:var(--line); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
-    .gallery-item img{width:100%; height:auto; display:block; cursor:pointer}
+    .gallery-item img{width:100%; height:auto; max-height:400px; object-fit:contain; display:block; cursor:pointer; background:#000}
     .gallery-info{padding:12px; position:relative}
     .gallery-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
     .gallery-meta{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px}
