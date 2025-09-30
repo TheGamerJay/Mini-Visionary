@@ -239,11 +239,11 @@
           if (profilePic) {
             const isVideo = profilePic.endsWith('.mp4');
             if (isVideo) {
-              avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+              avatarDisplay.innerHTML = `<video controls autoplay muted loop>
                 <source src="${profilePic}" type="video/mp4">
               </video>`;
             } else {
-              avatarDisplay.innerHTML = `<img src="${profilePic}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
+              avatarDisplay.innerHTML = `<img src="${profilePic}" alt="profile">`;
             }
           }
 
@@ -385,11 +385,15 @@
         });
 
         const data = await resp.json();
+        console.log('Upload response:', data);
 
         if (resp.status === 200 && data.ok) {
           // Success!
           const avatarDisplay = document.getElementById('avatar-display');
           const profilePicUrl = data.profile_picture_url;
+
+          console.log('Profile picture URL:', profilePicUrl);
+          console.log('Is video:', data.is_video);
 
           // Update userData
           userData.profile_picture_url = profilePicUrl;
@@ -397,11 +401,11 @@
           // Display the uploaded image/video
           if (profilePicUrl) {
             if (data.is_video) {
-              avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+              avatarDisplay.innerHTML = `<video controls autoplay muted loop>
                 <source src="${profilePicUrl}" type="video/mp4">
               </video>`;
             } else {
-              avatarDisplay.innerHTML = `<img src="${profilePicUrl}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
+              avatarDisplay.innerHTML = `<img src="${profilePicUrl}" alt="profile">`;
             }
           }
 
