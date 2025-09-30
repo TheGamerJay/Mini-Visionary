@@ -514,12 +514,8 @@
 
       empty.style.display = 'none';
 
-      // Sort by date, newest first
-      const sortedPosts = [...userPosts].sort((a, b) =>
-        new Date(b.createdAt) - new Date(a.createdAt)
-      );
-
-      feed.innerHTML = sortedPosts.map(post => {
+      // Posts are already sorted newest first (we use unshift when adding)
+      feed.innerHTML = userPosts.map(post => {
         const totalReactions = Object.values(post.reactions || {}).reduce((sum, count) => sum + count, 0);
         const myReaction = post.myReaction || null;
 
@@ -579,7 +575,7 @@
       }).join('');
     }
 
-    function submitPost() {
+    async function submitPost() {
       const body = document.getElementById('post-body').value.trim();
       const category = document.getElementById('category-select').value;
       const contentType = document.getElementById('content-type-select').value;
@@ -589,29 +585,58 @@
         return;
       }
 
-      const newPost = {
-        id: `post_${Date.now()}`,
-        body: body,
-        category: category,
-        contentType: contentType,
-        createdAt: new Date().toISOString(),
-        userName: 'You', // Will be replaced with real user data
-        mine: true,
-        reactions: {},
-        myReaction: null
-      };
+      // Confirm credit cost
+      if (!confirm('Post this to the community? This will cost 3 credits.')) {
+        return;
+      }
 
-      userPosts.push(newPost);
-      savePosts();
-      renderPosts();
+      try {
+        // Check user has enough credits
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
 
-      // Clear form
-      document.getElementById('post-body').value = '';
-      document.getElementById('char-count').textContent = '0';
-      document.getElementById('category-select').value = 'general';
-      document.getElementById('content-type-select').value = 'general';
+        if (!data.ok || !data.user) {
+          alert('Failed to verify credits. Please try again.');
+          return;
+        }
 
-      alert('Post shared successfully! 🎉');
+        if (data.user.credits < 3) {
+          alert('Not enough credits! You need 3 credits to post. Visit the Store to get more.');
+          return;
+        }
+
+        // Deduct 3 credits (this would be done server-side in production)
+        const newCredits = data.user.credits - 3;
+
+        const newPost = {
+          id: `post_${Date.now()}`,
+          body: body,
+          category: category,
+          contentType: contentType,
+          createdAt: new Date().toISOString(),
+          userName: data.user.display_name || 'You',
+          mine: true,
+          reactions: {},
+          myReaction: null
+        };
+
+        userPosts.unshift(newPost); // Add to beginning for newest first
+        savePosts();
+        renderPosts();
+
+        // Clear form
+        document.getElementById('post-body').value = '';
+        document.getElementById('char-count').textContent = '0';
+        document.getElementById('category-select').value = 'general';
+        document.getElementById('content-type-select').value = 'general';
+
+        alert(`Post shared successfully! 🎉\n\n3 credits deducted. You now have ${newCredits} credits.`);
+      } catch (error) {
+        console.error('Post error:', error);
+        alert('Failed to post. Please try again.');
+      }
     }
 
     function toggleReaction(postId, emoji) {
