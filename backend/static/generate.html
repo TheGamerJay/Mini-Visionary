@@ -227,21 +227,23 @@
   <div class="main-content">
     <!-- Welcome Section (shown when no chat history) -->
     <div id="welcome-section" class="welcome-section">
+      <h1 class="welcome-title" id="welcome-title">Hey <span id="display-name">...</span>. Ready when you are. Let's build your vision.</h1>
       <script>
-        // Render welcome title with cached name immediately - no flicker
-        try {
-          const cached = localStorage.getItem('cached_user_data');
-          let displayName = '...';
-          if (cached) {
-            const userData = JSON.parse(cached);
-            if (userData.display_name) {
-              displayName = userData.display_name;
+        // Load cached name immediately
+        (function() {
+          try {
+            const cached = localStorage.getItem('cached_user_data');
+            if (cached) {
+              const userData = JSON.parse(cached);
+              if (userData.display_name) {
+                const el = document.getElementById('display-name');
+                if (el) el.textContent = userData.display_name;
+              }
             }
+          } catch(e) {
+            console.error('Cache load error:', e);
           }
-          document.write('<h1 class="welcome-title">Hey ' + displayName + '. Ready when you are. Let\\'s build your vision.</h1>');
-        } catch(e) {
-          document.write('<h1 class="welcome-title">Hey <span id="display-name">...</span>. Ready when you are. Let\\'s build your vision.</h1>');
-        }
+        })();
       </script>
       <div class="input-container">
         <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
@@ -312,7 +314,7 @@
     } else {
       console.log('Token found, attempting auth check...');
 
-      // Load cached credits only (display name already rendered inline)
+      // Cache already loaded inline, just load credits here
       try {
         const cachedUser = localStorage.getItem('cached_user_data');
         if (cachedUser) {
@@ -352,10 +354,14 @@
           // Safely update DOM elements if they exist
           const userNameEl = document.getElementById('user-name');
           const userCreditsEl = document.getElementById('user-credits');
+          const displayNameEl = document.getElementById('display-name');
 
           if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
           if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
-          // Display name is already rendered inline with cached data, no need to update
+          // Only update if still showing placeholder
+          if (displayNameEl && displayNameEl.textContent === '...') {
+            displayNameEl.textContent = data.user.display_name || 'User';
+          }
 
           // Update cached credits to prevent flash on next refresh
           try {
