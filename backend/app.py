@@ -233,6 +233,20 @@ app.register_blueprint(webhooks_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(health_bp)         # Essential - health monitoring endpoint
 
+# JSON error handlers (prevent HTML error pages from breaking JSON APIs)
+@app.errorhandler(405)
+def handle_405(e):
+    """Return JSON for Method Not Allowed instead of HTML"""
+    allow = list(e.valid_methods) if e.valid_methods else []
+    return jsonify({"ok": False, "error": "METHOD_NOT_ALLOWED", "allow": allow}), 405
+
+@app.errorhandler(404)
+def handle_404(e):
+    """Return JSON for Not Found on API routes"""
+    if request.path.startswith('/api/'):
+        return jsonify({"ok": False, "error": "NOT_FOUND"}), 404
+    return e  # Let HTML 404 page show for non-API routes
+
 # OpenAI client (only if key + lib present)
 oai_client: Optional["OpenAI"] = None
 if OPENAI_API_KEY and OPENAI_AVAILABLE:

@@ -271,7 +271,7 @@ def get_profile():
             }
         })
 
-@library_bp.route("/profile", methods=["PUT", "POST", "PATCH", "OPTIONS"])
+@library_bp.route("/profile", methods=["GET", "POST", "PUT", "PATCH", "OPTIONS"], strict_slashes=False)
 @auth_required
 def update_profile():
     """
@@ -280,7 +280,28 @@ def update_profile():
     """
     # Handle OPTIONS for CORS preflight
     if request.method == "OPTIONS":
-        return jsonify({"ok": True}), 200
+        return ("", 204)
+
+    # Handle GET for fetching current profile
+    if request.method == "GET":
+        with get_session() as s:
+            db_user = s.query(User).filter_by(id=g.user.id).first()
+            if not db_user:
+                return jsonify({"ok": False, "error": "User not found"}), 404
+
+            avatar = getattr(db_user, 'avatar_url', None)
+            is_video = avatar and (avatar.startswith('data:video/') or avatar.endswith('.mp4'))
+
+            return jsonify({
+                "ok": True,
+                "profile": {
+                    "id": db_user.id,
+                    "display_name": db_user.display_name,
+                    "avatar_image_url": avatar if avatar and not is_video else None,
+                    "avatar_video_url": avatar if avatar and is_video else None,
+                    "avatar_url": avatar
+                }
+            })
 
     try:
         with get_session() as s:

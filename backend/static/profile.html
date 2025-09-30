@@ -333,6 +333,31 @@
       document.getElementById('file-name').textContent = file.name;
     }
 
+    // Safe JSON parser that won't crash on HTML
+    async function safeParseJson(resp) {
+      const ct = resp.headers.get("content-type") || "";
+      if (!ct.toLowerCase().includes("application/json")) {
+        console.error("[Non-JSON Response]", await resp.text().catch(() => ""));
+        return null;
+      }
+      try { return await resp.json(); } catch { return null; }
+    }
+
+    async function sendOnce(url, method, body) {
+      const resp = await fetch(url, {
+        method,
+        body,
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: "include"
+      });
+
+      // 204/empty body is OK
+      if (resp.status === 204) return { resp, data: null };
+
+      const data = await safeParseJson(resp);
+      return { resp, data };
+    }
+
     async function uploadMedia() {
       if (!selectedMedia) {
         alert('Please select a file');
@@ -340,77 +365,108 @@
       }
 
       try {
-        // Use FormData for proper file upload
         const formData = new FormData();
         formData.append('avatar', selectedMedia);
 
         const isVideo = selectedMedia.type.startsWith('video/');
         const isImage = selectedMedia.type.startsWith('image/');
 
-        // Try PATCH first, then POST, then PUT
-        const methods = ['PATCH', 'POST', 'PUT'];
-        let response = null;
-        let lastError = null;
+        const verbs = ["PATCH", "POST", "PUT"];
+        const candidatePaths = [
+          "/api/library/profile",   // no trailing slash
+          "/api/library/profile/"   // trailing slash (covers strict_slashes issues)
+        ];
 
-        for (const method of methods) {
-          try {
-            response = await fetch('/api/library/profile', {
-              method: method,
-              headers: {
-                'Authorization': `Bearer ${token}`
-                // Don't set Content-Type - browser will set it with boundary
-              },
-              body: formData
-            });
+        // Try both path variants
+        for (const path of candidatePaths) {
+          // 1) Try common verbs
+          for (const method of verbs) {
+            const { resp, data } = await sendOnce(path, method, formData);
 
-            if (response.status === 405) {
-              // Method not allowed, try next one
-              continue;
-            }
+            if (resp.status === 200) {
+              // Success!
+              const avatarDisplay = document.getElementById('avatar-display');
+              const avatarUrl = data.profile.avatar_url;
 
-            if (response.status === 413) {
-              alert('File too large. Maximum size is 20MB.');
+              if (isVideo) {
+                avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
+                userData.avatar_video_url = avatarUrl;
+              } else if (isImage) {
+                avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
+                userData.avatar_image_url = avatarUrl;
+              }
+
+              closeModal('media-modal');
+              alert('Profile media updated successfully!');
+              selectedMedia = null;
+              document.getElementById('file-name').textContent = 'No file chosen';
               return;
             }
 
-            if (response.status === 415) {
+            if (resp.status === 405) {
+              // If backend gave JSON with allowed methods, try those next
+              const allowHeader = resp.headers.get("Allow") || (data?.allow || []).join(",");
+              const allowList = (allowHeader || "").split(",").map(s => s.trim().toUpperCase());
+              for (const am of allowList) {
+                if (!verbs.includes(am) && ["POST","PUT","PATCH"].includes(am)) {
+                  const attempt = await sendOnce(path, am, formData);
+                  if (attempt.resp.status === 200) {
+                    const avatarUrl = attempt.data.profile.avatar_url;
+                    const avatarDisplay = document.getElementById('avatar-display');
+                    if (isVideo) {
+                      avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
+                    } else {
+                      avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
+                    }
+                    closeModal('media-modal');
+                    alert('Profile media updated successfully!');
+                    selectedMedia = null;
+                    document.getElementById('file-name').textContent = 'No file chosen';
+                    return;
+                  }
+                }
+              }
+              // Continue to next verb or path
+              continue;
+            } else if (resp.status === 415) {
               alert('File type not supported. Use PNG, JPG, GIF, WebP, or MP4.');
               return;
+            } else if (resp.status === 413) {
+              alert('File too large (max 20MB).');
+              return;
+            } else if (resp.status >= 400) {
+              const msg = (data && (data.error || data.message)) || `HTTP ${resp.status}`;
+              alert('Upload failed: ' + msg);
+              return;
             }
+          }
 
-            break; // Success or other error, exit loop
-          } catch (err) {
-            lastError = err;
-            continue; // Try next method
+          // 2) Final attempt: ask server via OPTIONS what's allowed
+          const opt = await fetch(path, { method: "OPTIONS", headers: { 'Authorization': `Bearer ${token}` }});
+          const allow = opt.headers.get("Allow") || "";
+          const allowList = allow.split(",").map(s => s.trim().toUpperCase());
+          for (const am of allowList) {
+            if (["POST","PUT","PATCH"].includes(am)) {
+              const attempt = await sendOnce(path, am, formData);
+              if (attempt.resp.status === 200) {
+                const avatarUrl = attempt.data.profile.avatar_url;
+                const avatarDisplay = document.getElementById('avatar-display');
+                if (isVideo) {
+                  avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
+                } else {
+                  avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
+                }
+                closeModal('media-modal');
+                alert('Profile media updated successfully!');
+                selectedMedia = null;
+                document.getElementById('file-name').textContent = 'No file chosen';
+                return;
+              }
+            }
           }
         }
 
-        if (!response) {
-          throw lastError || new Error('All upload methods failed');
-        }
-
-        const data = await response.json();
-
-        if (data.ok) {
-          // Update display with the uploaded file URL
-          const avatarDisplay = document.getElementById('avatar-display');
-          const avatarUrl = data.profile.avatar_url;
-
-          if (isVideo) {
-            avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
-            userData.avatar_video_url = avatarUrl;
-          } else if (isImage) {
-            avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
-            userData.avatar_image_url = avatarUrl;
-          }
-
-          closeModal('media-modal');
-          alert('Profile media updated successfully!');
-          selectedMedia = null;
-          document.getElementById('file-name').textContent = 'No file chosen';
-        } else {
-          alert('Failed to upload: ' + (data.error || 'Unknown error'));
-        }
+        alert('Profile endpoint does not accept POST/PUT/PATCH (405). Check server route and proxy.');
       } catch (error) {
         console.error('Upload error:', error);
         alert('Network error: ' + error.message);
