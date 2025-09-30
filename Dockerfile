@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Railway target port is 8080
 EXPOSE 8080
+# Cache bust: 2025-09-30-04:10
 
 # Healthcheck: use JSON endpoint for detailed diagnostics
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD \
