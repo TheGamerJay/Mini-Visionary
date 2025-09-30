@@ -380,6 +380,17 @@
       if (saved) {
         try {
           const userPosts = JSON.parse(saved);
+          // Normalize reactions to use current REACTION_SET
+          userPosts.forEach(post => {
+            const oldReactions = post.reactions || {};
+            post.reactions = {};
+            // Only keep reactions that are in current REACTION_SET
+            REACTION_SET.forEach(emoji => {
+              if (oldReactions[emoji]) {
+                post.reactions[emoji] = oldReactions[emoji];
+              }
+            });
+          });
           posts = [...userPosts, ...posts];
         } catch (e) {
           console.error('Failed to load posts:', e);
