@@ -373,14 +373,18 @@
 
         const verbs = ["PATCH", "POST", "PUT"];
         const candidatePaths = [
-          "/api/library/profile",   // no trailing slash
-          "/api/library/profile/"   // trailing slash (covers strict_slashes issues)
+          "/api/library/profile/upload",  // alternative endpoint (POST only) - try first
+          "/api/library/profile",         // main endpoint
+          "/api/library/profile/"         // with trailing slash
         ];
 
         // Try both path variants
         for (const path of candidatePaths) {
+          // For /upload endpoint, only try POST
+          const methodsToTry = path.includes('/upload') ? ['POST'] : verbs;
+
           // 1) Try common verbs
-          for (const method of verbs) {
+          for (const method of methodsToTry) {
             const { resp, data } = await sendOnce(path, method, formData);
 
             if (resp.status === 200) {

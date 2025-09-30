@@ -385,3 +385,85 @@ def update_profile():
     except Exception as e:
         current_app.logger.exception("Profile update failed")
         return jsonify({"ok": False, "error": "Server error"}), 500
+
+# Alternative endpoint for production compatibility (POST only)
+@library_bp.route("/profile/upload", methods=["POST", "OPTIONS"], strict_slashes=False)
+@auth_required
+def upload_profile():
+    """
+    Alternative profile upload endpoint (POST only)
+    Workaround for servers that block PUT/PATCH on /profile
+    """
+    if request.method == "OPTIONS":
+        return ("", 204)
+
+    try:
+        with get_session() as s:
+            db_user = s.query(User).filter_by(id=g.user.id).first()
+            if not db_user:
+                return jsonify({"ok": False, "error": "User not found"}), 404
+
+            is_multipart = request.content_type and 'multipart/form-data' in request.content_type
+
+            if is_multipart:
+                display_name = request.form.get("display_name", "").strip()
+                avatar_file = request.files.get("avatar")
+
+                if display_name:
+                    db_user.display_name = display_name[:120]
+
+                if avatar_file and avatar_file.filename:
+                    avatar_file.seek(0, os.SEEK_END)
+                    file_size = avatar_file.tell()
+                    avatar_file.seek(0)
+
+                    if file_size > MAX_FILE_SIZE:
+                        return jsonify({"ok": False, "error": f"File too large. Max {MAX_FILE_SIZE // (1024*1024)}MB"}), 413
+
+                    ext = avatar_file.filename.rsplit('.', 1)[1].lower() if '.' in avatar_file.filename else ''
+                    if ext not in ALLOWED_EXTENSIONS:
+                        return jsonify({"ok": False, "error": "Only png/jpg/jpeg/gif/webp/mp4 allowed"}), 415
+
+                    avatar_url = save_upload_file(avatar_file, "profiles/avatars")
+                    db_user.avatar_url = avatar_url
+            else:
+                data = request.get_json()
+                if not data:
+                    return jsonify({"ok": False, "error": "Request body required"}), 400
+
+                if "display_name" in data:
+                    display_name = (data["display_name"] or "").strip()
+                    if display_name:
+                        db_user.display_name = display_name[:120]
+
+                if "avatar_image_url" in data:
+                    avatar_image_url = (data["avatar_image_url"] or "").strip()
+                    db_user.avatar_url = avatar_image_url if avatar_image_url else None
+
+                if "avatar_video_url" in data:
+                    avatar_video_url = (data["avatar_video_url"] or "").strip()
+                    db_user.avatar_url = avatar_video_url if avatar_video_url else None
+
+            db_user.updated_at = datetime.utcnow()
+            s.commit()
+
+            avatar = getattr(db_user, 'avatar_url', None)
+            is_video = avatar and (avatar.startswith('data:video/') or avatar.endswith('.mp4'))
+
+            return jsonify({
+                "ok": True,
+                "profile": {
+                    "id": db_user.id,
+                    "display_name": db_user.display_name,
+                    "avatar_image_url": avatar if avatar and not is_video else None,
+                    "avatar_video_url": avatar if avatar and is_video else None,
+                    "avatar_url": avatar,
+                    "updated_at": db_user.updated_at.isoformat()
+                }
+            })
+
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.exception("Profile upload failed")
+        return jsonify({"ok": False, "error": "Server error"}), 500
