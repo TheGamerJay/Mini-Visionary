@@ -38,7 +38,7 @@
 
     .profile-center{display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center}
     .avatar-display{width:120px; height:120px; border-radius:50%; overflow:hidden; border:2px solid var(--ring); background:var(--sunken); display:grid; place-items:center}
-    .avatar-display img,.avatar-display video{width:100%; height:100%; object-fit:cover}
+    .avatar-display img,.avatar-display video{width:100%; height:100%; object-fit:contain}
     .avatar-placeholder{width:100%; height:100%; background:linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); text-align:center; padding:20px}
     .display-name{font-size:20px; font-weight:600; margin-top:8px}
     .action-buttons{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
@@ -237,7 +237,7 @@
           const avatarDisplay = document.getElementById('avatar-display');
           const profilePic = userData.profile_picture_url || userData.avatar_url;
           if (profilePic) {
-            const isVideo = profilePic.endsWith('.mp4');
+            const isVideo = profilePic.endsWith('.mp4') || profilePic.startsWith('data:video/');
             if (isVideo) {
               avatarDisplay.innerHTML = `<video autoplay muted loop playsinline>
                 <source src="${profilePic}" type="video/mp4">
@@ -464,7 +464,7 @@
       }
     }
 
-    function updatePassword() {
+    async function updatePassword() {
       const current = document.getElementById('current-password').value;
       const newPass = document.getElementById('new-password').value;
       const confirm = document.getElementById('confirm-password').value;
@@ -484,13 +484,37 @@
         return;
       }
 
-      closeModal('password-modal');
-      alert('Password updated successfully!');
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/profile/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            current_password: current,
+            new_password: newPass
+          })
+        });
 
-      // Clear fields
-      document.getElementById('current-password').value = '';
-      document.getElementById('new-password').value = '';
-      document.getElementById('confirm-password').value = '';
+        const data = await response.json();
+
+        if (data.ok) {
+          closeModal('password-modal');
+          alert('Password updated successfully!');
+
+          // Clear fields
+          document.getElementById('current-password').value = '';
+          document.getElementById('new-password').value = '';
+          document.getElementById('confirm-password').value = '';
+        } else {
+          alert(`Failed to update password: ${data.error}`);
+        }
+      } catch (error) {
+        console.error('Password update error:', error);
+        alert('Failed to update password. Please try again.');
+      }
     }
   </script>
 </body>

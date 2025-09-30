@@ -147,3 +147,53 @@ def update_profile_name():
 
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
+@profile_upload_bp.route('/change-password', methods=['POST'])
+@auth_required
+def change_password():
+    """Change user password"""
+    from flask_bcrypt import Bcrypt
+    from werkzeug.security import check_password_hash
+
+    bcrypt_instance = Bcrypt()
+
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"ok": False, "error": "Request body required"}), 400
+
+        current_password = data.get('current_password', '').strip()
+        new_password = data.get('new_password', '').strip()
+
+        if not current_password or not new_password:
+            return jsonify({"ok": False, "error": "Both current and new password required"}), 400
+
+        if len(new_password) < 8:
+            return jsonify({"ok": False, "error": "Password must be at least 8 characters"}), 400
+
+        with get_session() as session:
+            user = session.query(User).filter_by(id=g.user.id).first()
+            if not user:
+                return jsonify({"ok": False, "error": "User not found"}), 404
+
+            # Verify current password
+            password_valid = False
+            if user.password_hash:
+                # Try bcrypt first
+                try:
+                    password_valid = bcrypt_instance.check_password_hash(user.password_hash, current_password)
+                except:
+                    # Fallback to werkzeug
+                    password_valid = check_password_hash(user.password_hash, current_password)
+
+            if not password_valid:
+                return jsonify({"ok": False, "error": "Current password is incorrect"}), 401
+
+            # Hash and save new password
+            user.password_hash = bcrypt_instance.generate_password_hash(new_password).decode('utf-8')
+            session.commit()
+
+            return jsonify({"ok": True, "message": "Password changed successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
