@@ -391,12 +391,18 @@
           const avatarDisplay = document.getElementById('avatar-display');
           const profilePicUrl = data.profile_picture_url;
 
-          if (data.is_video) {
-            avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
-              <source src="${profilePicUrl}" type="video/mp4">
-            </video>`;
-          } else {
-            avatarDisplay.innerHTML = `<img src="${profilePicUrl}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
+          // Update userData
+          userData.profile_picture_url = profilePicUrl;
+
+          // Display the uploaded image/video
+          if (profilePicUrl) {
+            if (data.is_video) {
+              avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+                <source src="${profilePicUrl}" type="video/mp4">
+              </video>`;
+            } else {
+              avatarDisplay.innerHTML = `<img src="${profilePicUrl}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
+            }
           }
 
           closeModal('media-modal');
