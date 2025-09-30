@@ -298,23 +298,26 @@
       console.log('Token found, attempting auth check...');
 
       // Load cached user data first to prevent flicker
+      const welcomeTitleEl = document.getElementById('welcome-title');
       try {
         const cachedUser = localStorage.getItem('cached_user_data');
         if (cachedUser) {
           const userData = JSON.parse(cachedUser);
           const displayNameEl = document.getElementById('display-name');
-          const welcomeTitleEl = document.getElementById('welcome-title');
           const userCreditsEl = document.getElementById('user-credits');
           if (displayNameEl && userData.display_name) {
             displayNameEl.textContent = userData.display_name;
-            if (welcomeTitleEl) welcomeTitleEl.style.visibility = 'visible';
           }
           if (userCreditsEl && userData.credits !== undefined) {
             userCreditsEl.textContent = userData.credits;
           }
         }
+        // Show title regardless of cache
+        if (welcomeTitleEl) welcomeTitleEl.style.visibility = 'visible';
       } catch (e) {
         console.log('Error loading cached user data:', e);
+        // Show title even on error
+        if (welcomeTitleEl) welcomeTitleEl.style.visibility = 'visible';
       }
 
       // Load user info - with better error handling
