@@ -241,10 +241,11 @@
   <div class="main-content">
     <!-- Welcome Section (shown when no chat history) -->
     <div id="welcome-section" class="welcome-section">
+      <h1 class="welcome-title">Hey <span id="display-name"></span>. Ready when you are. Let's build your vision.</h1>
       <script>
-        // Use pre-loaded cached name from head to render immediately
+        // Use pre-loaded cached name from head - already loaded before page rendered
         const displayName = window.__CACHED_DISPLAY_NAME || '...';
-        document.write('<h1 class="welcome-title">Hey ' + displayName + '. Ready when you are. Let\\'s build your vision.</h1>');
+        document.getElementById('display-name').textContent = displayName;
       </script>
       <div class="input-container">
         <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
