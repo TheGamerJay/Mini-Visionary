@@ -667,8 +667,8 @@ def test_logging():
 def serve_logo():
     return send_from_directory(app.static_folder, 'logo.png')
 
-# Import SPA routing to register catch-all routes
-import serve_spa
+# Import SPA routing to register catch-all routes LAST (after all blueprints)
+import serve_spa  # This registers /<path:path> catch-all AFTER all API routes
 
 if __name__ == "__main__":
     # Initialize database
