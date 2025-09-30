@@ -39,7 +39,7 @@
     .profile-center{display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center}
     .avatar-display{width:120px; height:120px; border-radius:50%; overflow:hidden; border:2px solid var(--ring); background:var(--sunken); display:grid; place-items:center}
     .avatar-display img,.avatar-display video{width:100%; height:100%; object-fit:cover}
-    .avatar-placeholder{font-size:48px}
+    .avatar-placeholder{width:100%; height:100%; background:linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); text-align:center; padding:20px}
     .display-name{font-size:20px; font-weight:600; margin-top:8px}
     .action-buttons{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
     .btn-action{padding:8px 16px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); color:var(--text); font-size:13px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px}
@@ -100,7 +100,7 @@
           <h1 class="section-title">🧑 Profile</h1>
           <div class="profile-center">
             <div class="avatar-display" id="avatar-display">
-              <div class="avatar-placeholder">📷</div>
+              <div class="avatar-placeholder">No Image</div>
             </div>
             <div class="display-name" id="display-name">Gamer Jay</div>
             <div class="action-buttons">
