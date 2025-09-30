@@ -195,18 +195,46 @@
       border-color:#ef4444;
     }
 
+    /* Category Sections */
+    .category-section{
+      margin-bottom:40px;
+    }
+    .category-header{
+      font-size:24px;
+      font-weight:700;
+      margin-bottom:20px;
+      padding-bottom:12px;
+      border-bottom:2px solid var(--ring);
+      background:linear-gradient(90deg, var(--btn-start), var(--btn-end));
+      background-clip:text;
+      -webkit-background-clip:text;
+      color:transparent;
+    }
+
+    /* Post Grid */
+    .posts-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:20px;
+      margin-bottom:20px;
+    }
+    @media (max-width: 1024px) { .posts-grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width: 640px) { .posts-grid{grid-template-columns:1fr} }
+
     /* Post Cards */
     .post-card{
       background:var(--card);
       border:1px solid var(--ring);
       border-radius:16px;
       overflow:hidden;
-      margin-bottom:20px;
       transition:all 0.3s;
+      display:flex;
+      flex-direction:column;
     }
     .post-card:hover{
       border-color:var(--line);
       box-shadow:0 8px 24px rgba(0,0,0,0.3);
+      transform:translateY(-2px);
     }
     .post-header{
       padding:16px;
@@ -514,12 +542,42 @@
 
       empty.style.display = 'none';
 
-      // Posts are already sorted newest first (we use unshift when adding)
-      feed.innerHTML = userPosts.map(post => {
-        const totalReactions = Object.values(post.reactions || {}).reduce((sum, count) => sum + count, 0);
-        const myReaction = post.myReaction || null;
+      // Group posts by category
+      const categories = {
+        'general': 'General',
+        'showcase': 'Showcase',
+        'poster-design': 'Poster Design',
+        'concept-art': 'Concept Art',
+        'tips': 'Tips & Tricks',
+        'feedback': 'Feedback'
+      };
 
-        return `
+      const postsByCategory = {};
+      userPosts.forEach(post => {
+        const cat = post.category || 'general';
+        if (!postsByCategory[cat]) {
+          postsByCategory[cat] = [];
+        }
+        postsByCategory[cat].push(post);
+      });
+
+      // Render each category section with grid
+      let html = '';
+      Object.keys(categories).forEach(catKey => {
+        const posts = postsByCategory[catKey];
+        if (!posts || posts.length === 0) return;
+
+        html += `
+          <div class="category-section">
+            <h2 class="category-header">${categories[catKey]} (${posts.length})</h2>
+            <div class="posts-grid">
+        `;
+
+        posts.forEach(post => {
+          const totalReactions = Object.values(post.reactions || {}).reduce((sum, count) => sum + count, 0);
+          const myReaction = post.myReaction || null;
+
+          html += `
           <div class="post-card">
             <div class="post-header">
               <div class="user-avatar">
@@ -571,8 +629,16 @@
               </div>
             </div>
           </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
         `;
-      }).join('');
+      });
+
+      feed.innerHTML = html;
     }
 
     async function submitPost() {
