@@ -228,6 +228,18 @@
     <!-- Welcome Section (shown when no chat history) -->
     <div id="welcome-section" class="welcome-section">
       <h1 class="welcome-title">Hey <span id="display-name">...</span>. Ready when you are. Let's build your vision.</h1>
+      <script>
+        // Load cached name immediately to prevent flicker
+        try {
+          const cached = localStorage.getItem('cached_user_data');
+          if (cached) {
+            const userData = JSON.parse(cached);
+            if (userData.display_name) {
+              document.getElementById('display-name').textContent = userData.display_name;
+            }
+          }
+        } catch(e) {}
+      </script>
       <div class="input-container">
         <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
         <button id="main-generate-btn" class="generate-btn">Generate</button>
