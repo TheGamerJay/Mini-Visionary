@@ -19,6 +19,7 @@ from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterM
 # Essential blueprints:
 from app_library import library_bp
 from app_legal import legal_bp
+from app_profile_upload import profile_upload_bp
 from mailer import send_email_post, MailError
 from me import bp as me_bp
 from me_alias import bp as auth_alias_bp
@@ -223,6 +224,7 @@ app.register_blueprint(new_auth_bp)
 # app.register_blueprint(poster_bp)       # Disabled - needs OpenAI configuration
 app.register_blueprint(library_bp)        # Essential - poster library and gallery
 app.register_blueprint(legal_bp)          # Essential - privacy policy, terms of service
+app.register_blueprint(profile_upload_bp)  # Clean profile upload endpoint
 # app.register_blueprint(payments_bp)     # CSS f-string issues - needs manual fix
 # app.register_blueprint(storage_bp)      # Disabled - needs S3/R2 configuration
 # app.register_blueprint(ads_bp)          # Disabled - needs subscription logic

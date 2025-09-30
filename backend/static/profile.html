@@ -233,14 +233,18 @@
           document.getElementById('display-name').textContent = userData.display_name || 'User';
           document.getElementById('new-name').value = userData.display_name || '';
 
-          // Update avatar - prioritize video over image
+          // Update avatar (using profile_picture_url)
           const avatarDisplay = document.getElementById('avatar-display');
-          if (userData.avatar_video_url) {
-            avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
-              <source src="${userData.avatar_video_url}" type="video/mp4">
-            </video>`;
-          } else if (userData.avatar_image_url) {
-            avatarDisplay.innerHTML = `<img src="${userData.avatar_image_url}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
+          const profilePic = userData.profile_picture_url || userData.avatar_url;
+          if (profilePic) {
+            const isVideo = profilePic.endsWith('.mp4');
+            if (isVideo) {
+              avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+                <source src="${profilePic}" type="video/mp4">
+              </video>`;
+            } else {
+              avatarDisplay.innerHTML = `<img src="${profilePic}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
+            }
           }
 
           // Update info grid
@@ -368,113 +372,45 @@
 
       try {
         const formData = new FormData();
-        formData.append('avatar', selectedMedia);
+        formData.append('file', selectedMedia);  // Changed from 'avatar' to 'file'
 
         const isVideo = selectedMedia.type.startsWith('video/');
         const isImage = selectedMedia.type.startsWith('image/');
 
-        const verbs = ["PATCH", "POST", "PUT"];
-        const candidatePaths = [
-          "/api/library/profile/upload",  // alternative endpoint (POST only) - try first
-          "/api/library/profile",         // main endpoint
-          "/api/library/profile/"         // with trailing slash
-        ];
+        // Simple POST to new clean endpoint
+        const resp = await fetch('/api/profile/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
 
-        // Try both path variants
-        for (const path of candidatePaths) {
-          // For /upload endpoint, only try POST
-          const methodsToTry = path.includes('/upload') ? ['POST'] : verbs;
+        const data = await resp.json();
 
-          // 1) Try common verbs
-          for (const method of methodsToTry) {
-            const { resp, data } = await sendOnce(path, method, formData);
+        if (resp.status === 200 && data.ok) {
+          // Success!
+          const avatarDisplay = document.getElementById('avatar-display');
+          const profilePicUrl = data.profile_picture_url;
 
-            if (resp.status === 200) {
-              // Success!
-              const avatarDisplay = document.getElementById('avatar-display');
-              const avatarUrl = data.profile.avatar_url;
-
-              if (isVideo) {
-                avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
-                  <source src="${avatarUrl}" type="video/mp4">
-                </video>`;
-                userData.avatar_video_url = avatarUrl;
-              } else if (isImage) {
-                avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
-                userData.avatar_image_url = avatarUrl;
-              }
-
-              closeModal('media-modal');
-              alert('Profile media updated successfully!');
-              selectedMedia = null;
-              document.getElementById('file-name').textContent = 'No file chosen';
-              return;
-            }
-
-            if (resp.status === 405) {
-              // If backend gave JSON with allowed methods, try those next
-              const allowHeader = resp.headers.get("Allow") || (data?.allow || []).join(",");
-              const allowList = (allowHeader || "").split(",").map(s => s.trim().toUpperCase());
-              for (const am of allowList) {
-                if (!verbs.includes(am) && ["POST","PUT","PATCH"].includes(am)) {
-                  const attempt = await sendOnce(path, am, formData);
-                  if (attempt.resp.status === 200) {
-                    const avatarUrl = attempt.data.profile.avatar_url;
-                    const avatarDisplay = document.getElementById('avatar-display');
-                    if (isVideo) {
-                      avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
-                    } else {
-                      avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
-                    }
-                    closeModal('media-modal');
-                    alert('Profile media updated successfully!');
-                    selectedMedia = null;
-                    document.getElementById('file-name').textContent = 'No file chosen';
-                    return;
-                  }
-                }
-              }
-              // Continue to next verb or path
-              continue;
-            } else if (resp.status === 415) {
-              alert('File type not supported. Use PNG, JPG, GIF, WebP, or MP4.');
-              return;
-            } else if (resp.status === 413) {
-              alert('File too large (max 10MB).');
-              return;
-            } else if (resp.status >= 400) {
-              const msg = (data && (data.error || data.message)) || `HTTP ${resp.status}`;
-              alert('Upload failed: ' + msg);
-              return;
-            }
+          if (data.is_video) {
+            avatarDisplay.innerHTML = `<video controls autoplay muted loop class="profile-media" style="width: 120px; height: auto; object-fit: contain;">
+              <source src="${profilePicUrl}" type="video/mp4">
+            </video>`;
+          } else {
+            avatarDisplay.innerHTML = `<img src="${profilePicUrl}" alt="profile" class="profile-media" style="width: 120px; height: auto; object-fit: contain;">`;
           }
 
-          // 2) Final attempt: ask server via OPTIONS what's allowed
-          const opt = await fetch(path, { method: "OPTIONS", headers: { 'Authorization': `Bearer ${token}` }});
-          const allow = opt.headers.get("Allow") || "";
-          const allowList = allow.split(",").map(s => s.trim().toUpperCase());
-          for (const am of allowList) {
-            if (["POST","PUT","PATCH"].includes(am)) {
-              const attempt = await sendOnce(path, am, formData);
-              if (attempt.resp.status === 200) {
-                const avatarUrl = attempt.data.profile.avatar_url;
-                const avatarDisplay = document.getElementById('avatar-display');
-                if (isVideo) {
-                  avatarDisplay.innerHTML = `<video src="${avatarUrl}" autoplay loop muted></video>`;
-                } else {
-                  avatarDisplay.innerHTML = `<img src="${avatarUrl}" alt="profile">`;
-                }
-                closeModal('media-modal');
-                alert('Profile media updated successfully!');
-                selectedMedia = null;
-                document.getElementById('file-name').textContent = 'No file chosen';
-                return;
-              }
-            }
-          }
+          closeModal('media-modal');
+          alert('Profile picture updated successfully!');
+          selectedMedia = null;
+          document.getElementById('file-name').textContent = 'No file chosen';
+        } else if (resp.status === 413) {
+          alert('File too large (max 10MB).');
+        } else if (resp.status === 415) {
+          alert('File type not supported. Use PNG, JPG, GIF, WebP, or MP4.');
+        } else {
+          const msg = data.error || `Upload failed (${resp.status})`;
+          alert('Upload failed: ' + msg);
         }
-
-        alert('Profile endpoint does not accept POST/PUT/PATCH (405). Check server route and proxy.');
       } catch (error) {
         console.error('Upload error:', error);
         alert('Network error: ' + error.message);
