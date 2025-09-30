@@ -26,64 +26,270 @@
     .nav{display:flex; gap:16px; align-items:center}
     .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
     .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
-    .container{max-width:1400px; margin:0 auto; padding:40px 24px}
-    h1{font-size:36px; font-weight:800; margin-bottom:16px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .container{max-width:1600px; margin:0 auto; padding:40px 24px}
 
-    /* Layout */
-    .library-layout{display:grid; grid-template-columns:320px 1fr; gap:24px; margin-top:32px}
-    @media (max-width: 1024px) { .library-layout{grid-template-columns:1fr} }
+    /* Hero */
+    .hero{margin-bottom:40px}
+    .hero-title{font-size:48px; font-weight:800; margin:0 0 12px 0; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .hero-subtitle{color:var(--muted); font-size:18px; margin:0}
 
-    /* Sidebar */
-    .sidebar{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:20px; height:fit-content}
-    .sidebar-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:16px}
-    .tree{padding-left:8px; border-left:1px solid var(--ring)}
-    .tree-item{padding:12px 8px; display:flex; align-items:center; gap:8px; cursor:pointer; border-radius:8px; transition:all 0.2s; margin:4px 0}
-    .tree-item:hover{background:var(--sunken)}
-    .tree-item.active{background:var(--sunken); border-left:2px solid var(--line)}
-    .tree-item-icon{width:20px; text-align:center; font-size:18px}
-    .tree-item-name{font-size:14px; color:var(--text); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-    .tree-item-count{font-size:11px; color:var(--muted); background:var(--sunken); padding:2px 6px; border-radius:4px}
-    .tree-children{padding-left:16px; margin-left:8px; border-left:1px solid var(--ring)}
+    /* Toolbar */
+    .toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; flex-wrap:wrap; gap:16px}
+    .toolbar-left{display:flex; gap:8px; flex-wrap:wrap}
+    .filter-btn{padding:10px 20px; background:var(--card); border:1px solid var(--ring); border-radius:12px; color:var(--muted); cursor:pointer; transition:all 0.2s; font-size:14px; font-weight:600}
+    .filter-btn:hover{border-color:var(--line); color:var(--text)}
+    .filter-btn.active{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; border:none}
+    .toolbar-right{display:flex; gap:8px}
+    .btn{padding:10px 20px; border-radius:12px; font-size:14px; cursor:pointer; transition:all 0.2s; border:none; font-weight:600}
+    .btn-secondary{background:var(--card); border:1px solid var(--ring); color:var(--text)}
+    .btn-secondary:hover{background:var(--sunken); border-color:var(--line); transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018}
+    .btn-primary:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(34,211,238,0.3)}
 
-    /* Main content */
-    .main-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px}
-    .content-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px}
-    .content-title{font-size:20px; font-weight:700; color:var(--text)}
-    .content-actions{display:flex; gap:8px}
-    .btn{padding:10px 20px; border-radius:8px; font-size:14px; cursor:pointer; transition:all 0.2s; border:none}
-    .btn-secondary{background:var(--sunken); border:1px solid var(--ring); color:var(--text)}
-    .btn-secondary:hover{background:var(--card); border-color:var(--line)}
-    .btn-primary{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700}
-    .btn-primary:hover{transform:translateY(-1px)}
+    /* Masonry grid */
+    .library-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+      gap:24px;
+      margin-top:24px;
+    }
+    @media (max-width: 768px) { .library-grid{grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px} }
 
-    /* Grid */
-    .library-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px}
-    @media (max-width: 640px) { .library-grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr))} }
+    .library-item{
+      background:var(--card);
+      border:1px solid var(--ring);
+      border-radius:16px;
+      overflow:hidden;
+      transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor:pointer;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+    .library-item:hover{
+      border-color:var(--line);
+      transform:translateY(-4px);
+      box-shadow:0 12px 32px rgba(0,0,0,0.4);
+    }
 
-    .library-item{background:var(--sunken); border:1px solid var(--ring); border-radius:12px; padding:16px; transition:all 0.2s; cursor:pointer; position:relative}
-    .library-item:hover{border-color:var(--line); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.3)}
-    .library-item-icon{font-size:48px; text-align:center; margin-bottom:12px}
-    .library-item-name{font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-    .library-item-meta{font-size:11px; color:var(--muted)}
-    .library-item-actions{display:flex; gap:4px; margin-top:12px; opacity:0; transition:opacity 0.2s}
-    .library-item:hover .library-item-actions{opacity:1}
-    .btn-icon{padding:6px; background:var(--card); border:1px solid var(--ring); border-radius:6px; color:var(--text); cursor:pointer; font-size:12px; transition:all 0.2s}
-    .btn-icon:hover{border-color:var(--line)}
-    .btn-delete{background:#ef4444; border:none; color:white}
-    .btn-delete:hover{background:#dc2626}
+    .library-item-image{
+      width:100%;
+      aspect-ratio:3/4;
+      background:var(--sunken);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .library-item-image img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transition:transform 0.3s;
+    }
+    .library-item:hover .library-item-image img{
+      transform:scale(1.05);
+    }
 
-    .empty-state{text-align:center; padding:80px 20px; color:var(--muted)}
+    .library-item-folder{
+      width:100%;
+      aspect-ratio:3/4;
+      background:linear-gradient(135deg, var(--card), var(--sunken));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:64px;
+      position:relative;
+    }
+    .library-item-folder::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(34,211,238,0.1), rgba(236,72,153,0.1));
+      opacity:0;
+      transition:opacity 0.3s;
+    }
+    .library-item:hover .library-item-folder::before{
+      opacity:1;
+    }
 
-    /* New folder modal */
-    .modal{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding:20px}
+    .library-item-info{
+      padding:16px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+    .library-item-name{
+      font-size:15px;
+      font-weight:600;
+      color:var(--text);
+      margin:0 0 6px 0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .library-item-meta{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .library-item-actions{
+      display:flex;
+      gap:8px;
+      margin-top:12px;
+      opacity:0;
+      transform:translateY(4px);
+      transition:all 0.2s;
+    }
+    .library-item:hover .library-item-actions{
+      opacity:1;
+      transform:translateY(0);
+    }
+    .btn-icon{
+      padding:8px 12px;
+      background:var(--sunken);
+      border:1px solid var(--ring);
+      border-radius:8px;
+      color:var(--text);
+      cursor:pointer;
+      font-size:12px;
+      transition:all 0.2s;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      flex:1;
+      justify-content:center;
+    }
+    .btn-icon:hover{
+      border-color:var(--line);
+      background:var(--card);
+    }
+    .btn-delete{
+      background:#ef4444;
+      border:none;
+      color:white;
+    }
+    .btn-delete:hover{
+      background:#dc2626;
+    }
+
+    .empty-state{
+      text-align:center;
+      padding:120px 40px;
+      color:var(--muted);
+    }
+    .empty-state-icon{
+      font-size:72px;
+      margin-bottom:24px;
+      opacity:0.5;
+    }
+    .empty-state h2{
+      color:var(--text);
+      font-size:28px;
+      font-weight:700;
+      margin:0 0 12px 0;
+    }
+    .empty-state p{
+      font-size:16px;
+      margin:0 0 24px 0;
+    }
+
+    /* Modal */
+    .modal{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(0,0,0,0.85);
+      backdrop-filter:blur(8px);
+      z-index:1000;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
     .modal.active{display:flex}
-    .modal-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; max-width:400px; width:100%; padding:24px}
-    .modal-title{font-size:20px; font-weight:700; color:var(--text); margin-bottom:16px}
-    .modal-form{display:grid; gap:16px}
-    .form-group label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
-    .form-group input{width:100%; padding:10px 12px; background:var(--sunken); border:1px solid var(--ring); border-radius:8px; color:var(--text); font-size:14px}
-    .form-group input:focus{outline:none; border-color:var(--line)}
-    .modal-actions{display:flex; gap:8px; justify-content:flex-end}
+    .modal-content{
+      background:var(--card);
+      border:1px solid var(--ring);
+      border-radius:20px;
+      max-width:500px;
+      width:100%;
+      padding:32px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    }
+    .modal-title{
+      font-size:24px;
+      font-weight:700;
+      color:var(--text);
+      margin:0 0 24px 0;
+    }
+    .modal-form{
+      display:grid;
+      gap:20px;
+    }
+    .form-group label{
+      display:block;
+      font-size:13px;
+      font-weight:600;
+      color:var(--muted);
+      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    .form-group input{
+      width:100%;
+      padding:12px 16px;
+      background:var(--sunken);
+      border:1px solid var(--ring);
+      border-radius:12px;
+      color:var(--text);
+      font-size:15px;
+      transition:all 0.2s;
+    }
+    .form-group input:focus{
+      outline:none;
+      border-color:var(--line);
+      background:var(--card);
+    }
+    .modal-actions{
+      display:flex;
+      gap:12px;
+      justify-content:flex-end;
+      margin-top:8px;
+    }
+
+    /* Image viewer */
+    .image-viewer{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.95);
+      backdrop-filter:blur(12px);
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      animation:fadeIn 0.2s;
+    }
+    @keyframes fadeIn{
+      from{opacity:0}
+      to{opacity:1}
+    }
+    .image-viewer img{
+      max-width:90%;
+      max-height:90%;
+      object-fit:contain;
+      border-radius:12px;
+      box-shadow:0 20px 80px rgba(0,0,0,0.8);
+    }
   </style>
 </head>
 <body>
@@ -103,49 +309,46 @@
   </div>
 
   <div class="container">
-    <h1>📁 Your Library</h1>
-    <p style="color:var(--muted); margin-bottom:24px;">All your saved posters organized in folders.</p>
+    <div class="hero">
+      <h1 class="hero-title">Your Library</h1>
+      <p class="hero-subtitle">All your saved posters and collections in one place</p>
+    </div>
 
-    <div class="library-layout">
-      <!-- Sidebar with folder tree -->
-      <div class="sidebar">
-        <div class="sidebar-title">Folders</div>
-        <div id="folder-tree" class="tree"></div>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="filter-btn active" onclick="filterLibrary('all')">All</button>
+        <button class="filter-btn" onclick="filterLibrary('images')">Images</button>
+        <button class="filter-btn" onclick="filterLibrary('folders')">Folders</button>
       </div>
-
-      <!-- Main content -->
-      <div class="main-content">
-        <div class="content-header">
-          <div class="content-title" id="current-folder-name">Library</div>
-          <div class="content-actions">
-            <input type="file" id="file-input" style="display:none;" accept="image/*" onchange="uploadFile()">
-            <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">📤 Upload</button>
-            <button class="btn btn-primary" onclick="openNewFolderModal()">📁 New Folder</button>
-          </div>
-        </div>
-
-        <div id="library-grid" class="library-grid"></div>
-
-        <div id="empty-state" class="empty-state" style="display:none;">
-          <h2 style="color:var(--text); margin-bottom:16px;">This folder is empty</h2>
-          <p>Upload images or create subfolders to organize your library.</p>
-        </div>
+      <div class="toolbar-right">
+        <input type="file" id="file-input" style="display:none;" accept="image/*" onchange="uploadFile()">
+        <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">📤 Upload</button>
+        <button class="btn btn-primary" onclick="openNewFolderModal()">+ New Folder</button>
       </div>
+    </div>
+
+    <div id="library-grid" class="library-grid"></div>
+
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <div class="empty-state-icon">📁</div>
+      <h2>Your library is empty</h2>
+      <p>Upload your first poster or create a folder to get started</p>
+      <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Upload Image</button>
     </div>
   </div>
 
   <!-- New Folder Modal -->
   <div id="new-folder-modal" class="modal" onclick="closeNewFolderModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-title">📁 Create New Folder</div>
+      <div class="modal-title">Create New Folder</div>
       <form class="modal-form" onsubmit="createFolder(event)">
         <div class="form-group">
           <label>Folder Name</label>
-          <input type="text" id="folder-name-input" placeholder="e.g. Posters, Moodboards..." required>
+          <input type="text" id="folder-name-input" placeholder="e.g. Movie Posters, Vintage Style..." required>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" onclick="closeNewFolderModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create</button>
+          <button type="submit" class="btn btn-primary">Create Folder</button>
         </div>
       </form>
     </div>
@@ -159,17 +362,8 @@
     }
 
     // Library state
-    let library = [
-      { id: "f1", name: "Posters", type: "folder", children: [
-        { id: "i1", name: "NeonConcert.png", type: "image", url: "https://picsum.photos/seed/neon1/400/600" },
-        { id: "i2", name: "VaporPortrait.jpg", type: "image", url: "https://picsum.photos/seed/vapor1/400/600" },
-      ]},
-      { id: "f2", name: "Moodboards", type: "folder", children: [
-        { id: "i3", name: "Palette01.png", type: "image", url: "https://picsum.photos/seed/palette1/400/400" },
-      ]},
-    ];
-
-    let currentFolderId = null;
+    let library = [];
+    let currentFilter = 'all';
 
     // Load from localStorage
     function loadLibrary() {
@@ -187,97 +381,83 @@
       localStorage.setItem('mv_library', JSON.stringify(library));
     }
 
-    // Render folder tree
-    function renderFolderTree() {
-      const tree = document.getElementById('folder-tree');
-      tree.innerHTML = renderTreeNodes(library);
+    // Filter library
+    function filterLibrary(type) {
+      currentFilter = type;
+
+      // Update filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      renderLibrary();
     }
 
-    function renderTreeNodes(nodes, level = 0) {
-      return nodes.map(node => {
-        if (node.type === 'folder') {
-          const childCount = (node.children || []).length;
-          const isActive = currentFolderId === node.id;
-          return `
-            <div>
-              <div class="tree-item ${isActive ? 'active' : ''}" onclick="selectFolder('${node.id}')">
-                <span class="tree-item-icon">📁</span>
-                <span class="tree-item-name">${node.name}</span>
-                <span class="tree-item-count">${childCount}</span>
-              </div>
-              ${node.children && node.children.some(c => c.type === 'folder') ?
-                `<div class="tree-children">${renderTreeNodes(node.children.filter(c => c.type === 'folder'), level + 1)}</div>`
-                : ''}
-            </div>
-          `;
-        }
-        return '';
-      }).join('');
-    }
-
-    // Select folder
-    function selectFolder(folderId) {
-      currentFolderId = folderId;
-      renderFolderTree();
-      renderLibraryGrid();
-    }
-
-    // Render library grid
-    function renderLibraryGrid() {
+    // Render library
+    function renderLibrary() {
       const grid = document.getElementById('library-grid');
       const empty = document.getElementById('empty-state');
-      const folderNameEl = document.getElementById('current-folder-name');
 
-      let items = [];
-      let folderName = 'Library';
+      let items = library;
 
-      if (currentFolderId) {
-        const folder = findNodeById(library, currentFolderId);
-        if (folder) {
-          items = folder.children || [];
-          folderName = folder.name;
-        }
-      } else {
-        items = library;
+      // Apply filter
+      if (currentFilter === 'images') {
+        items = library.filter(item => item.type === 'image');
+      } else if (currentFilter === 'folders') {
+        items = library.filter(item => item.type === 'folder');
       }
 
-      folderNameEl.textContent = folderName;
-
       if (items.length === 0) {
-        grid.innerHTML = '';
+        grid.style.display = 'none';
         empty.style.display = 'block';
       } else {
         empty.style.display = 'none';
-        grid.innerHTML = items.map(item => `
-          <div class="library-item" onclick="${item.type === 'folder' ? `selectFolder('${item.id}')` : `viewImage('${item.id}')`}">
-            <div class="library-item-icon">${item.type === 'folder' ? '📁' : '🖼️'}</div>
-            <div class="library-item-name" title="${item.name}">${item.name}</div>
-            <div class="library-item-meta">${item.type === 'folder' ? `${(item.children || []).length} items` : 'Image'}</div>
-            <div class="library-item-actions">
-              ${item.type === 'image' ? `<button class="btn-icon" onclick="event.stopPropagation(); downloadImage('${item.id}')">⬇️</button>` : ''}
-              <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${item.id}')">🗑️</button>
-            </div>
-          </div>
-        `).join('');
+        grid.style.display = 'grid';
+        grid.innerHTML = items.map(item => {
+          if (item.type === 'folder') {
+            return `
+              <div class="library-item" onclick="openFolder('${item.id}')">
+                <div class="library-item-folder">📁</div>
+                <div class="library-item-info">
+                  <div class="library-item-name">${item.name}</div>
+                  <div class="library-item-meta">
+                    <span>${(item.children || []).length} items</span>
+                  </div>
+                  <div class="library-item-actions">
+                    <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${item.id}')">🗑️ Delete</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="library-item" onclick="viewImage('${item.id}')">
+                <div class="library-item-image">
+                  <img src="${item.url}" alt="${item.name}">
+                </div>
+                <div class="library-item-info">
+                  <div class="library-item-name">${item.name}</div>
+                  <div class="library-item-meta">
+                    <span>Image</span>
+                  </div>
+                  <div class="library-item-actions">
+                    <button class="btn-icon" onclick="event.stopPropagation(); downloadImage('${item.id}')">⬇️ Download</button>
+                    <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${item.id}')">🗑️</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
       }
-    }
-
-    // Find node by ID
-    function findNodeById(nodes, id) {
-      for (const node of nodes) {
-        if (node.id === id) return node;
-        if (node.children) {
-          const found = findNodeById(node.children, id);
-          if (found) return found;
-        }
-      }
-      return null;
     }
 
     // Create new folder
     function openNewFolderModal() {
       document.getElementById('new-folder-modal').classList.add('active');
       document.getElementById('folder-name-input').value = '';
+      setTimeout(() => document.getElementById('folder-name-input').focus(), 100);
     }
 
     function closeNewFolderModal() {
@@ -296,18 +476,9 @@
         children: []
       };
 
-      if (currentFolderId) {
-        const folder = findNodeById(library, currentFolderId);
-        if (folder && folder.children) {
-          folder.children.push(newFolder);
-        }
-      } else {
-        library.push(newFolder);
-      }
-
+      library.push(newFolder);
       saveLibrary();
-      renderFolderTree();
-      renderLibraryGrid();
+      renderLibrary();
       closeNewFolderModal();
     }
 
@@ -326,28 +497,9 @@
           url: e.target.result
         };
 
-        if (currentFolderId) {
-          const folder = findNodeById(library, currentFolderId);
-          if (folder && folder.children) {
-            folder.children.push(newImage);
-          }
-        } else {
-          // Add to first folder or create a default folder
-          if (library.length === 0 || library[0].type !== 'folder') {
-            library.unshift({
-              id: `f_${Date.now()}`,
-              name: 'My Images',
-              type: 'folder',
-              children: [newImage]
-            });
-          } else {
-            library[0].children.push(newImage);
-          }
-        }
-
+        library.push(newImage);
         saveLibrary();
-        renderFolderTree();
-        renderLibraryGrid();
+        renderLibrary();
       };
 
       reader.readAsDataURL(file);
@@ -356,62 +508,50 @@
 
     // Delete item
     function deleteItem(id) {
-      if (!confirm('Delete this item?')) return;
+      if (!confirm('Delete this item? This cannot be undone.')) return;
 
-      function removeFromNodes(nodes) {
-        for (let i = 0; i < nodes.length; i++) {
-          if (nodes[i].id === id) {
-            nodes.splice(i, 1);
-            return true;
-          }
-          if (nodes[i].children && removeFromNodes(nodes[i].children)) {
-            return true;
-          }
-        }
-        return false;
-      }
-
-      removeFromNodes(library);
+      library = library.filter(item => item.id !== id);
       saveLibrary();
-      renderFolderTree();
-      renderLibraryGrid();
+      renderLibrary();
     }
 
-    // View image - display inline instead of opening new window
+    // View image
     function viewImage(id) {
-      const image = findNodeById(library, id);
-      if (image && image.url) {
-        // Create modal overlay to display image
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+      const image = library.find(item => item.id === id);
+      if (!image || !image.url) return;
 
-        const img = document.createElement('img');
-        img.src = image.url;
-        img.style.cssText = 'max-width:90%;max-height:90%;object-fit:contain;';
+      const viewer = document.createElement('div');
+      viewer.className = 'image-viewer';
 
-        modal.appendChild(img);
-        document.body.appendChild(modal);
+      const img = document.createElement('img');
+      img.src = image.url;
+      img.alt = image.name;
 
-        // Close on click
-        modal.onclick = () => modal.remove();
-      }
+      viewer.appendChild(img);
+      document.body.appendChild(viewer);
+
+      viewer.onclick = () => viewer.remove();
     }
 
     // Download image
     function downloadImage(id) {
-      const image = findNodeById(library, id);
-      if (image && image.url) {
-        const a = document.createElement('a');
-        a.href = image.url;
-        a.download = image.name;
-        a.click();
-      }
+      const image = library.find(item => item.id === id);
+      if (!image || !image.url) return;
+
+      const a = document.createElement('a');
+      a.href = image.url;
+      a.download = image.name;
+      a.click();
+    }
+
+    // Open folder (placeholder - can implement folder navigation later)
+    function openFolder(id) {
+      alert('Folder navigation coming soon! For now, folders are used to organize items.');
     }
 
     // Initialize
     loadLibrary();
-    renderFolderTree();
-    renderLibraryGrid();
+    renderLibrary();
   </script>
 </body>
 </html>
