@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mini Visionary — AI Poster Generator</title>
   <link rel="icon" href="/logo.png" />
+  <meta name="mv-username" content="">
+  <script>
+    // Bootstrap data for immediate render
+    window.__BOOTSTRAP__ = { username: "" };
+
+    // Load cached username BEFORE page renders to eliminate flicker
+    (function() {
+      try {
+        const cached = localStorage.getItem('cached_user_data');
+        if (cached) {
+          const userData = JSON.parse(cached);
+          if (userData.display_name) {
+            window.__BOOTSTRAP__.username = userData.display_name;
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
   <style>
     :root{
       --bg-0:#0b0f19; --bg-1:#0f1629; --card:#0e1424; --sunken:#0b1020;
@@ -227,7 +245,57 @@
   <div class="main-content">
     <!-- Welcome Section (shown when no chat history) -->
     <div id="welcome-section" class="welcome-section">
-      <h1 class="welcome-title" id="welcome-title" style="visibility: hidden;">Hey <span id="display-name">Visionary</span>. Ready to bring your Vision to life?</h1>
+      <h1 class="welcome-title">Hey <span id="username-placeholder">Visionary</span>. Ready to bring your Vision to life?</h1>
+      <script>
+        // Render username immediately on first paint - zero flicker with multiple fallbacks
+        (function() {
+          // Try meta tag, bootstrap, localStorage, cookie in that order
+          function getInitialUsername() {
+            const meta = document.querySelector('meta[name="mv-username"]');
+            if (meta && meta.content) return meta.content.trim();
+
+            if (window.__BOOTSTRAP__ && window.__BOOTSTRAP__.username) {
+              return window.__BOOTSTRAP__.username.trim();
+            }
+
+            try {
+              const ls = localStorage.getItem("mv_username");
+              if (ls) return ls.trim();
+            } catch {}
+
+            const match = document.cookie.match(/(?:^|;\s*)mv_username=([^;]*)/);
+            if (match) return decodeURIComponent(match[1]).trim();
+
+            return null;
+          }
+
+          function setCaches(username) {
+            try { localStorage.setItem("mv_username", username); } catch {}
+            document.cookie = "mv_username=" + encodeURIComponent(username) + "; path=/; max-age=15552000";
+          }
+
+          const user = getInitialUsername();
+          if (user) {
+            document.getElementById("username-placeholder").textContent = user;
+          }
+
+          // Background refresh from API
+          fetch("/api/auth/me", {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+            }
+          })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(data => {
+              if (data && data.user && data.user.display_name) {
+                const newName = data.user.display_name;
+                document.getElementById("username-placeholder").textContent = newName;
+                setCaches(newName);
+              }
+            })
+            .catch(() => { /* keep cached */ });
+        })();
+      </script>
       <div class="input-container">
         <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
         <button id="main-generate-btn" class="generate-btn">Generate</button>
@@ -297,48 +365,49 @@
     } else {
       console.log('Token found, attempting auth check...');
 
-      // Load cached user data first to prevent flicker
-      const welcomeTitleEl = document.getElementById('welcome-title');
+      // Load cached credits only (username already rendered inline)
       try {
         const cachedUser = localStorage.getItem('cached_user_data');
         if (cachedUser) {
           const userData = JSON.parse(cachedUser);
-          const displayNameEl = document.getElementById('display-name');
           const userCreditsEl = document.getElementById('user-credits');
-          if (displayNameEl && userData.display_name) {
-            displayNameEl.textContent = userData.display_name;
-          }
           if (userCreditsEl && userData.credits !== undefined) {
             userCreditsEl.textContent = userData.credits;
           }
         }
-        // Show title regardless of cache
-        if (welcomeTitleEl) welcomeTitleEl.style.visibility = 'visible';
       } catch (e) {
         console.log('Error loading cached user data:', e);
-        // Show title even on error
-        if (welcomeTitleEl) welcomeTitleEl.style.visibility = 'visible';
       }
 
-      // Load user info - with better error handling
-      setTimeout(() => {
+      // Load user info - only logout on actual auth failures (401), not network issues
       fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(r => {
         console.log('Auth check response status:', r.status);
-        console.log('Auth check response headers:', r.headers);
+        // Only logout on 401 Unauthorized - ignore other errors
+        if (r.status === 401) {
+          console.log('Token invalid (401), logging out');
+          logout();
+          return null;
+        }
         if (!r.ok) {
-          throw new Error(`HTTP ${r.status}`);
+          console.log('Auth check failed with status ' + r.status + ', but keeping session');
+          return null;
         }
         return r.json();
       })
       .then(data => {
+        if (!data) return; // Skip if we already handled error above
+
         console.log('Auth check response data:', data);
         if (data.ok && data.user) {
           // Cache user data to prevent username flash on refresh
           try {
             localStorage.setItem('cached_user_data', JSON.stringify(data.user));
+            // Also cache username separately for faster access
+            localStorage.setItem('mv_username', data.user.display_name || '');
+            document.cookie = "mv_username=" + encodeURIComponent(data.user.display_name || '') + "; path=/; max-age=15552000";
           } catch (e) {
             console.log('Error caching user data:', e);
           }
@@ -346,11 +415,10 @@
           // Safely update DOM elements if they exist
           const userNameEl = document.getElementById('user-name');
           const userCreditsEl = document.getElementById('user-credits');
-          const displayNameEl = document.getElementById('display-name');
 
           if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
           if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
-          if (displayNameEl) displayNameEl.textContent = data.user.display_name || 'User';
+          // username-placeholder is already updated by inline script
 
           // Update cached credits to prevent flash on next refresh
           try {
@@ -362,16 +430,12 @@
           }
 
           console.log('Authentication successful, staying on generate page');
-        } else {
-          console.log('Auth check failed, response not ok:', data);
-          logout();
         }
       })
       .catch(err => {
-        console.log('Auth check error:', err);
-        logout();
+        // Network errors, timeouts, etc - don't logout, just log
+        console.log('Auth check network error (keeping session):', err);
       });
-    }, 500); // Small delay to ensure page is fully loaded
     }
 
     // Navigation function
