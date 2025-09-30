@@ -220,13 +220,57 @@
     let selectedMedia = null;
     let userData = null;
 
+    // IndexedDB cache for large profile pictures
+    const openDB = () => {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('ProfileCache', 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('media')) {
+            db.createObjectStore('media');
+          }
+        };
+      });
+    };
+
+    const getCachedMedia = async () => {
+      try {
+        const db = await openDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction('media', 'readonly');
+          const store = tx.objectStore('media');
+          const request = store.get('profile_picture');
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const setCachedMedia = async (data) => {
+      try {
+        const db = await openDB();
+        const tx = db.transaction('media', 'readwrite');
+        const store = tx.objectStore('media');
+        store.put(data, 'profile_picture');
+      } catch (e) {}
+    };
+
     // Load user data on page load
     async function loadUserData() {
-      // Check cache first for instant load (excluding large profile_picture_url)
+      // Check cache first for instant load
       const cached = sessionStorage.getItem('profile_cache');
+      const cachedMedia = await getCachedMedia();
+
       if (cached) {
         try {
           const cachedData = JSON.parse(cached);
+          if (cachedMedia) {
+            cachedData.profile_picture_url = cachedMedia;
+          }
           updateUI(cachedData);
         } catch (e) {}
       }
@@ -240,14 +284,17 @@
         if (data.ok && data.user) {
           userData = data.user;
 
-          // Cache without profile picture to avoid QuotaExceededError
+          // Cache user data (without large media)
           try {
             const cacheData = { ...userData };
             delete cacheData.profile_picture_url;
             delete cacheData.avatar_url;
             sessionStorage.setItem('profile_cache', JSON.stringify(cacheData));
-          } catch (e) {
-            // Ignore cache errors
+          } catch (e) {}
+
+          // Cache media separately in IndexedDB
+          if (userData.profile_picture_url) {
+            setCachedMedia(userData.profile_picture_url);
           }
 
           updateUI(userData);
