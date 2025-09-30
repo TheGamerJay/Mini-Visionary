@@ -239,7 +239,7 @@
           if (profilePic) {
             const isVideo = profilePic.endsWith('.mp4');
             if (isVideo) {
-              avatarDisplay.innerHTML = `<video controls autoplay muted loop>
+              avatarDisplay.innerHTML = `<video autoplay muted loop playsinline>
                 <source src="${profilePic}" type="video/mp4">
               </video>`;
             } else {
@@ -425,7 +425,7 @@
           // Display the uploaded image/video
           if (profilePicUrl) {
             if (data.is_video) {
-              avatarDisplay.innerHTML = `<video controls autoplay muted loop>
+              avatarDisplay.innerHTML = `<video autoplay muted loop playsinline>
                 <source src="${profilePicUrl}" type="video/mp4">
               </video>`;
             } else {
