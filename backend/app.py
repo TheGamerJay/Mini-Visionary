@@ -577,6 +577,8 @@ def add_text_to_poster():
 def static_files(filename):
     """Custom static file handler with no-cache headers for HTML/JS"""
     resp = make_response(send_from_directory(app.static_folder, filename))
+    # Add security headers
+    resp.headers['X-Content-Type-Options'] = 'nosniff'
     # Prevent browser caching of HTML and JS files
     if filename.endswith(('.html', '.js')):
         resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
