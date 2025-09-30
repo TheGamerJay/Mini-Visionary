@@ -185,6 +185,19 @@ def init_db():
                 conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR(100)"))
                 conn.commit()
                 print("✅ Added display_name column")
+
+            # Check if avatar_url column exists, add if missing
+            result = conn.execute(text("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'avatar_url'
+            """))
+
+            if not result.fetchone():
+                print("Adding missing avatar_url column to users table...")
+                conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url TEXT"))
+                conn.commit()
+                print("✅ Added avatar_url column")
     except Exception as e:
         print(f"Migration warning: {e}")
         # Continue anyway - this might be a new database
