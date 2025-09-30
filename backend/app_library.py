@@ -338,7 +338,8 @@ def update_profile():
 
                     # Save file
                     avatar_url = save_upload_file(avatar_file, "profiles/avatars")
-                    db_user.avatar_url = avatar_url
+                    db_user.profile_picture_url = avatar_url
+                    db_user.avatar_url = avatar_url  # Keep both for compatibility
 
             else:
                 # Handle JSON (backward compatibility with data URLs)
