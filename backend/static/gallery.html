@@ -187,18 +187,30 @@
     let galleryItems = [];
     let currentModal = null;
 
-    // Load demo data
+    // Load demo data with real category images
     function loadDemoData() {
-      const prompts = ["concert poster", "vaporwave art", "portrait photography", "product hero"];
-      const tags = [["poster", "neon"], ["art", "retro"], ["portrait"], ["product", "hero"]];
+      const categoryImages = [
+        {url: '/static/categories/fantasy1.jpg', prompt: 'Fantasy Adventure', tags: ['fantasy', 'adventure']},
+        {url: '/static/categories/action.jpg', prompt: 'Action Hero', tags: ['action', 'hero']},
+        {url: '/static/categories/horror_dark-reaper-angel_1024x1536.jpg', prompt: 'Horror Dark Angel', tags: ['horror', 'dark']},
+        {url: '/static/categories/anime.jpg', prompt: 'Anime Character', tags: ['anime', 'character']},
+        {url: '/static/categories/romance.jpg', prompt: 'Romance Story', tags: ['romance', 'love']},
+        {url: '/static/categories/scifi.jpg', prompt: 'Sci-Fi Future', tags: ['sci-fi', 'future']},
+        {url: '/static/categories/fantasy_dark-knight-flame_1024x1536.jpg', prompt: 'Dark Knight', tags: ['fantasy', 'knight']},
+        {url: '/static/categories/horror_pumpkin-rider_1024x1536.jpg', prompt: 'Pumpkin Rider', tags: ['horror', 'halloween']},
+        {url: '/static/categories/fantasy_light-angel_1024x1536.jpg', prompt: 'Light Angel', tags: ['fantasy', 'angel']},
+        {url: '/static/categories/anime_anime-fox-dragonflame_1024x1536.jpg', prompt: 'Fox Dragon', tags: ['anime', 'dragon']},
+        {url: '/static/categories/scifi_cybernetic-tiger-cub_1024x1024.jpg', prompt: 'Cybernetic Tiger', tags: ['sci-fi', 'cybernetic']},
+        {url: '/static/categories/fantasy_spirit-wolf-aura_1024x1536.jpg', prompt: 'Spirit Wolf', tags: ['fantasy', 'wolf']}
+      ];
 
-      galleryItems = Array.from({length: 12}).map((_, i) => ({
-        id: `img_${i+1}`,
-        url: `https://picsum.photos/seed/mv_${i+1}/600/${800 + i*50}`,
-        prompt: prompts[i % 4],
+      galleryItems = categoryImages.map((img, i) => ({
+        id: `demo_${i+1}`,
+        url: img.url,
+        prompt: img.prompt,
         story: "",
         createdAt: new Date(Date.now() - i * 3600000).toISOString(),
-        tags: tags[i % 4],
+        tags: img.tags,
         reactions: {likes: 0, love: 0, fire: 0},
         userReacted: {likes: false, love: false, fire: false}
       }));
