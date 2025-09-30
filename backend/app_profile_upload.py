@@ -48,19 +48,15 @@ def upload_profile_picture():
         if file_size > MAX_FILE_SIZE:
             return jsonify({"ok": False, "error": f"File too large. Max 10MB"}), 413
 
-        # Generate unique filename
+        # Convert to base64 for database storage (Railway has ephemeral storage)
+        import base64
         ext = file.filename.rsplit('.', 1)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex}.{ext}"
+        file_data = file.read()
+        base64_data = base64.b64encode(file_data).decode('utf-8')
 
-        # Save file
-        upload_dir = os.path.join(os.path.dirname(__file__), 'static', 'uploads', 'profiles')
-        os.makedirs(upload_dir, exist_ok=True)
-
-        filepath = os.path.join(upload_dir, unique_filename)
-        file.save(filepath)
-
-        # Generate public URL
-        profile_picture_url = f"/static/uploads/profiles/{unique_filename}"
+        # Create data URL
+        mime_type = 'video/mp4' if ext == 'mp4' else f'image/{ext}'
+        profile_picture_url = f"data:{mime_type};base64,{base64_data}"
 
         # Update database
         with get_session() as session:
