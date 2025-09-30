@@ -271,9 +271,9 @@ def get_profile():
             }
         })
 
-@library_bp.route("/profile", methods=["GET", "POST", "PUT", "PATCH", "OPTIONS"], strict_slashes=False)
+@library_bp.route("/profile_ARCHIVED_USE_API_PROFILE_INSTEAD", methods=["GET", "POST", "PUT", "PATCH", "OPTIONS"], strict_slashes=False)
 @auth_required
-def update_profile():
+def update_profile_ARCHIVED():
     """
     Update user profile
     Supports both multipart/form-data (file uploads) and application/json
@@ -387,10 +387,10 @@ def update_profile():
         current_app.logger.exception("Profile update failed")
         return jsonify({"ok": False, "error": "Server error"}), 500
 
-# Alternative endpoint for production compatibility (POST only)
-@library_bp.route("/profile/upload", methods=["POST", "OPTIONS"], strict_slashes=False)
+# ARCHIVED - Use /api/profile/upload instead
+@library_bp.route("/profile/upload_ARCHIVED", methods=["POST", "OPTIONS"], strict_slashes=False)
 @auth_required
-def upload_profile():
+def upload_profile_ARCHIVED():
     """
     Alternative profile upload endpoint (POST only)
     Workaround for servers that block PUT/PATCH on /profile
