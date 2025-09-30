@@ -242,7 +242,7 @@
             const isVideo = profilePic.endsWith('.mp4') || profilePic.startsWith('data:video/');
             console.log('Is video:', isVideo);
             if (isVideo) {
-              avatarDisplay.innerHTML = `<video autoplay muted loop playsinline>
+              avatarDisplay.innerHTML = `<video autoplay muted loop playsinline disablepictureinpicture controlslist="nodownload noplaybackrate">
                 <source src="${profilePic}" type="video/mp4">
               </video>`;
             } else {
