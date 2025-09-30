@@ -226,10 +226,10 @@
 
   <div class="main-content">
     <!-- Welcome Section (shown when no chat history) -->
-    <div id="welcome-section" class="welcome-section">
+    <div id="welcome-section" class="welcome-section" style="visibility: hidden;">
       <h1 class="welcome-title" id="welcome-title">Hey <span id="display-name">...</span>. Ready when you are. Let's build your vision.</h1>
       <script>
-        // Load cached name immediately
+        // Load cached name and show section immediately - no flicker
         (function() {
           try {
             const cached = localStorage.getItem('cached_user_data');
@@ -243,6 +243,9 @@
           } catch(e) {
             console.error('Cache load error:', e);
           }
+          // Show section now that name is loaded
+          const section = document.getElementById('welcome-section');
+          if (section) section.style.visibility = 'visible';
         })();
       </script>
       <div class="input-container">
