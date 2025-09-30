@@ -48,7 +48,8 @@
     .section-title{font-size:24px; font-weight:700; color:var(--text); margin-bottom:24px}
 
     /* Packages */
-    .packages-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px}
+    .packages-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:24px}
+    @media (max-width: 768px) { .packages-grid{grid-template-columns:1fr} }
     .package{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px; transition:all 0.3s; display:flex; flex-direction:column}
     .package:hover{border-color:var(--line); transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.3)}
     .package.popular{border:2px solid var(--line); box-shadow:0 0 0 1px rgba(148,163,184,0.25)}
