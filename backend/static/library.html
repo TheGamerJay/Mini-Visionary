@@ -46,14 +46,16 @@
     .btn-primary{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018}
     .btn-primary:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(34,211,238,0.3)}
 
-    /* Masonry grid */
+    /* Grid layout */
     .library-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns:repeat(4, 1fr);
       gap:24px;
       margin-top:24px;
     }
-    @media (max-width: 768px) { .library-grid{grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px} }
+    @media (max-width: 1200px) { .library-grid{grid-template-columns:repeat(3, 1fr)} }
+    @media (max-width: 768px) { .library-grid{grid-template-columns:repeat(2, 1fr); gap:16px} }
+    @media (max-width: 480px) { .library-grid{grid-template-columns:1fr} }
 
     .library-item{
       background:var(--card);
