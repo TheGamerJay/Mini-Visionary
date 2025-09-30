@@ -236,8 +236,11 @@
           // Update avatar (using profile_picture_url)
           const avatarDisplay = document.getElementById('avatar-display');
           const profilePic = userData.profile_picture_url || userData.avatar_url;
+          console.log('Profile pic URL:', profilePic);
+          console.log('User data:', userData);
           if (profilePic) {
             const isVideo = profilePic.endsWith('.mp4') || profilePic.startsWith('data:video/');
+            console.log('Is video:', isVideo);
             if (isVideo) {
               avatarDisplay.innerHTML = `<video autoplay muted loop playsinline>
                 <source src="${profilePic}" type="video/mp4">
@@ -245,6 +248,8 @@
             } else {
               avatarDisplay.innerHTML = `<img src="${profilePic}" alt="profile">`;
             }
+          } else {
+            console.log('No profile pic found in user data');
           }
 
           // Update info grid
