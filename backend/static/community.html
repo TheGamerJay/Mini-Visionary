@@ -27,64 +27,308 @@
     .nav a{color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:8px; transition:all 0.2s}
     .nav a:hover, .nav a.active{color:var(--text); background:var(--sunken)}
     .container{max-width:900px; margin:0 auto; padding:40px 24px}
-    h1{font-size:36px; font-weight:800; margin-bottom:8px; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
-    .subtitle{color:var(--muted); margin-bottom:32px}
 
-    /* Avatar chip */
-    .avatar-chip{display:grid; place-items:center; border-radius:50%; font-size:18px; user-select:none}
-    .avatar-male-1{background:linear-gradient(135deg, #818cf8, #f0abfc, #22d3ee)}
-    .avatar-male-2{background:linear-gradient(135deg, #6366f1, #d946ef, #06b6d4)}
-    .avatar-male-3{background:linear-gradient(135deg, #8b5cf6, #f0abfc, #0ea5e9)}
-    .avatar-female-1{background:linear-gradient(135deg, #f472b6, #f0abfc, #818cf8)}
-    .avatar-female-2{background:linear-gradient(135deg, #fb7185, #f0abfc, #22d3ee)}
-    .avatar-female-3{background:linear-gradient(135deg, #22d3ee, #f0abfc, #818cf8)}
+    /* Hero */
+    .hero{margin-bottom:32px}
+    .hero-title{font-size:42px; font-weight:800; margin:0 0 8px 0; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); background-clip:text; -webkit-background-clip:text; color:transparent}
+    .subtitle{color:var(--muted); font-size:16px; margin:0}
 
-    /* Composer */
-    .composer{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:24px; margin-bottom:32px}
-    .composer-title{font-size:18px; font-weight:700; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center}
-    .composer-note{font-size:12px; color:var(--muted)}
-    .avatar-picker{display:flex; flex-wrap:wrap; gap:12px; margin:16px 0}
-    .avatar-btn{display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--ring); cursor:pointer; transition:all 0.2s}
-    .avatar-btn:hover{background:rgba(255,255,255,0.1)}
-    .avatar-btn.active{border-color:rgba(255,255,255,0.4)}
-    .avatar-btn span{font-size:13px}
-    .form-group{margin-bottom:16px}
-    .form-label{display:block; font-size:14px; color:var(--muted); margin-bottom:8px}
-    .form-input, .form-select, .form-textarea{width:100%; padding:10px 12px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); border-radius:12px; color:var(--text); font-family:inherit; font-size:14px}
-    .form-textarea{min-height:100px; resize:vertical}
-    .char-count{font-size:12px; color:var(--muted); margin-top:4px}
-    .image-preview{border-radius:12px; overflow:hidden; border:1px solid var(--ring); background:rgba(255,255,255,0.05); margin-top:12px}
-    .image-preview img{width:100%; height:auto; display:block}
-    .image-placeholder{border-radius:12px; border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); padding:40px; text-align:center; color:var(--muted); font-size:14px}
-    .btn{padding:10px 20px; border-radius:12px; font-weight:600; cursor:pointer; border:none; font-size:14px; transition:all 0.2s}
-    .btn-primary{background:linear-gradient(90deg, #818cf8, #f0abfc, #22d3ee); color:#000}
-    .btn-primary:hover{transform:translateY(-2px)}
-    .btn-primary:disabled{opacity:0.6; cursor:not-allowed}
-    .btn-secondary{background:rgba(255,255,255,0.1); border:1px solid var(--ring); color:var(--text)}
-    .btn-actions{display:flex; gap:8px; justify-content:flex-end}
+    /* Stats Card */
+    .stats-card{
+      background:linear-gradient(135deg, var(--card) 0%, var(--sunken) 100%);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:24px;
+      margin-bottom:24px;
+    }
+    .stats-title{font-size:18px; font-weight:700; margin-bottom:16px}
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:16px;
+    }
+    @media (max-width: 768px) { .stats-grid{grid-template-columns:repeat(2, 1fr)} }
+    .stat-item{
+      text-align:center;
+      padding:12px;
+      background:rgba(255,255,255,0.05);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    .stat-value{
+      display:block;
+      font-size:24px;
+      font-weight:700;
+      color:var(--btn-start);
+      margin-bottom:4px;
+    }
+    .stat-label{
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
 
-    /* Post card */
-    .post-card{background:var(--card); border:1px solid var(--ring); border-radius:16px; overflow:hidden; margin-bottom:16px}
-    .post-header{padding:16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--ring)}
-    .post-author{display:flex; align-items:center; gap:12px}
-    .post-author-info{flex:1}
-    .post-author-name{font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px}
-    .post-meta{font-size:12px; color:var(--muted)}
-    .post-badge{font-size:11px; padding:4px 8px; border-radius:12px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); color:#fbbf24}
-    .post-image{background:#000; display:flex; justify-content:center; align-items:center; max-height:400px; overflow:hidden}
-    .post-image img{max-width:100%; max-height:400px; width:auto; height:auto; display:block; object-fit:contain}
-    .post-story{padding:16px; color:rgba(255,255,255,0.9); white-space:pre-wrap; line-height:1.6}
-    .post-reactions{padding:12px 16px; display:flex; flex-wrap:wrap; gap:8px}
-    .reaction-btn{padding:6px 12px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); font-size:14px; cursor:pointer; transition:all 0.2s}
-    .reaction-btn:hover{background:rgba(255,255,255,0.15)}
-    .reaction-count{color:var(--muted); margin-left:4px}
-    .post-actions{padding:12px 16px; border-top:1px solid var(--ring); display:flex; flex-wrap:wrap; gap:8px; font-size:13px}
-    .action-btn{padding:6px 12px; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid var(--ring); cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:4px}
-    .action-btn:hover{background:rgba(255,255,255,0.15)}
+    /* Composer Card */
+    .composer{
+      background:var(--card);
+      border:1px solid var(--ring);
+      border-radius:16px;
+      padding:24px;
+      margin-bottom:24px;
+    }
+    .composer-title{font-size:20px; font-weight:700; margin-bottom:20px}
 
-    .empty-state{text-align:center; padding:80px 20px; color:var(--muted); background:var(--card); border:1px solid var(--ring); border-radius:16px}
-    .empty-title{font-size:20px; color:var(--text); margin-bottom:8px}
-    .file-input{display:none}
+    .post-selectors{
+      display:flex;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+    .selector-group{
+      flex:1;
+      min-width:150px;
+    }
+    .selector-group label{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    .form-select{
+      width:100%;
+      padding:10px 12px;
+      background:rgba(255,255,255,0.1);
+      border:1px solid var(--ring);
+      border-radius:12px;
+      color:var(--text);
+      font-size:14px;
+      transition:all 0.2s;
+    }
+    .form-select:focus{
+      background:rgba(255,255,255,0.15);
+      border-color:var(--line);
+      outline:none;
+    }
+    .form-select option{
+      background:var(--card);
+      color:var(--text);
+    }
+
+    .form-textarea{
+      width:100%;
+      min-height:100px;
+      padding:12px;
+      background:rgba(255,255,255,0.1);
+      border:1px solid var(--ring);
+      border-radius:12px;
+      color:var(--text);
+      font-family:inherit;
+      font-size:14px;
+      resize:vertical;
+      transition:all 0.2s;
+    }
+    .form-textarea:focus{
+      background:rgba(255,255,255,0.15);
+      border-color:var(--line);
+      outline:none;
+    }
+    .char-count{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+      text-align:right;
+    }
+    .composer-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:16px;
+    }
+    .composer-note{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .btn{
+      padding:12px 24px;
+      border-radius:12px;
+      font-weight:600;
+      cursor:pointer;
+      border:none;
+      font-size:14px;
+      transition:all 0.2s;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-primary{
+      background:linear-gradient(90deg, var(--btn-start), var(--btn-end));
+      color:#081018;
+    }
+    .btn-primary:hover:not(:disabled){
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(34,211,238,0.3);
+    }
+    .btn-primary:disabled{
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+    .btn-secondary{
+      background:var(--card);
+      border:1px solid var(--ring);
+      color:var(--text);
+    }
+    .btn-secondary:hover{
+      background:var(--sunken);
+      border-color:var(--line);
+    }
+    .btn-danger{
+      background:rgba(239,68,68,0.2);
+      border:1px solid rgba(239,68,68,0.4);
+      color:#ef4444;
+    }
+    .btn-danger:hover{
+      background:rgba(239,68,68,0.3);
+      border-color:#ef4444;
+    }
+
+    /* Post Cards */
+    .post-card{
+      background:var(--card);
+      border:1px solid var(--ring);
+      border-radius:16px;
+      overflow:hidden;
+      margin-bottom:20px;
+      transition:all 0.3s;
+    }
+    .post-card:hover{
+      border-color:var(--line);
+      box-shadow:0 8px 24px rgba(0,0,0,0.3);
+    }
+    .post-header{
+      padding:16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      border-bottom:1px solid var(--ring);
+    }
+    .user-avatar{
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      background:linear-gradient(135deg, var(--btn-start), var(--btn-end));
+      display:grid;
+      place-items:center;
+      font-size:20px;
+      font-weight:700;
+      color:#081018;
+      flex-shrink:0;
+    }
+    .user-avatar img, .user-avatar video{
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      object-fit:cover;
+    }
+    .post-meta-container{
+      flex:1;
+    }
+    .post-author{
+      font-size:15px;
+      font-weight:600;
+      margin-bottom:2px;
+    }
+    .post-meta{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .post-actions-header{
+      display:flex;
+      gap:8px;
+    }
+    .post-content{
+      padding:16px;
+      color:rgba(255,255,255,0.9);
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-size:14px;
+    }
+    .post-image{
+      background:#000;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+    .post-image img{
+      max-width:100%;
+      max-height:500px;
+      width:auto;
+      height:auto;
+      display:block;
+      object-fit:contain;
+    }
+
+    /* Reactions */
+    .reaction-section{
+      padding:16px;
+      border-top:1px solid var(--ring);
+    }
+    .reaction-buttons{
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    .reaction-btn{
+      padding:8px 12px;
+      font-size:20px;
+      border-radius:20px;
+      transition:all 0.2s;
+      background:rgba(255,255,255,0.1);
+      border:1px solid rgba(255,255,255,0.2);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+    .reaction-btn:hover{
+      background:rgba(255,255,255,0.2);
+      transform:scale(1.1);
+    }
+    .reaction-btn.reaction-active{
+      background:var(--btn-start);
+      border-color:var(--btn-start);
+      box-shadow:0 0 10px rgba(34,211,238,0.3);
+    }
+    .reaction-count{
+      font-size:12px;
+      color:var(--text);
+    }
+    .reaction-counts{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .total-reactions{
+      color:var(--btn-start);
+      font-weight:700;
+    }
+
+    .empty-state{
+      text-align:center;
+      padding:80px 20px;
+      color:var(--muted);
+      background:var(--card);
+      border:1px solid var(--ring);
+      border-radius:16px;
+    }
+    .empty-state h3{
+      color:var(--text);
+      font-size:24px;
+      margin-bottom:12px;
+    }
   </style>
 </head>
 <body>
@@ -105,48 +349,78 @@
   </div>
 
   <div class="container">
-    <h1>👥 Community Wall</h1>
-    <p class="subtitle">Share anonymously with avatar IDs. Express yourself freely in our creative community.</p>
+    <div class="hero">
+      <h1 class="hero-title">👥 Community</h1>
+      <p class="subtitle">Share your creations and connect with other visionaries</p>
+    </div>
 
-    <!-- Composer -->
+    <!-- User Stats -->
+    <div class="stats-card" id="user-stats" style="display:none;">
+      <h3 class="stats-title">📊 Your Activity</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value" id="stat-posts-remaining">10</span>
+          <span class="stat-label">Posts left today</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-reactions-remaining">50</span>
+          <span class="stat-label">Reactions left</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-total-posts">0</span>
+          <span class="stat-label">Total posts</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-total-reactions">0</span>
+          <span class="stat-label">Reactions received</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Composer -->
     <div class="composer">
-      <div class="composer-title">
-        <span>Share your masterpiece (anonymous)</span>
-        <span class="composer-note">Name is hidden — avatar only</span>
+      <h3 class="composer-title">✍️ Share Something</h3>
+
+      <div class="post-selectors">
+        <div class="selector-group">
+          <label for="category-select">Category</label>
+          <select id="category-select" class="form-select">
+            <option value="general">General</option>
+            <option value="showcase">Showcase</option>
+            <option value="poster-design">Poster Design</option>
+            <option value="concept-art">Concept Art</option>
+            <option value="tips">Tips & Tricks</option>
+            <option value="feedback">Feedback</option>
+          </select>
+        </div>
+        <div class="selector-group">
+          <label for="content-type-select">Type</label>
+          <select id="content-type-select" class="form-select">
+            <option value="general">General</option>
+            <option value="achievement">Achievement</option>
+            <option value="question">Question</option>
+            <option value="tutorial">Tutorial</option>
+            <option value="inspiration">Inspiration</option>
+          </select>
+        </div>
       </div>
 
-      <div class="form-group">
-        <div class="form-label">Choose an avatar</div>
-        <div class="avatar-picker" id="avatar-picker"></div>
-      </div>
+      <textarea
+        id="post-body"
+        class="form-textarea"
+        placeholder="Share your latest creation, ask a question, or inspire others..."
+        maxlength="500"
+      ></textarea>
+      <div class="char-count"><span id="char-count">0</span>/500</div>
 
-      <div class="form-group">
-        <label class="form-label">Category</label>
-        <select id="category-select" class="form-select">
-          <option value="General">General</option>
-          <option value="Showcase">Showcase</option>
-          <option value="Poster Design">Poster Design</option>
-          <option value="Concept Art">Concept Art</option>
-          <option value="Photography">Photography</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Backstory / Inspiration (optional)</label>
-        <textarea id="story-input" class="form-textarea" maxlength="1200" placeholder="What sparked this piece? Tools, mood, influences… (optional)"></textarea>
-        <div class="char-count"><span id="char-count">0</span>/1200</div>
-      </div>
-
-      <div class="form-group">
-        <div class="form-label">Artwork image</div>
-        <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">Upload Image</button>
-        <input type="file" id="file-input" class="file-input" accept="image/*" onchange="handleFileUpload(event)">
-        <div id="image-preview"></div>
-      </div>
-
-      <div class="btn-actions">
-        <button class="btn btn-primary" id="post-btn" onclick="submitPost()" disabled>Post Anonymously</button>
+      <div class="composer-footer">
+        <div class="composer-note">
+          🕒 2-minute cooldown • 10 posts per day limit
+        </div>
+        <button class="btn btn-primary" id="post-btn" onclick="submitPost()">
+          <span>🚀</span>
+          <span>Post</span>
+        </button>
       </div>
     </div>
 
@@ -154,8 +428,8 @@
     <div id="posts-feed"></div>
 
     <div id="empty-state" class="empty-state" style="display:none;">
-      <div class="empty-title">No posts yet</div>
-      <div>Be the first to share your masterpiece ✨</div>
+      <h3>Welcome to the Community!</h3>
+      <p>No posts yet. Be the first to share something amazing!</p>
     </div>
   </div>
 
@@ -166,238 +440,194 @@
       window.location.href = '/auth.html#login';
     }
 
-    // Avatar configuration
-    const AVATARS = [
-      { key: 'm1', label: 'Male 1', emoji: '🧑‍🎨', tone: 'avatar-male-1' },
-      { key: 'm2', label: 'Male 2', emoji: '🧔‍♂️', tone: 'avatar-male-2' },
-      { key: 'm3', label: 'Male 3', emoji: '👨‍💻', tone: 'avatar-male-3' },
-      { key: 'f1', label: 'Female 1', emoji: '👩‍🎨', tone: 'avatar-female-1' },
-      { key: 'f2', label: 'Female 2', emoji: '👩‍💻', tone: 'avatar-female-2' },
-      { key: 'f3', label: 'Female 3', emoji: '👩', tone: 'avatar-female-3' }
-    ];
-
     const REACTION_SET = ['❤️', '✨', '🌿', '🔥', '🙏', '⭐', '👏', '🫶'];
 
     // State
-    let selectedAvatar = 'm1';
-    let previewImage = null;
-    let posts = [
-      {
-        id: 'seed1',
-        createdAt: new Date(Date.now() - 9 * 24 * 3600000).toISOString(),
-        category: 'General',
-        story: 'First post on the community wall!',
-        avatarKey: 'm1',
-        imageUrl: null,
-        mine: false,
-        reactions: {},
-        reported: false
-      }
-    ];
+    let userPosts = [];
+    let myUserId = null;
 
     // Initialize
     function init() {
-      renderAvatarPicker();
       loadPosts();
-      renderPosts();
-      updatePostButton();
 
-      document.getElementById('story-input').addEventListener('input', (e) => {
+      const textarea = document.getElementById('post-body');
+      textarea.addEventListener('input', (e) => {
         document.getElementById('char-count').textContent = e.target.value.length;
-        updatePostButton();
       });
+
+      // Show user stats
+      document.getElementById('user-stats').style.display = 'block';
     }
 
-    function renderAvatarPicker() {
-      const picker = document.getElementById('avatar-picker');
-      picker.innerHTML = AVATARS.map(a => `
-        <button class="avatar-btn ${a.key === selectedAvatar ? 'active' : ''}" onclick="selectAvatar('${a.key}')">
-          <div class="avatar-chip ${a.tone}" style="width:28px; height:28px; font-size:14px;">${a.emoji}</div>
-          <span>${a.label}</span>
-        </button>
-      `).join('');
-    }
+    function loadPosts() {
+      const saved = localStorage.getItem('community_posts');
+      if (saved) {
+        try {
+          userPosts = JSON.parse(saved);
+        } catch(e) {
+          console.error('Failed to load posts:', e);
+        }
+      }
 
-    function selectAvatar(key) {
-      selectedAvatar = key;
-      renderAvatarPicker();
-    }
-
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        previewImage = e.target.result;
-        document.getElementById('image-preview').innerHTML = `
-          <div class="image-preview">
-            <img src="${previewImage}" alt="preview">
-          </div>
-        `;
-        updatePostButton();
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function updatePostButton() {
-      const story = document.getElementById('story-input').value.trim();
-      const btn = document.getElementById('post-btn');
-      btn.disabled = !previewImage && !story;
-    }
-
-    function submitPost() {
-      const category = document.getElementById('category-select').value;
-      const story = document.getElementById('story-input').value.trim();
-
-      const newPost = {
-        id: `p_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        category: category,
-        story: story || undefined,
-        imageUrl: previewImage,
-        avatarKey: selectedAvatar,
-        mine: true,
-        reactions: {},
-        reported: false
-      };
-
-      posts.unshift(newPost);
-      savePosts();
       renderPosts();
+    }
 
-      // Reset form
-      document.getElementById('story-input').value = '';
-      document.getElementById('char-count').textContent = '0';
-      document.getElementById('category-select').value = 'General';
-      document.getElementById('file-input').value = '';
-      document.getElementById('image-preview').innerHTML = '';
-      previewImage = null;
-      updatePostButton();
+    function savePosts() {
+      localStorage.setItem('community_posts', JSON.stringify(userPosts));
     }
 
     function renderPosts() {
       const feed = document.getElementById('posts-feed');
       const empty = document.getElementById('empty-state');
 
-      if (posts.length === 0) {
+      if (userPosts.length === 0) {
         feed.innerHTML = '';
         empty.style.display = 'block';
         return;
       }
 
       empty.style.display = 'none';
-      feed.innerHTML = posts.map(post => {
-        const avatar = AVATARS.find(a => a.key === post.avatarKey) || AVATARS[0];
+
+      // Sort by date, newest first
+      const sortedPosts = [...userPosts].sort((a, b) =>
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      feed.innerHTML = sortedPosts.map(post => {
+        const totalReactions = Object.values(post.reactions || {}).reduce((sum, count) => sum + count, 0);
+        const myReaction = post.myReaction || null;
+
         return `
-          <article class="post-card">
+          <div class="post-card">
             <div class="post-header">
-              <div class="post-author">
-                <div class="avatar-chip ${avatar.tone}" style="width:40px; height:40px;">${avatar.emoji}</div>
-                <div class="post-author-info">
-                  <div class="post-author-name">
-                    <span>👤 Anonymous</span>
-                    <span style="color:var(--muted)">•</span>
-                    <span style="color:var(--muted)">${new Date(post.createdAt).toLocaleString()}</span>
-                  </div>
-                  <div class="post-meta">💬 ${post.category}</div>
-                </div>
+              <div class="user-avatar">
+                ${post.userName ? post.userName[0].toUpperCase() : 'U'}
               </div>
-              ${post.reported ? '<span class="post-badge">Reported</span>' : ''}
+              <div class="post-meta-container">
+                <div class="post-author">${post.userName || 'Anonymous'}</div>
+                <div class="post-meta">${new Date(post.createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'})}</div>
+              </div>
+              <div class="post-actions-header">
+                ${post.mine ? `
+                  <button class="btn btn-danger" onclick="deletePost('${post.id}')" title="Delete post">
+                    🗑️
+                  </button>
+                ` : `
+                  <button class="btn btn-secondary" onclick="reportPost('${post.id}')" title="Report post">
+                    ⚠️
+                  </button>
+                `}
+              </div>
             </div>
+
+            ${post.body ? `<div class="post-content">${post.body}</div>` : ''}
 
             ${post.imageUrl ? `
               <div class="post-image">
-                <img src="${post.imageUrl}" alt="artwork">
+                <img src="${post.imageUrl}" alt="Post image">
               </div>
             ` : ''}
 
-            ${post.story ? `
-              <div class="post-story">${post.story}</div>
-            ` : ''}
-
-            <div class="post-reactions">
-              ${REACTION_SET.map(emoji => `
-                <button class="reaction-btn" onclick="react('${post.id}', '${emoji}')">
-                  ${emoji}
-                  ${post.reactions[emoji] ? `<span class="reaction-count">${post.reactions[emoji]}</span>` : ''}
-                </button>
-              `).join('')}
+            <div class="reaction-section">
+              <div class="reaction-buttons">
+                ${REACTION_SET.map(emoji => {
+                  const count = post.reactions?.[emoji] || 0;
+                  const isActive = myReaction === emoji;
+                  return `
+                    <button
+                      class="reaction-btn ${isActive ? 'reaction-active' : ''}"
+                      onclick="toggleReaction('${post.id}', '${emoji}')"
+                      title="${emoji}">
+                      <span>${emoji}</span>
+                      ${count > 0 ? `<span class="reaction-count">${count}</span>` : ''}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+              <div class="reaction-counts">
+                Total reactions: <span class="total-reactions">${totalReactions}</span>
+              </div>
             </div>
-
-            <div class="post-actions">
-              ${post.mine ? `<button class="action-btn" onclick="deletePost('${post.id}')">🗑️ Delete My Post</button>` : ''}
-              <button class="action-btn" onclick="reportPost('${post.id}')">Report</button>
-              <button class="action-btn" onclick="flagCategory('${post.id}')">Flag Category</button>
-              <button class="action-btn" onclick="suggestReview('${post.id}')">Suggest Review</button>
-            </div>
-          </article>
+          </div>
         `;
       }).join('');
     }
 
-    function react(id, emoji) {
-      const post = posts.find(p => p.id === id);
-      if (!post) return;
+    function submitPost() {
+      const body = document.getElementById('post-body').value.trim();
+      const category = document.getElementById('category-select').value;
+      const contentType = document.getElementById('content-type-select').value;
 
-      post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
-      savePosts();
-      renderPosts();
-    }
-
-    function deletePost(id) {
-      if (!confirm('Delete this post?')) return;
-      posts = posts.filter(p => p.id !== id);
-      savePosts();
-      renderPosts();
-    }
-
-    function reportPost(id) {
-      const post = posts.find(p => p.id === id);
-      if (!post) return;
-
-      post.reported = true;
-      savePosts();
-      renderPosts();
-      alert('Post flagged for review. Thank you.');
-    }
-
-    function flagCategory(id) {
-      alert("Thanks! We'll review this post's category.");
-    }
-
-    function suggestReview(id) {
-      alert('Sent to moderators for review.');
-    }
-
-    function savePosts() {
-      const userPosts = posts.filter(p => p.mine);
-      localStorage.setItem('mv_community_posts', JSON.stringify(userPosts));
-    }
-
-    function loadPosts() {
-      const saved = localStorage.getItem('mv_community_posts');
-      if (saved) {
-        try {
-          const userPosts = JSON.parse(saved);
-          // Normalize reactions to use current REACTION_SET
-          userPosts.forEach(post => {
-            const oldReactions = post.reactions || {};
-            post.reactions = {};
-            // Only keep reactions that are in current REACTION_SET
-            REACTION_SET.forEach(emoji => {
-              if (oldReactions[emoji]) {
-                post.reactions[emoji] = oldReactions[emoji];
-              }
-            });
-          });
-          posts = [...userPosts, ...posts];
-        } catch (e) {
-          console.error('Failed to load posts:', e);
-        }
+      if (!body) {
+        alert('Please write something to post');
+        return;
       }
+
+      const newPost = {
+        id: `post_${Date.now()}`,
+        body: body,
+        category: category,
+        contentType: contentType,
+        createdAt: new Date().toISOString(),
+        userName: 'You', // Will be replaced with real user data
+        mine: true,
+        reactions: {},
+        myReaction: null
+      };
+
+      userPosts.push(newPost);
+      savePosts();
+      renderPosts();
+
+      // Clear form
+      document.getElementById('post-body').value = '';
+      document.getElementById('char-count').textContent = '0';
+      document.getElementById('category-select').value = 'general';
+      document.getElementById('content-type-select').value = 'general';
+
+      alert('Post shared successfully! 🎉');
     }
 
+    function toggleReaction(postId, emoji) {
+      const post = userPosts.find(p => p.id === postId);
+      if (!post) return;
+
+      // Initialize reactions if not exists
+      if (!post.reactions) post.reactions = {};
+
+      // If already reacted with this emoji, remove it
+      if (post.myReaction === emoji) {
+        post.reactions[emoji] = (post.reactions[emoji] || 1) - 1;
+        if (post.reactions[emoji] <= 0) delete post.reactions[emoji];
+        post.myReaction = null;
+      } else {
+        // Remove old reaction if exists
+        if (post.myReaction && post.reactions[post.myReaction]) {
+          post.reactions[post.myReaction] = (post.reactions[post.myReaction] || 1) - 1;
+          if (post.reactions[post.myReaction] <= 0) delete post.reactions[post.myReaction];
+        }
+        // Add new reaction
+        post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
+        post.myReaction = emoji;
+      }
+
+      savePosts();
+      renderPosts();
+    }
+
+    function deletePost(postId) {
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+
+      userPosts = userPosts.filter(p => p.id !== postId);
+      savePosts();
+      renderPosts();
+    }
+
+    function reportPost(postId) {
+      alert('Post reported. Thank you for helping keep our community safe.');
+    }
+
+    // Initialize on load
     init();
   </script>
 </body>
