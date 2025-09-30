@@ -667,8 +667,27 @@ def test_logging():
 def serve_logo():
     return send_from_directory(app.static_folder, 'logo.png')
 
-# Import SPA routing to register catch-all routes LAST (after all blueprints)
-import serve_spa  # This registers /<path:path> catch-all AFTER all API routes
+# SPA catch-all routes registered LAST so blueprints take precedence
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def spa_frontend(path=""):
+    """Serve SPA for all non-API, non-static routes"""
+    # Static files
+    if path.startswith("static/"):
+        subpath = path[len("static/"):]
+        return send_from_directory(app.static_folder, subpath)
+
+    if path in ("favicon.ico", "robots.txt"):
+        return send_from_directory(app.static_folder, path)
+
+    # If it looks like a file, try to serve from static
+    if "." in path:
+        candidate = os.path.join(app.static_folder, path)
+        if os.path.exists(candidate):
+            return send_from_directory(app.static_folder, path)
+
+    # SPA fallback
+    return send_from_directory(app.static_folder, "index.html")
 
 if __name__ == "__main__":
     # Initialize database
