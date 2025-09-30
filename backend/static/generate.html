@@ -241,11 +241,14 @@
   <div class="main-content">
     <!-- Welcome Section (shown when no chat history) -->
     <div id="welcome-section" class="welcome-section">
-      <h1 class="welcome-title">Hey <span id="display-name"></span>. Ready when you are. Let's build your vision.</h1>
+      <h1 class="welcome-title" id="welcome-title" style="visibility: hidden;">Hey <span id="display-name"></span>. Ready when you are. Let's build your vision.</h1>
       <script>
-        // Use pre-loaded cached name from head - already loaded before page rendered
+        // Use pre-loaded cached name from head - set name and show title atomically
         const displayName = window.__CACHED_DISPLAY_NAME || '...';
-        document.getElementById('display-name').textContent = displayName;
+        const nameEl = document.getElementById('display-name');
+        const titleEl = document.getElementById('welcome-title');
+        nameEl.textContent = displayName;
+        titleEl.style.visibility = 'visible';
       </script>
       <div class="input-container">
         <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
