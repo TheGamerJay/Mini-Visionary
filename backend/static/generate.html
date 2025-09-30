@@ -345,7 +345,10 @@
 
           if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
           if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
-          if (displayNameEl) displayNameEl.textContent = data.user.display_name || 'User';
+          // Only update display name if it's still showing placeholder
+          if (displayNameEl && (displayNameEl.textContent === '...' || displayNameEl.textContent === 'User')) {
+            displayNameEl.textContent = data.user.display_name || 'User';
+          }
 
           // Update cached credits to prevent flash on next refresh
           try {
