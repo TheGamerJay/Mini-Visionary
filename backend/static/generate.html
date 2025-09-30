@@ -227,7 +227,7 @@
   <div class="main-content">
     <!-- Welcome Section (shown when no chat history) -->
     <div id="welcome-section" class="welcome-section">
-      <h1 class="welcome-title">Hey <span id="display-name">User</span>. Ready when you are. Let's build your vision.</h1>
+      <h1 class="welcome-title">Hey <span id="display-name"></span><span id="name-suffix" style="display:none;">. Ready when you are. Let's build your vision.</span></h1>
       <div class="input-container">
         <textarea id="main-input" class="main-textarea" placeholder="Describe your poster idea..." rows="1"></textarea>
         <button id="main-generate-btn" class="generate-btn">Generate</button>
@@ -303,9 +303,11 @@
         if (cachedUser) {
           const userData = JSON.parse(cachedUser);
           const displayNameEl = document.getElementById('display-name');
+          const nameSuffixEl = document.getElementById('name-suffix');
           const userCreditsEl = document.getElementById('user-credits');
           if (displayNameEl && userData.display_name) {
             displayNameEl.textContent = userData.display_name;
+            if (nameSuffixEl) nameSuffixEl.style.display = 'inline';
           }
           if (userCreditsEl && userData.credits !== undefined) {
             userCreditsEl.textContent = userData.credits;
@@ -342,10 +344,14 @@
           const userNameEl = document.getElementById('user-name');
           const userCreditsEl = document.getElementById('user-credits');
           const displayNameEl = document.getElementById('display-name');
+          const nameSuffixEl = document.getElementById('name-suffix');
 
           if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
           if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
-          if (displayNameEl) displayNameEl.textContent = data.user.display_name || 'User';
+          if (displayNameEl) {
+            displayNameEl.textContent = data.user.display_name || 'User';
+            if (nameSuffixEl) nameSuffixEl.style.display = 'inline';
+          }
 
           // Update cached credits to prevent flash on next refresh
           try {
