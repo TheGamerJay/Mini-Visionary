@@ -220,6 +220,15 @@
 
     // Load user data on page load
     async function loadUserData() {
+      // Check cache first for instant load
+      const cached = sessionStorage.getItem('profile_cache');
+      if (cached) {
+        try {
+          const cachedData = JSON.parse(cached);
+          updateUI(cachedData);
+        } catch (e) {}
+      }
+
       try {
         const response = await fetch('/api/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -228,6 +237,18 @@
 
         if (data.ok && data.user) {
           userData = data.user;
+          sessionStorage.setItem('profile_cache', JSON.stringify(userData));
+          updateUI(userData);
+        } else {
+          console.error('Failed to load user data');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    }
+
+    function updateUI(userData) {
+      if (!userData) return;
 
           // Update display
           document.getElementById('display-name').textContent = userData.display_name || 'User';
@@ -236,11 +257,8 @@
           // Update avatar (using profile_picture_url)
           const avatarDisplay = document.getElementById('avatar-display');
           const profilePic = userData.profile_picture_url || userData.avatar_url;
-          console.log('Profile pic URL:', profilePic);
-          console.log('User data:', userData);
           if (profilePic) {
             const isVideo = profilePic.endsWith('.mp4') || profilePic.startsWith('data:video/');
-            console.log('Is video:', isVideo);
             if (isVideo) {
               avatarDisplay.innerHTML = `<video autoplay muted loop playsinline disablepictureinpicture controlslist="nodownload noplaybackrate">
                 <source src="${profilePic}" type="video/mp4">
@@ -248,20 +266,12 @@
             } else {
               avatarDisplay.innerHTML = `<img src="${profilePic}" alt="profile">`;
             }
-          } else {
-            console.log('No profile pic found in user data');
           }
 
-          // Update info grid
-          document.querySelector('.info-item:nth-child(2) .info-value').textContent = userData.email || 'N/A';
-          document.querySelector('.info-item:nth-child(3) .info-value').textContent = userData.ad_free ? 'Premium (Ad-Free)' : 'Free (With Ads)';
-          document.querySelector('.info-item:nth-child(4) .info-value').textContent = `${userData.credits || 0} credits`;
-        } else {
-          console.error('Failed to load user data');
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
+      // Update info grid
+      document.querySelector('.info-item:nth-child(2) .info-value').textContent = userData.email || 'N/A';
+      document.querySelector('.info-item:nth-child(3) .info-value').textContent = userData.ad_free ? 'Premium (Ad-Free)' : 'Free (With Ads)';
+      document.querySelector('.info-item:nth-child(4) .info-value').textContent = `${userData.credits || 0} credits`;
     }
 
     // Call on page load
