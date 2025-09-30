@@ -36,4 +36,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD \
   curl -fsS http://localhost:8080/healthz | grep -q '"ok": true'
 
-CMD ["gunicorn","app:app","--workers","2","--bind","0.0.0.0:8080","--log-level","info"]
+CMD ["gunicorn","serve_spa:app","--workers","2","--bind","0.0.0.0:8080","--log-level","info"]
