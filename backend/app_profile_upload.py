@@ -118,3 +118,32 @@ def get_profile():
 
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
+@profile_upload_bp.route('/update', methods=['PUT', 'PATCH'])
+@auth_required
+def update_profile_name():
+    """Update user profile display name"""
+    try:
+        data = request.get_json()
+        if not data or 'display_name' not in data:
+            return jsonify({"ok": False, "error": "display_name required"}), 400
+
+        display_name = data['display_name'].strip()
+        if not display_name:
+            return jsonify({"ok": False, "error": "display_name cannot be empty"}), 400
+
+        with get_session() as session:
+            user = session.query(User).filter_by(id=g.user.id).first()
+            if not user:
+                return jsonify({"ok": False, "error": "User not found"}), 404
+
+            user.display_name = display_name
+            session.commit()
+
+            return jsonify({
+                "ok": True,
+                "display_name": display_name
+            }), 200
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
