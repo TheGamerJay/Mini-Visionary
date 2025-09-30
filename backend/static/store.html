@@ -241,14 +241,39 @@
       btn.disabled = true;
       btn.textContent = 'Processing...';
 
-      // Simulate checkout
-      await new Promise(r => setTimeout(r, 700));
+      try {
+        // Call backend to create Stripe checkout session
+        const response = await fetch('/api/payments/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            sku: packId,
+            success_url: window.location.origin + '/static/wallet.html?payment=success',
+            cancel_url: window.location.origin + '/static/store.html?payment=canceled'
+          })
+        });
 
-      alert(`Checkout (demo): ${packId}\n\nIn production, this would open a Stripe checkout session.`);
+        const data = await response.json();
 
-      btn.disabled = false;
-      btn.textContent = originalText;
-      busyCheckout = null;
+        if (data.ok && data.url) {
+          // Redirect to Stripe checkout
+          window.location.href = data.url;
+        } else {
+          alert('Failed to start checkout: ' + (data.error || 'Unknown error'));
+          btn.disabled = false;
+          btn.textContent = originalText;
+          busyCheckout = null;
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Failed to start checkout. Please try again.');
+        btn.disabled = false;
+        btn.textContent = originalText;
+        busyCheckout = null;
+      }
     }
   </script>
 </body>
