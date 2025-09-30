@@ -312,31 +312,55 @@
 
     function handleMediaSelect(event) {
       const file = event.target.files[0];
-      if (!file) return;
+      console.log('File selected:', file);
+
+      if (!file) {
+        console.log('No file selected');
+        return;
+      }
 
       // Check file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
+        console.log('File too large:', file.size);
         alert('File size exceeds 10MB');
         return;
       }
 
-      // Check video duration if it's a video
-      if (file.type.startsWith('video/')) {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.onloadedmetadata = function() {
-          window.URL.revokeObjectURL(video.src);
-          if (video.duration > 11) {
-            alert('Video duration exceeds 11 seconds');
-            document.getElementById('media-input').value = '';
-            return;
-          }
-        };
-        video.src = URL.createObjectURL(file);
+      // Set immediately for images
+      if (!file.type.startsWith('video/')) {
+        selectedMedia = file;
+        document.getElementById('file-name').textContent = file.name;
+        console.log('Image file set:', file.name);
+        return;
       }
 
-      selectedMedia = file;
-      document.getElementById('file-name').textContent = file.name;
+      // Check video duration
+      console.log('Checking video duration...');
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onerror = function() {
+        console.error('Error loading video metadata');
+        alert('Could not load video file');
+        document.getElementById('media-input').value = '';
+      };
+      video.onloadedmetadata = function() {
+        window.URL.revokeObjectURL(video.src);
+        console.log('Video duration:', video.duration);
+
+        if (video.duration > 11) {
+          alert('Video duration exceeds 11 seconds (max 11s)');
+          document.getElementById('media-input').value = '';
+          selectedMedia = null;
+          document.getElementById('file-name').textContent = 'No file chosen';
+          return;
+        }
+
+        // Video is valid
+        selectedMedia = file;
+        document.getElementById('file-name').textContent = file.name;
+        console.log('Video file set:', file.name);
+      };
+      video.src = URL.createObjectURL(file);
     }
 
     // Safe JSON parser that won't crash on HTML
