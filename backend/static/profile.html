@@ -264,6 +264,7 @@
       // Check cache first for instant load
       const cached = sessionStorage.getItem('profile_cache');
       const cachedMedia = await getCachedMedia();
+      let hasLoadedFromCache = false;
 
       if (cached) {
         try {
@@ -272,6 +273,7 @@
             cachedData.profile_picture_url = cachedMedia;
           }
           updateUI(cachedData);
+          hasLoadedFromCache = true;
         } catch (e) {}
       }
 
@@ -297,7 +299,10 @@
             setCachedMedia(userData.profile_picture_url);
           }
 
-          updateUI(userData);
+          // Only update UI if profile picture changed or no cache was loaded
+          if (!hasLoadedFromCache || userData.profile_picture_url !== cachedMedia) {
+            updateUI(userData);
+          }
         } else {
           console.error('Failed to load user data');
         }
