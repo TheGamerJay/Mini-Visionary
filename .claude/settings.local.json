@@ -23,7 +23,8 @@
       "Bash(chmod:*)",
       "Bash(cat:*)",
       "Bash(rm:*)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "Bash(git cherry-pick:*)"
     ],
     "deny": [],
     "ask": []
