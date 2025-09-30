@@ -220,7 +220,7 @@
 
     // Load user data on page load
     async function loadUserData() {
-      // Check cache first for instant load
+      // Check cache first for instant load (excluding large profile_picture_url)
       const cached = sessionStorage.getItem('profile_cache');
       if (cached) {
         try {
@@ -237,7 +237,17 @@
 
         if (data.ok && data.user) {
           userData = data.user;
-          sessionStorage.setItem('profile_cache', JSON.stringify(userData));
+
+          // Cache without profile picture to avoid QuotaExceededError
+          try {
+            const cacheData = { ...userData };
+            delete cacheData.profile_picture_url;
+            delete cacheData.avatar_url;
+            sessionStorage.setItem('profile_cache', JSON.stringify(cacheData));
+          } catch (e) {
+            // Ignore cache errors
+          }
+
           updateUI(userData);
         } else {
           console.error('Failed to load user data');
