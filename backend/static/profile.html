@@ -124,7 +124,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">Subscription Status</span>
-              <span class="info-value">Free</span>
+              <span class="info-value">Free (With Ads)</span>
             </div>
             <div class="info-item">
               <span class="info-label">💎 Credits</span>
@@ -249,7 +249,7 @@
 
           // Update info grid
           document.querySelector('.info-item:nth-child(2) .info-value').textContent = userData.email || 'N/A';
-          document.querySelector('.info-item:nth-child(3) .info-value').textContent = userData.ad_free ? 'Premium' : 'Free';
+          document.querySelector('.info-item:nth-child(3) .info-value').textContent = userData.ad_free ? 'Premium (Ad-Free)' : 'Free (With Ads)';
           document.querySelector('.info-item:nth-child(4) .info-value').textContent = `${userData.credits || 0} credits`;
         } else {
           console.error('Failed to load user data');
