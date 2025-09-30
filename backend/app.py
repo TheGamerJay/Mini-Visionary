@@ -575,14 +575,24 @@ def add_text_to_poster():
 # ---------------------- STATIC FILE ROUTE ----------------------
 @app.route('/static/<path:filename>')
 def static_files(filename):
-    """Custom static file handler to ensure proper serving"""
-    return send_from_directory(app.static_folder, filename)
+    """Custom static file handler with no-cache headers for HTML/JS"""
+    resp = make_response(send_from_directory(app.static_folder, filename))
+    # Prevent browser caching of HTML and JS files
+    if filename.endswith(('.html', '.js')):
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        resp.headers['Pragma'] = 'no-cache'
+        resp.headers['Expires'] = '0'
+    return resp
 
 # ---------------------- AUTH PAGES ----------------------
 @app.route('/auth.html')
 def auth_page():
-    """Serve auth.html directly"""
-    return send_from_directory(app.static_folder, 'auth.html')
+    """Serve auth.html directly with no-cache"""
+    resp = make_response(send_from_directory(app.static_folder, 'auth.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 @app.route('/register')
 def register_redirect():
@@ -618,8 +628,12 @@ def create_redirect():
 
 @app.route('/generate')
 def generate_page():
-    """Serve the AI poster generation dashboard"""
-    return send_from_directory(app.static_folder, 'generate.html')
+    """Serve the AI poster generation dashboard with no-cache"""
+    resp = make_response(send_from_directory(app.static_folder, 'generate.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 # SPA routes are handled by serve_spa.py to avoid duplication
 
