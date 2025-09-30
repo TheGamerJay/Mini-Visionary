@@ -52,7 +52,7 @@ SUPPORT_EMAIL = "support@minivisionary.com"
 # ---------------------- ENV / CONFIG ----------------------
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
-MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "20"))  # reject > 20MB
+MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))  # reject > 10MB
 RATE_LIMIT_WINDOW_SEC = int(os.getenv("RATE_LIMIT_WINDOW_SEC", "30"))
 RATE_LIMIT_MAX_REQUESTS = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "6"))
 
