@@ -240,8 +240,8 @@
         story: "",
         createdAt: new Date(Date.now() - i * 3600000).toISOString(),
         tags: img.tags,
-        reactions: {likes: 0, love: 0, fire: 0},
-        userReacted: {likes: false, love: false, fire: false}
+        reactions: {likes: 0, love: 0, fire: 0, laugh: 0, wow: 0, star: 0},
+        userReacted: {likes: false, love: false, fire: false, laugh: false, wow: false, star: false}
       }));
 
       // Load from localStorage
@@ -295,6 +295,15 @@
                   </button>
                   <button class="reaction-btn ${item.userReacted.fire ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'fire')">
                     🔥 ${item.reactions.fire}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted.laugh ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'laugh')">
+                    😂 ${item.reactions.laugh}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted.wow ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'wow')">
+                    😮 ${item.reactions.wow}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted.star ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'star')">
+                    ⭐ ${item.reactions.star}
                   </button>
                 </div>
                 ${item.id.startsWith('uploaded_') ? `<button class="btn-delete" onclick="deleteImage('${item.id}')">🗑️ Delete</button>` : ''}
@@ -383,8 +392,8 @@
           story: story,
           createdAt: new Date().toISOString(),
           tags: tags.length > 0 ? tags : ['custom'],
-          reactions: {likes: 0, love: 0, fire: 0},
-          userReacted: {likes: false, love: false, fire: false}
+          reactions: {likes: 0, love: 0, fire: 0, laugh: 0, wow: 0, star: 0},
+          userReacted: {likes: false, love: false, fire: false, laugh: false, wow: false, star: false}
         };
 
         galleryItems.unshift(newItem);
