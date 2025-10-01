@@ -269,6 +269,15 @@
 
       galleryItems = categoryImages.map((img, i) => {
         const postId = `demo_${i+1}`;
+        const savedCounts = getReactionCounts(postId);
+        const userReaction = getUserReaction(postId);
+
+        // Migration: if user has reacted but count is 0, increment it
+        if (userReaction && savedCounts[userReaction] === 0) {
+          savedCounts[userReaction] = 1;
+          saveReactionCounts(postId, savedCounts);
+        }
+
         return {
           id: postId,
           url: img.url,
@@ -276,8 +285,8 @@
           story: "",
           createdAt: new Date(Date.now() - i * 3600000).toISOString(),
           tags: img.tags,
-          reactions: getReactionCounts(postId),  // Load saved reaction counts
-          userReacted: getUserReaction(postId)   // Load user's reaction from localStorage
+          reactions: savedCounts,
+          userReacted: userReaction
         };
       });
 
@@ -288,8 +297,17 @@
           const savedItems = JSON.parse(saved);
           // Apply user reactions and counts to saved items too
           savedItems.forEach(item => {
-            item.reactions = getReactionCounts(item.id);
-            item.userReacted = getUserReaction(item.id);
+            const savedCounts = getReactionCounts(item.id);
+            const userReaction = getUserReaction(item.id);
+
+            // Migration: if user has reacted but count is 0, increment it
+            if (userReaction && savedCounts[userReaction] === 0) {
+              savedCounts[userReaction] = 1;
+              saveReactionCounts(item.id, savedCounts);
+            }
+
+            item.reactions = savedCounts;
+            item.userReacted = userReaction;
           });
           galleryItems = [...savedItems, ...galleryItems];
         } catch(e) {
