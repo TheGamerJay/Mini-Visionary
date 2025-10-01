@@ -1005,11 +1005,11 @@
       const chatIndicator = document.getElementById('chat-reference-indicator');
 
       if (show) {
-        mainIndicator.style.display = 'block';
-        chatIndicator.style.display = 'block';
+        if (mainIndicator) mainIndicator.style.display = 'block';
+        if (chatIndicator) chatIndicator.style.display = 'block';
       } else {
-        mainIndicator.style.display = 'none';
-        chatIndicator.style.display = 'none';
+        if (mainIndicator) mainIndicator.style.display = 'none';
+        if (chatIndicator) chatIndicator.style.display = 'none';
       }
     }
 
