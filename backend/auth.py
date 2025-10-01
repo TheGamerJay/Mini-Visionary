@@ -256,7 +256,7 @@ def forgot():
                 "exp": now + (24 * 60 * 60),  # 24 hours
             }
             reset_token = jwt.encode(reset_payload, SECRET, algorithm="HS256")
-            reset_url = f"{PUBLIC_APP_URL}/reset-password?token={reset_token}"
+            reset_url = f"{PUBLIC_APP_URL}/static/auth.html#reset?token={reset_token}"
             current_app.logger.info("Attempting to send reset email to %s with URL: %s", user.email, reset_url)
             send_reset_email(user.email, reset_url)
             current_app.logger.info("Password reset email sent successfully to %s", user.email)
