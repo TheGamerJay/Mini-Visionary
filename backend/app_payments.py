@@ -58,6 +58,19 @@ def products():
     } for sku, p in PRODUCTS.items()]
     return jsonify(ok=True, items=items, publishable_key=os.getenv("STRIPE_PUBLISHABLE_KEY"))
 
+@payments_bp.get("/debug/config")
+def debug_config():
+    """Debug endpoint to check Stripe configuration (REMOVE IN PRODUCTION)"""
+    return jsonify({
+        "stripe_api_key_set": bool(stripe.api_key),
+        "stripe_api_key_length": len(stripe.api_key) if stripe.api_key else 0,
+        "price_starter_set": bool(os.getenv("STORE_PRICE_STARTER")),
+        "price_standard_set": bool(os.getenv("STORE_PRICE_STANDARD")),
+        "price_studio_set": bool(os.getenv("STORE_PRICE_STUDIO")),
+        "price_adfree_set": bool(os.getenv("STORE_PRICE_ADFREE")),
+        "products": {k: {"name": v["name"], "price_set": bool(v.get("stripe_price"))} for k, v in PRODUCTS.items()}
+    })
+
 @payments_bp.post("/checkout")
 @auth_required
 def checkout():
