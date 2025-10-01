@@ -214,6 +214,21 @@
       return reactions[postId] || null;
     }
 
+    // Save global reaction counts for all posts
+    function saveReactionCounts(postId, reactionCounts) {
+      const key = 'mv_global_reaction_counts';
+      const allCounts = JSON.parse(localStorage.getItem(key) || '{}');
+      allCounts[postId] = reactionCounts;
+      localStorage.setItem(key, JSON.stringify(allCounts));
+    }
+
+    // Load global reaction counts for a post
+    function getReactionCounts(postId) {
+      const key = 'mv_global_reaction_counts';
+      const allCounts = JSON.parse(localStorage.getItem(key) || '{}');
+      return allCounts[postId] || {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0};
+    }
+
     // Load demo data with real category images organized by category
     function loadDemoData() {
       const categoryImages = [
@@ -261,8 +276,8 @@
           story: "",
           createdAt: new Date(Date.now() - i * 3600000).toISOString(),
           tags: img.tags,
-          reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
-          userReacted: getUserReaction(postId)  // Load user's reaction from localStorage
+          reactions: getReactionCounts(postId),  // Load saved reaction counts
+          userReacted: getUserReaction(postId)   // Load user's reaction from localStorage
         };
       });
 
@@ -271,8 +286,9 @@
       if (saved) {
         try {
           const savedItems = JSON.parse(saved);
-          // Apply user reactions to saved items too
+          // Apply user reactions and counts to saved items too
           savedItems.forEach(item => {
+            item.reactions = getReactionCounts(item.id);
             item.userReacted = getUserReaction(item.id);
           });
           galleryItems = [...savedItems, ...galleryItems];
@@ -381,8 +397,9 @@
       item.reactions[type]++;
       item.userReacted = type;
 
-      // Save user reaction to localStorage
+      // Save user reaction and counts to localStorage
       saveUserReaction(item.id, type);
+      saveReactionCounts(item.id, item.reactions);
 
       saveGallery();
       renderGallery();
