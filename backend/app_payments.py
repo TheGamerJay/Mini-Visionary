@@ -8,8 +8,8 @@ from auth import auth_required
 from models import get_session, User, CreditLedger, CreditEventType
 from mailer import send_email
 
-# Stripe init
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# Stripe init (use STRIPE_SECRET_KEY or fall back to SECRET_KEY for backward compatibility)
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY") or os.getenv("SECRET_KEY")
 FRONTEND_ORIGIN = (os.getenv("FRONTEND_ORIGIN") or "").rstrip("/")
 CURRENCY = "usd"
 
