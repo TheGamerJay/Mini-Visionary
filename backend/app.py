@@ -5,11 +5,15 @@ import time
 from datetime import datetime
 from typing import Optional
 
+from dotenv import load_dotenv
+
+# Load environment variables FIRST before any imports that need them
+load_dotenv()
+
 from flask import Flask, request, jsonify, send_from_directory, render_template, abort, make_response
 from flask_cors import CORS
 from flask_compress import Compress
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
 
 # --- Database models ---
 from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterMode, PosterStatus, PosterStyle
@@ -42,8 +46,6 @@ try:
     OPENAI_AVAILABLE = True
 except Exception:
     OPENAI_AVAILABLE = False
-
-load_dotenv()
 
 # ---------------------- BRAND ----------------------
 BRAND_NAME = "Mini-Visionary"

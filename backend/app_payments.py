@@ -13,6 +13,11 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_ORIGIN = (os.getenv("FRONTEND_ORIGIN") or "").rstrip("/")
 CURRENCY = "usd"
 
+# Debug: Log Stripe configuration status (remove in production)
+import logging
+logging.info(f"Stripe API Key configured: {bool(stripe.api_key)}")
+logging.info(f"Price IDs configured - Starter: {bool(os.getenv('STORE_PRICE_STARTER'))}, Standard: {bool(os.getenv('STORE_PRICE_STANDARD'))}, Studio: {bool(os.getenv('STORE_PRICE_STUDIO'))}")
+
 payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
 
 # ---- PRODUCT CATALOG (server authority) ----
