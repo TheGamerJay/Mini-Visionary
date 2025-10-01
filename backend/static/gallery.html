@@ -240,8 +240,8 @@
         story: "",
         createdAt: new Date(Date.now() - i * 3600000).toISOString(),
         tags: img.tags,
-        reactions: {likes: 0, love: 0, fire: 0, laugh: 0, wow: 0, star: 0},
-        userReacted: {likes: false, love: false, fire: false, laugh: false, wow: false, star: false}
+        reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
+        userReacted: null  // Track which single reaction the user chose
       }));
 
       // Load from localStorage
@@ -287,24 +287,33 @@
               </div>
               <div class="gallery-actions">
                 <div class="gallery-reactions">
-                  <button class="reaction-btn ${item.userReacted.likes ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'likes')">
-                    👍 ${item.reactions.likes}
-                  </button>
-                  <button class="reaction-btn ${item.userReacted.love ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'love')">
+                  <button class="reaction-btn ${item.userReacted === 'love' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'love')">
                     ❤️ ${item.reactions.love}
                   </button>
-                  <button class="reaction-btn ${item.userReacted.fire ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'fire')">
+                  <button class="reaction-btn ${item.userReacted === 'magic' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'magic')">
+                    ✨ ${item.reactions.magic}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted === 'peace' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'peace')">
+                    🌿 ${item.reactions.peace}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted === 'fire' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'fire')">
                     🔥 ${item.reactions.fire}
                   </button>
-                  <button class="reaction-btn ${item.userReacted.laugh ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'laugh')">
-                    😂 ${item.reactions.laugh}
+                  <button class="reaction-btn ${item.userReacted === 'gratitude' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'gratitude')">
+                    🙏 ${item.reactions.gratitude}
                   </button>
-                  <button class="reaction-btn ${item.userReacted.wow ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'wow')">
-                    😮 ${item.reactions.wow}
-                  </button>
-                  <button class="reaction-btn ${item.userReacted.star ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'star')">
+                  <button class="reaction-btn ${item.userReacted === 'star' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'star')">
                     ⭐ ${item.reactions.star}
                   </button>
+                  <button class="reaction-btn ${item.userReacted === 'applause' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'applause')">
+                    👏 ${item.reactions.applause}
+                  </button>
+                  <button class="reaction-btn ${item.userReacted === 'support' ? 'active' : ''}" onclick="toggleReaction('${item.id}', 'support')">
+                    🫶 ${item.reactions.support}
+                  </button>
+                </div>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+                  Total reactions: ${Object.values(item.reactions).reduce((a, b) => a + b, 0)}
                 </div>
                 ${item.id.startsWith('uploaded_') ? `<button class="btn-delete" onclick="deleteImage('${item.id}')">🗑️ Delete</button>` : ''}
               </div>
@@ -318,13 +327,33 @@
       const item = galleryItems.find(i => i.id === id);
       if (!item) return;
 
-      if (item.userReacted[type]) {
-        item.reactions[type]--;
-        item.userReacted[type] = false;
-      } else {
-        item.reactions[type]++;
-        item.userReacted[type] = true;
+      const reactionEmojis = {
+        'love': '❤️',
+        'magic': '✨',
+        'peace': '🌿',
+        'fire': '🔥',
+        'gratitude': '🙏',
+        'star': '⭐',
+        'applause': '👏',
+        'support': '🫶'
+      };
+
+      // Check if user already reacted
+      if (item.userReacted) {
+        const existingEmoji = reactionEmojis[item.userReacted];
+        alert(`You've already reacted to this post!\n\n${existingEmoji} Your ${item.userReacted} reaction is locked in.\n\n⚠️ You can only react once per post - reactions are permanent and cannot be changed.`);
+        return;
       }
+
+      // Show confirmation prompt
+      const emoji = reactionEmojis[type];
+      const confirmed = confirm(`Confirm Permanent Reaction\n${emoji}\n\nAre you sure you want to react with ${emoji}?\n\n⚠️ This reaction is permanent and cannot be changed or removed!`);
+
+      if (!confirmed) return;
+
+      // Add the reaction
+      item.reactions[type]++;
+      item.userReacted = type;
 
       saveGallery();
       renderGallery();
@@ -392,8 +421,8 @@
           story: story,
           createdAt: new Date().toISOString(),
           tags: tags.length > 0 ? tags : ['custom'],
-          reactions: {likes: 0, love: 0, fire: 0, laugh: 0, wow: 0, star: 0},
-          userReacted: {likes: false, love: false, fire: false, laugh: false, wow: false, star: false}
+          reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
+          userReacted: null
         };
 
         galleryItems.unshift(newItem);
