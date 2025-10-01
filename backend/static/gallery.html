@@ -49,22 +49,23 @@
     .btn-upload:hover{border-color:var(--line)}
 
     /* Gallery grid - masonry layout */
-    .gallery-grid{column-count:3; column-gap:16px; margin-top:32px}
-    @media (max-width: 1024px) { .gallery-grid{column-count:2} }
-    @media (max-width: 640px) { .gallery-grid{column-count:1} }
+    .gallery-grid{column-count:4; column-gap:12px; margin-top:32px}
+    @media (max-width: 1200px) { .gallery-grid{column-count:3} }
+    @media (max-width: 768px) { .gallery-grid{column-count:2} }
+    @media (max-width: 480px) { .gallery-grid{column-count:1} }
 
-    .gallery-item{background:var(--card); border:1px solid var(--ring); border-radius:12px; overflow:hidden; margin-bottom:16px; break-inside:avoid; transition:all 0.2s; position:relative}
-    .gallery-item:hover{border-color:var(--line); box-shadow:0 8px 32px rgba(0,0,0,0.3)}
-    .gallery-item img{width:100%; height:auto; max-height:400px; object-fit:contain; display:block; cursor:pointer; background:#000}
-    .gallery-info{padding:12px; position:relative}
-    .gallery-title{font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .gallery-item{background:var(--card); border:1px solid var(--ring); border-radius:8px; overflow:hidden; margin-bottom:12px; break-inside:avoid; transition:all 0.2s; position:relative}
+    .gallery-item:hover{border-color:var(--line); box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+    .gallery-item img{width:100%; height:auto; max-height:300px; object-fit:contain; display:block; cursor:pointer; background:#000}
+    .gallery-info{padding:8px; position:relative}
+    .gallery-title{font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
     .gallery-meta{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px}
     .gallery-date{font-size:11px; color:var(--muted)}
     .gallery-tags{display:flex; gap:4px; flex-wrap:wrap}
     .tag{padding:3px 8px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:11px; color:var(--muted)}
-    .gallery-actions{display:flex; gap:8px; margin-top:8px}
-    .gallery-reactions{display:flex; gap:4px}
-    .reaction-btn{padding:6px 10px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:16px; cursor:pointer; transition:all 0.2s}
+    .gallery-actions{display:flex; flex-direction:column; gap:6px; margin-top:6px}
+    .gallery-reactions{display:flex; gap:3px; flex-wrap:wrap}
+    .reaction-btn{padding:4px 6px; background:var(--sunken); border:1px solid var(--ring); border-radius:4px; font-size:14px; cursor:pointer; transition:all 0.2s}
     .reaction-btn:hover{background:var(--card); border-color:var(--line)}
     .reaction-btn.active{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; border:none}
     .btn-delete{padding:4px 8px; background:#ef4444; border:none; border-radius:6px; font-size:11px; color:white; cursor:pointer; transition:all 0.2s}
