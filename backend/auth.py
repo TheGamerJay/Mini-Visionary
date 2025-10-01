@@ -257,11 +257,17 @@ def forgot():
             }
             reset_token = jwt.encode(reset_payload, SECRET, algorithm="HS256")
             reset_url = f"{PUBLIC_APP_URL}/reset-password?token={reset_token}"
+            current_app.logger.info("Attempting to send reset email to %s with URL: %s", user.email, reset_url)
             send_reset_email(user.email, reset_url)
-            current_app.logger.info("Password reset email sent to %s", user.email)
+            current_app.logger.info("Password reset email sent successfully to %s", user.email)
         except MailError as e:
-            current_app.logger.warning("Reset email failed for %s: %s", user.email, e)
+            current_app.logger.error("Reset email failed for %s: %s", user.email, str(e))
             # Return success anyway to avoid enumeration
+        except Exception as e:
+            current_app.logger.error("Unexpected error sending reset email to %s: %s", user.email, str(e))
+            # Return success anyway to avoid enumeration
+    else:
+        current_app.logger.info("Password reset requested for non-existent email: %s", email)
 
     return jsonify(ok=True, message="reset_email_sent")
 
