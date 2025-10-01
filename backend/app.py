@@ -644,6 +644,18 @@ def generate_page():
 def healthz():
     return {"ok": True, "time": datetime.utcnow().isoformat(), "openai": bool(oai_client)}
 
+@app.route("/__routes__", methods=["GET"])
+def __debug_routes():
+    """DEBUG ONLY: List all Flask routes - REMOVE IN PRODUCTION"""
+    rules = []
+    for rule in app.url_map.iter_rules():
+        rules.append({
+            "rule": str(rule),
+            "methods": sorted(rule.methods - {"HEAD", "OPTIONS"}),
+            "endpoint": rule.endpoint
+        })
+    return jsonify(sorted(rules, key=lambda x: x["rule"]))
+
 @app.get("/api/test-compression")
 def test_compression():
     """Large JSON response to test compression"""

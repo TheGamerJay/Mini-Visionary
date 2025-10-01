@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Running pre-commit checks..."
+
+# Block console.log/print debug statements (except in tools/ directory)
+bad=$(git diff --cached --name-only | grep -E '\.(js|py|html)$' | grep -v '^tools/' | xargs -I{} grep -nE "console\.log\(|^\s*print\(" {} 2>/dev/null || true)
+if [ -n "$bad" ]; then
+  echo "[BLOCKED] Remove console.log/print before committing:"
+  echo "$bad"
+  exit 1
+fi
+
+echo "[OK] Pre-commit checks passed"
