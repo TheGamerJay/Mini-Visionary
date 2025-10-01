@@ -102,8 +102,11 @@ def checkout():
     cancel_url  = data.get("cancel_url")  or f"{FRONTEND_ORIGIN}/checkout/cancel"
 
     try:
+        # Use subscription mode for recurring products, payment mode for one-time purchases
+        mode = "subscription" if sku == "adfree" else "payment"
+
         session = stripe.checkout.Session.create(
-            mode="payment",
+            mode=mode,
             line_items=[{"price": product["stripe_price"], "quantity": 1}],
             success_url=success_url,
             cancel_url=cancel_url,
