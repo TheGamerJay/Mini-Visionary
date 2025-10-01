@@ -1,17 +1,16 @@
 from flask import Blueprint, jsonify, g
+from auth import auth_required
 
 bp = Blueprint("auth_alias", __name__, url_prefix="/api/auth")
 
 @bp.get("/whoami")
+@auth_required
 def whoami():
     """
     Get current user session state for SPA.
-    Auth is optional: if no user, return null JSON.
+    Requires authentication.
     """
-    user = getattr(g, 'user', None)
-    if not user:
-        return jsonify({"ok": True, "user": None}), 200
-
+    user = g.user
     avatar = getattr(user, "avatar_url", None)
     return jsonify({
         "ok": True,
