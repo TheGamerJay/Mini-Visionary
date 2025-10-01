@@ -195,6 +195,24 @@
     // Gallery state
     let galleryItems = [];
     let currentModal = null;
+    let currentUserId = null;
+
+    // Save user reactions per user
+    function saveUserReaction(postId, reactionType) {
+      if (!currentUserId) return;
+      const key = `mv_user_reactions_${currentUserId}`;
+      const reactions = JSON.parse(localStorage.getItem(key) || '{}');
+      reactions[postId] = reactionType;
+      localStorage.setItem(key, JSON.stringify(reactions));
+    }
+
+    // Load user reactions for current user
+    function getUserReaction(postId) {
+      if (!currentUserId) return null;
+      const key = `mv_user_reactions_${currentUserId}`;
+      const reactions = JSON.parse(localStorage.getItem(key) || '{}');
+      return reactions[postId] || null;
+    }
 
     // Load demo data with real category images organized by category
     function loadDemoData() {
@@ -234,22 +252,29 @@
         {url: '/Fantasy Images/romance.jpg', prompt: 'Romance Story', tags: ['romance', 'love', 'story'], category: 'romance'}
       ];
 
-      galleryItems = categoryImages.map((img, i) => ({
-        id: `demo_${i+1}`,
-        url: img.url,
-        prompt: img.prompt,
-        story: "",
-        createdAt: new Date(Date.now() - i * 3600000).toISOString(),
-        tags: img.tags,
-        reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
-        userReacted: null  // Track which single reaction the user chose
-      }));
+      galleryItems = categoryImages.map((img, i) => {
+        const postId = `demo_${i+1}`;
+        return {
+          id: postId,
+          url: img.url,
+          prompt: img.prompt,
+          story: "",
+          createdAt: new Date(Date.now() - i * 3600000).toISOString(),
+          tags: img.tags,
+          reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
+          userReacted: getUserReaction(postId)  // Load user's reaction from localStorage
+        };
+      });
 
       // Load from localStorage
       const saved = localStorage.getItem('mv_gallery_items');
       if (saved) {
         try {
           const savedItems = JSON.parse(saved);
+          // Apply user reactions to saved items too
+          savedItems.forEach(item => {
+            item.userReacted = getUserReaction(item.id);
+          });
           galleryItems = [...savedItems, ...galleryItems];
         } catch(e) {
           console.error('Failed to load saved items:', e);
@@ -355,6 +380,9 @@
       // Add the reaction
       item.reactions[type]++;
       item.userReacted = type;
+
+      // Save user reaction to localStorage
+      saveUserReaction(item.id, type);
 
       saveGallery();
       renderGallery();
@@ -503,7 +531,7 @@
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // Load user credits
+    // Load user credits and ID
     async function loadUserCredits() {
       try {
         const response = await fetch('/api/auth/whoami', {
@@ -513,7 +541,10 @@
         });
         const data = await response.json();
         if (data.ok && data.user) {
+          currentUserId = data.user.id;
           document.getElementById('user-credits').textContent = data.user.credits || 0;
+          // Reload demo data to apply user reactions
+          loadDemoData();
         } else {
           document.getElementById('user-credits').textContent = '0';
         }
@@ -523,8 +554,7 @@
       }
     }
 
-    // Initialize
-    loadDemoData();
+    // Initialize - load user first, then data
     loadUserCredits();
   </script>
 </body>
