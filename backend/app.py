@@ -27,7 +27,7 @@ from me_alias import bp as auth_alias_bp
 # Advanced blueprints that need proper setup:
 # from app_auth import auth_bp          # Needs JWT configuration
 from auth import bp as new_auth_bp, bcrypt
-# from app_payments import payments_bp  # CSS f-string issues - needs manual fix
+from app_payments import payments_bp
 # from storage import bp as storage_bp  # Needs S3/R2 configuration
 # from ads import bp as ads_bp          # Needs subscription logic
 from ads_portal import bp as ads_portal_bp
@@ -225,7 +225,7 @@ app.register_blueprint(new_auth_bp)
 app.register_blueprint(library_bp)        # Essential - poster library and gallery
 app.register_blueprint(legal_bp)          # Essential - privacy policy, terms of service
 app.register_blueprint(profile_upload_bp)  # Clean profile upload endpoint
-# app.register_blueprint(payments_bp)     # CSS f-string issues - needs manual fix
+app.register_blueprint(payments_bp)       # Stripe payments
 # app.register_blueprint(storage_bp)      # Disabled - needs S3/R2 configuration
 # app.register_blueprint(ads_bp)          # Disabled - needs subscription logic
 app.register_blueprint(ads_portal_bp)

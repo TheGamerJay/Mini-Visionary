@@ -262,18 +262,18 @@ font-weight: bold;
   }}
 
   .footer {{
-margin-top: 40px;
+    margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid #374151;
     text-align: center;
     color: #6b7280;
     font-size: 12px;
-  }
+  }}
 
   @media print {{
     body {{ background: white; color: black; }}
-    .header {{{ border-bottom-color: #0891b2; }}
-    .logo {{{ color: #0891b2; }}
+    .header {{ border-bottom-color: #0891b2; }}
+    .logo {{ color: #0891b2; }}
     .company, .receipt-info div, .item-desc {{ color: #666; }}
     .items {{ border-color: #ddd; }}
     .item-header {{ background: #f8f9fa; border-bottom-color: #ddd; }}
@@ -424,7 +424,7 @@ def checkout():
         )
         return jsonify(ok=True, url=session.url)
     except stripe.error.StripeError as e:
-        return jsonify(ok=False, error=str(e)}), 500
+        return jsonify(ok=False, error=str(e)), 500
 
 @payments_bp.get("/session/<session_id>")
 @auth_required
@@ -603,18 +603,18 @@ font-weight: bold;
   }}
 
   .footer {{
-margin-top: 40px;
+    margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid #374151;
     text-align: center;
     color: #6b7280;
     font-size: 12px;
-  }
+  }}
 
   @media print {{
     body {{ background: white; color: black; }}
-    .header {{{ border-bottom-color: #0891b2; }}
-    .logo {{{ color: #0891b2; }}
+    .header {{ border-bottom-color: #0891b2; }}
+    .logo {{ color: #0891b2; }}
     .company, .receipt-info div, .item-desc {{ color: #666; }}
     .items {{ border-color: #ddd; }}
     .item-header {{ background: #f8f9fa; border-bottom-color: #ddd; }}
