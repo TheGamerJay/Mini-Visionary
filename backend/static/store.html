@@ -209,6 +209,15 @@
 
     let busyCheckout = null;
 
+    // Reset all buttons on page load (fixes stuck "Processing..." state when user hits back button)
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.package-btn, .extra-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.textContent = btn.classList.contains('extra-btn') ? 'Subscribe' : 'Purchase';
+      });
+      busyCheckout = null;
+    });
+
     async function checkout(packId) {
       if (busyCheckout) return;
 
