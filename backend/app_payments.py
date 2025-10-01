@@ -61,11 +61,16 @@ def checkout():
     sku = (data.get("sku") or "").lower().strip()
 
     if sku not in PRODUCTS:
-        raise BadRequest("invalid_sku")
+        return jsonify(ok=False, error="invalid_sku"), 400
 
     product = PRODUCTS[sku]
-    if not product["stripe_price"]:
-        raise BadRequest("price_not_configured")
+
+    # Check if Stripe is configured
+    if not stripe.api_key or not product.get("stripe_price"):
+        return jsonify(
+            ok=False,
+            error="Stripe not configured. Please set STRIPE_SECRET_KEY and price IDs in environment variables."
+        ), 503
 
     # success/cancel fallbacks (must be absolute URLs)
     success_url = data.get("success_url") or f"{FRONTEND_ORIGIN}/checkout/success"
@@ -83,6 +88,8 @@ def checkout():
         return jsonify(ok=True, url=session.url)
     except stripe.error.StripeError as e:
         return jsonify(ok=False, error=str(e)), 500
+    except Exception as e:
+        return jsonify(ok=False, error=f"Checkout failed: {str(e)}"), 500
 
 @payments_bp.get("/session/<session_id>")
 @auth_required
