@@ -19,6 +19,7 @@ def whoami():
             "id": user.id,
             "email": user.email,
             "display_name": getattr(user, "display_name", None),
+            "credits": getattr(user, "credits", 0),
             "avatar_image_url": avatar if avatar and not avatar.startswith('data:video/') else None,
             "avatar_video_url": avatar if avatar and avatar.startswith('data:video/') else None,
         }
