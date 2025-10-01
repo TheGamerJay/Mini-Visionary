@@ -256,6 +256,29 @@
             <a href="#register" data-switch="register" class="link-btn">Create account</a>
           </div>
         </form>
+
+        <!-- Reset Password -->
+        <form id="form-reset" class="form" style="display:none">
+          <img src="/logo.png" alt="Mini Visionary Logo" class="login-logo">
+          <div class="field pwd">
+            <label class="label" for="rs-pass">New Password</label>
+            <input id="rs-pass" class="input" type="password" placeholder="At least 8 characters" autocomplete="new-password" required />
+            <button type="button" id="rs-eye" class="eye" aria-label="Show password">👁️</button>
+          </div>
+
+          <div class="field pwd">
+            <label class="label" for="rs-confirm">Confirm Password</label>
+            <input id="rs-confirm" class="input" type="password" placeholder="Re-enter your password" autocomplete="new-password" required />
+            <button type="button" id="rs-confirm-eye" class="eye" aria-label="Show password">👁️</button>
+          </div>
+
+          <button class="btn" id="btn-reset" type="submit" style="margin-top:8px">Reset Password</button>
+
+          <div class="row">
+            <a href="#login" data-switch="login" class="link-btn">Back to Login</a>
+            <span></span>
+          </div>
+        </form>
       </div>
 
       <!-- Bottom brand block -->
@@ -283,12 +306,13 @@
       const titles = {
         login:   ["Welcome back", "Sign in to continue your visionary journey."],
         register:["Create your account", "Join Mini Visionary and start creating posters with AI."],
-        forgot:  ["Password Reset", "Enter your email and we'll send a reset link."]
+        forgot:  ["Password Reset", "Enter your email and we'll send a reset link."],
+        reset:   ["Reset Your Password", "Enter your new password below."]
       };
       $("#formTitle").textContent = titles[name][0];
       $("#formSubtitle").textContent = titles[name][1];
 
-      for (const id of ["login","register","forgot"]){
+      for (const id of ["login","register","forgot","reset"]){
         (id===name?show:hide)($("#form-" + id));
       }
       setMsg("");
@@ -357,6 +381,8 @@
     document.addEventListener('DOMContentLoaded', () => {
       setupPasswordField("li-pass","li-eye");
       setupPasswordField("rg-pass","rg-eye");
+      setupPasswordField("rs-pass","rs-eye");
+      setupPasswordField("rs-confirm","rs-confirm-eye");
 
       // Terms checkbox confirmation
       const termsCheckbox = $("#rg-terms");
@@ -458,20 +484,68 @@
       finally{ $("#btn-forgot").disabled = false; }
     });
 
+    $("#form-reset").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      setMsg(""); $("#btn-reset").disabled = true;
+      try{
+        const pass = $("#rs-pass").value;
+        const confirm = $("#rs-confirm").value;
+
+        if (pass.length < 8) {
+          setMsg("Password must be at least 8 characters", "err");
+          return;
+        }
+
+        if (pass !== confirm) {
+          setMsg("Passwords do not match", "err");
+          return;
+        }
+
+        const params = new URLSearchParams(location.hash.split('?')[1] || '');
+        const token = params.get('token');
+
+        if (!token) {
+          setMsg("Invalid or missing reset token", "err");
+          return;
+        }
+
+        const res = await fetch("/api/auth/reset-password", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({token, password: pass})
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          setMsg(data.error || "Reset failed", "err");
+          return;
+        }
+
+        setMsg("Password reset successfully! Redirecting to login...", "ok");
+        setTimeout(() => {
+          location.hash = "#login";
+          swapTabs("login");
+        }, 2000);
+      }catch(err){ setMsg(err.message, "err"); }
+      finally{ $("#btn-reset").disabled = false; }
+    });
+
     // ===== Hash routing for tabs =====
     (function () {
-      const VIEWS = ["login", "register", "forgot"];
+      const VIEWS = ["login", "register", "forgot", "reset"];
 
       function currentFromHash() {
-        const h = (location.hash || "").replace("#", "").toLowerCase();
+        const h = (location.hash || "").replace("#", "").split('?')[0].toLowerCase();
         return VIEWS.includes(h) ? h : "login";
       }
 
       function updateFromHash() {
         const which = currentFromHash();
         swapTabs(which);
-        // Don't modify the URL if hash is already correct
-        if (location.hash !== "#" + which) {
+        // Don't modify the URL if hash is already correct (preserve query params for reset)
+        const hashBase = location.hash.split('?')[0];
+        if (hashBase !== "#" + which && which !== "reset") {
           history.replaceState(null, "", "#" + which);
         }
       }
