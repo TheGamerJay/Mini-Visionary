@@ -64,7 +64,7 @@
     .tag{padding:3px 8px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:11px; color:var(--muted)}
     .gallery-actions{display:flex; gap:8px; margin-top:8px}
     .gallery-reactions{display:flex; gap:4px}
-    .reaction-btn{padding:4px 8px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:12px; cursor:pointer; transition:all 0.2s}
+    .reaction-btn{padding:6px 10px; background:var(--sunken); border:1px solid var(--ring); border-radius:6px; font-size:16px; cursor:pointer; transition:all 0.2s}
     .reaction-btn:hover{background:var(--card); border-color:var(--line)}
     .reaction-btn.active{background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; border:none}
     .btn-delete{padding:4px 8px; background:#ef4444; border:none; border-radius:6px; font-size:11px; color:white; cursor:pointer; transition:all 0.2s}
@@ -401,7 +401,7 @@
       document.getElementById('upload-tags').value = '';
     }
 
-    function uploadImage(event) {
+    async function uploadImage(event) {
       event.preventDefault();
 
       const fileInput = document.getElementById('upload-file');
@@ -412,26 +412,85 @@
 
       if (!fileInput.files[0]) return;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newItem = {
-          id: `uploaded_${Date.now()}`,
-          url: e.target.result,
-          prompt: prompt,
-          story: story,
-          createdAt: new Date().toISOString(),
-          tags: tags.length > 0 ? tags : ['custom'],
-          reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
-          userReacted: null
+      // Check user credits first
+      try {
+        const response = await fetch('/api/auth/whoami', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+
+        if (!data.ok || !data.user) {
+          alert('Failed to verify your account. Please try again.');
+          return;
+        }
+
+        const userCredits = data.user.credits || 0;
+
+        if (userCredits < 3) {
+          alert(`Insufficient credits!\n\nYou need 3 credits to post to the gallery.\nYou currently have ${userCredits} credits.\n\nVisit the Store to purchase more credits.`);
+          closeUploadModal();
+          return;
+        }
+
+        // Confirm the cost
+        const confirmed = confirm(`Post to Gallery\n\nThis will cost 3 credits.\n\nYou have ${userCredits} credits.\nAfter posting, you'll have ${userCredits - 3} credits.\n\nDo you want to continue?`);
+
+        if (!confirmed) return;
+
+        // Deduct credits (call backend API)
+        const deductResponse = await fetch('/api/gallery/post', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            prompt: prompt,
+            story: story,
+            tags: tags
+          })
+        });
+
+        const deductData = await deductResponse.json();
+
+        if (!deductData.ok) {
+          alert(`Failed to post: ${deductData.error || 'Unknown error'}`);
+          return;
+        }
+
+        // Upload succeeded, add to gallery
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const newItem = {
+            id: `uploaded_${Date.now()}`,
+            url: e.target.result,
+            prompt: prompt,
+            story: story,
+            createdAt: new Date().toISOString(),
+            tags: tags.length > 0 ? tags : ['custom'],
+            reactions: {love: 0, magic: 0, peace: 0, fire: 0, gratitude: 0, star: 0, applause: 0, support: 0},
+            userReacted: null
+          };
+
+          galleryItems.unshift(newItem);
+          saveGallery();
+          renderGallery();
+          closeUploadModal();
+
+          // Reload credits display
+          loadUserCredits();
+
+          alert(`✅ Posted successfully!\n\n3 credits deducted.\nRemaining credits: ${userCredits - 3}`);
         };
 
-        galleryItems.unshift(newItem);
-        saveGallery();
-        renderGallery();
-        closeUploadModal();
-      };
+        reader.readAsDataURL(fileInput.files[0]);
 
-      reader.readAsDataURL(fileInput.files[0]);
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('Failed to post. Please try again.');
+      }
     }
 
     function saveGallery() {
