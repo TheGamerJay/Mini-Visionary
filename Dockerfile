@@ -2,7 +2,7 @@
 FROM node:20-alpine AS frontend
 WORKDIR /frontend
 COPY frontend/package*.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm install
 COPY frontend/ .
 # Clean any existing builds and create fresh build to dist folder
 RUN rm -rf dist && npm run build:docker
