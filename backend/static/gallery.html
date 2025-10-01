@@ -116,6 +116,14 @@
     <p class="subtitle">Explore masterpieces from the Mini Visionary community. Share your art and react to others.</p>
 
     <div class="filter-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="font-size: 18px; font-weight: 600; color: var(--text);">
+          💎 Credits: <span id="user-credits" style="color: var(--btn-start);">Loading...</span>
+        </div>
+        <div style="font-size: 13px; color: var(--muted);">
+          Posting costs 3 credits
+        </div>
+      </div>
       <div class="filter-actions">
         <button class="btn btn-primary" onclick="openUploadModal()">📤 Post Your Masterpiece</button>
         <button class="btn btn-clear" onclick="scrollToTop()">Back to top</button>
@@ -397,8 +405,29 @@
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
+    // Load user credits
+    async function loadUserCredits() {
+      try {
+        const response = await fetch('/api/auth/whoami', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.ok && data.user) {
+          document.getElementById('user-credits').textContent = data.user.credits || 0;
+        } else {
+          document.getElementById('user-credits').textContent = '0';
+        }
+      } catch (error) {
+        console.error('Failed to load credits:', error);
+        document.getElementById('user-credits').textContent = '0';
+      }
+    }
+
     // Initialize
     loadDemoData();
+    loadUserCredits();
   </script>
 </body>
 </html>
