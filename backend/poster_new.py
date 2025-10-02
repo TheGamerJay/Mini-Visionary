@@ -244,6 +244,63 @@ class OpenAIImagesEditClient:
             raise RuntimeError("No edited image returned from OpenAI.")
         return items
 
+
+class OpenAIImagesVariationClient:
+    """DALL-E 2 image variations - creates similar images without prompt control"""
+    VARIATIONS_URL = "https://api.openai.com/v1/images/variations"
+    MODEL = "dall-e-2"
+
+    @staticmethod
+    def variations(
+        image_blob: bytes,
+        size: str = "1024x1024",
+        n: int = 1,
+        timeout_seconds: int = 60
+    ) -> List[Dict]:
+        """
+        Calls OpenAI images/variations with multipart form (SDK-free).
+        Creates similar-looking images without prompt control.
+        """
+        requests, *_ = _lazy_imports()
+        headers = get_openai_headers()
+        # Remove Content-Type header - requests will set it for multipart/form-data
+        if "Content-Type" in headers:
+            del headers["Content-Type"]
+
+        data = {
+            "model": OpenAIImagesVariationClient.MODEL,
+            "size": size,
+            "n": str(max(1, min(int(n or 1), 4))),
+            "response_format": "b64_json",
+        }
+        files = {
+            "image": ("input.png", image_blob, "image/png"),
+        }
+
+        try:
+            resp = requests.post(
+                OpenAIImagesVariationClient.VARIATIONS_URL,
+                headers=headers,
+                data=data,
+                files=files,
+                timeout=timeout_seconds
+            )
+        except Exception as e:
+            raise RuntimeError(f"Image variations request failed: {e}")
+
+        if resp.status_code >= 400:
+            try:
+                err = resp.json()
+            except Exception:
+                err = {"message": resp.text}
+            raise RuntimeError(f"OpenAI variations error {resp.status_code}: {err}")
+
+        out = resp.json()
+        items = out.get("data", [])
+        if not items:
+            raise RuntimeError("No variation image returned from OpenAI.")
+        return items
+
 # ---------------------------
 # Storage
 # ---------------------------
@@ -409,6 +466,41 @@ def _preprocess_reference_to_square_png_alpha(file_storage, size: str) -> bytes:
         raise RuntimeError("Reference image exceeds 4MB after processing. Try a smaller size.")
 
     return png_bytes
+
+def _alpha_coverage(png_bytes: bytes) -> float:
+    """
+    Calculate what fraction of the image has opacity (non-transparent).
+    Returns 1.0 if fully opaque, 0.0 if fully transparent.
+    """
+    *_, Image = _lazy_imports()
+    if Image is None:
+        raise RuntimeError("Pillow not installed")
+
+    img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+    alpha = img.split()[-1]  # Get alpha channel
+    nonzero = sum(1 for p in alpha.getdata() if p > 0)
+    total_pixels = alpha.size[0] * alpha.size[1]
+    return nonzero / float(total_pixels)
+
+def _add_transparent_border(png_bytes: bytes, pad_px: int) -> bytes:
+    """
+    Add transparent padding around image for DALL-E edits to fill.
+    """
+    if pad_px <= 0:
+        return png_bytes
+
+    *_, Image = _lazy_imports()
+    if Image is None:
+        raise RuntimeError("Pillow not installed")
+
+    img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+    w, h = img.size
+    canvas = Image.new("RGBA", (w + pad_px*2, h + pad_px*2), (0, 0, 0, 0))
+    canvas.paste(img, (pad_px, pad_px))
+
+    out = io.BytesIO()
+    canvas.save(out, format="PNG", optimize=True)
+    return out.getvalue()
 
 def _learn_from_history(user_id: str, engine) -> dict:
     """
@@ -776,11 +868,15 @@ def edit_poster():
     """
     Multipart form endpoint to perform DALL·E 2-style edits with a reference image.
 
+    ⚠️ DALL-E 2 edit only fills TRANSPARENT areas - it's for inpainting, not style transfer!
+    For style transformations, use /remix instead.
+
     FORM FIELDS:
       - prompt: text prompt describing changes/style (required)
       - size: 256x256 | 512x512 | 1024x1024 (optional, default 1024x1024)
       - n: number of images (1..4, optional, default 1)
       - image: the reference image file (required) — will be converted to square PNG with alpha
+      - border_pad_px: add transparent border for edge editing (optional, default 0)
       - user_id: optional user ID for learning
 
     Returns:
@@ -801,6 +897,11 @@ def edit_poster():
             n = 1
         n = max(1, min(n, 4))
 
+        try:
+            border_pad = int(request.form.get("border_pad_px", "0"))
+        except Exception:
+            border_pad = 0
+
         user_id = request.form.get("user_id")
 
         if "image" not in request.files:
@@ -808,15 +909,37 @@ def edit_poster():
 
         image_file = request.files["image"]
         current_app.logger.info(
-            "poster.edit: received file %s size=%s",
+            "poster.edit: received file %s size=%s border=%d",
             image_file.filename,
-            image_file.content_length
+            image_file.content_length,
+            border_pad
         )
         try:
             processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
         except Exception as e:
             current_app.logger.exception("Preprocess failed")
             return jsonify({"ok": False, "error": f"preprocess_failed: {str(e)}"}), 400
+
+        # Check alpha coverage - DALL-E 2 edit only fills transparent areas
+        try:
+            coverage = _alpha_coverage(processed_png)
+            current_app.logger.info(f"Alpha coverage: {coverage:.2%}")
+
+            if coverage > 0.999:  # Fully opaque
+                if border_pad > 0:
+                    # Add transparent border so DALL-E can edit edges
+                    current_app.logger.info(f"Adding {border_pad}px transparent border")
+                    processed_png = _add_transparent_border(processed_png, border_pad)
+                else:
+                    # Image is fully opaque - DALL-E edit won't work
+                    return jsonify({
+                        "ok": False,
+                        "error": "Image is fully opaque - DALL-E 2 edit only fills transparent areas",
+                        "suggestion": "Use /api/poster/variations for similar images, or /api/poster/remix to transform the image with your prompt"
+                    }), 400
+        except Exception as e:
+            current_app.logger.warning(f"Alpha check failed: {e}")
+            # Continue anyway - let DALL-E try
 
         # Get database engine for learning
         engine = get_db_engine()
@@ -869,10 +992,272 @@ def edit_poster():
             "ok": True,
             "items": out_items,
             "enhanced_prompt": enhanced_prompt,
-            "model": "dall-e-2"  # Indicate it used DALL-E 2
+            "model": "dall-e-2",
+            "mode": "edit/inpaint"
         }), 200
     except Exception as e:
         # Catch any unexpected errors
+        error_msg = f"Unexpected error: {str(e)}"
+        current_app.logger.exception(error_msg)
+        return jsonify({
+            "ok": False,
+            "error": error_msg,
+            "details": "Internal server error - contact support"
+        }), 500
+
+
+@poster_bp.route("/variations", methods=["POST"])
+def variations_poster():
+    """
+    Create similar images using DALL-E 2 variations endpoint.
+
+    ✨ No prompt needed - creates variations of the uploaded image.
+    Great for exploring different versions of the same concept.
+
+    FORM FIELDS:
+      - image: the reference image file (required)
+      - size: 256x256 | 512x512 | 1024x1024 (optional, default 1024x1024)
+      - n: number of variations (1..4, optional, default 1)
+      - user_id: optional user ID
+
+    Returns:
+      { "ok": true, "items": [ { "poster_id": "...", "url": "/api/poster/file/<id>", "filename": "..." } ] }
+    """
+    try:
+        size = request.form.get("size", "1024x1024")
+        if size not in _EDIT_SIZES:
+            size = "1024x1024"
+
+        try:
+            n = int(request.form.get("n", "1"))
+        except Exception:
+            n = 1
+        n = max(1, min(n, 4))
+
+        if "image" not in request.files:
+            return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
+
+        image_file = request.files["image"]
+        current_app.logger.info(
+            "poster.variations: received file %s size=%s n=%d",
+            image_file.filename,
+            image_file.content_length,
+            n
+        )
+
+        # Preprocess image (DALL-E 2 variations needs square PNG, but no alpha required)
+        try:
+            processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
+        except Exception as e:
+            current_app.logger.exception("Preprocess failed")
+            return jsonify({"ok": False, "error": f"preprocess_failed: {str(e)}"}), 400
+
+        try:
+            items = OpenAIImagesVariationClient.variations(
+                image_blob=processed_png,
+                size=size,
+                n=n,
+                timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
+            )
+        except Exception as e:
+            error_msg = str(e)
+            current_app.logger.exception(f"Variations generation failed: {error_msg}")
+            return jsonify({
+                "ok": False,
+                "error": error_msg,
+                "details": "DALL-E 2 variations failed - check server logs for details"
+            }), 502
+
+        storage = PosterStorage()
+        out_items = []
+        for _i, item in enumerate(items):
+            b64 = item.get("b64_json")
+            if not b64:
+                continue
+            filename = f"poster-variation-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.png"
+            poster_id = storage.save(b64, filename, "image/png", "variation", size)
+            out_items.append({
+                "poster_id": poster_id,
+                "url": f"/api/poster/file/{poster_id}",
+                "filename": filename
+            })
+
+        if not out_items:
+            return jsonify({"ok": False, "error": "No variations returned"}), 502
+
+        return jsonify({
+            "ok": True,
+            "items": out_items,
+            "model": "dall-e-2",
+            "mode": "variations"
+        }), 200
+    except Exception as e:
+        error_msg = f"Unexpected error: {str(e)}"
+        current_app.logger.exception(error_msg)
+        return jsonify({
+            "ok": False,
+            "error": error_msg,
+            "details": "Internal server error - contact support"
+        }), 500
+
+
+@poster_bp.route("/remix", methods=["POST"])
+def remix_poster():
+    """
+    Transform an image using DALL-E 3 by describing it and regenerating.
+
+    🎨 This is what you want for style transformations!
+    Uses vision to describe the image, then regenerates with DALL-E 3 + your prompt.
+
+    FORM FIELDS:
+      - image: the reference image file (required)
+      - prompt: transformation instructions (e.g., "make it cyberpunk style") (required)
+      - size: 1024x1024 | 1024x1792 | 1792x1024 (optional, default 1024x1024)
+      - n: always 1 for DALL-E 3
+      - user_id: optional user ID for learning
+
+    Returns:
+      { "ok": true, "items": [ { "poster_id": "...", "url": "/api/poster/file/<id>", "filename": "..." } ] }
+    """
+    try:
+        prompt = _sanitize_prompt(request.form.get("prompt", ""))
+        if not prompt:
+            return jsonify({"ok": False, "error": "Missing 'prompt' - describe how to transform the image"}), 400
+
+        size = request.form.get("size", "1024x1024")
+        if size not in _IMAGE_SIZES:
+            size = "1024x1024"
+
+        user_id = request.form.get("user_id")
+
+        if "image" not in request.files:
+            return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
+
+        image_file = request.files["image"]
+        current_app.logger.info(
+            "poster.remix: received file %s size=%s",
+            image_file.filename,
+            image_file.content_length
+        )
+
+        # Step 1: Describe the image using vision
+        try:
+            image_bytes = image_file.read()
+            image_file.seek(0)  # Reset for potential reuse
+
+            image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+
+            requests, _, _, _ = _lazy_imports()
+            headers = get_openai_headers()
+            headers["Content-Type"] = "application/json"
+
+            vision_payload = {
+                "model": "gpt-4o",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Describe this image in detail, focusing on the subject, composition, style, colors, and mood. Be concise but thorough."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{image_b64}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "max_tokens": 300
+            }
+
+            vision_resp = requests.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers=headers,
+                json=vision_payload,
+                timeout=30
+            )
+
+            if vision_resp.status_code >= 400:
+                raise RuntimeError(f"Vision API error {vision_resp.status_code}: {vision_resp.text}")
+
+            vision_data = vision_resp.json()
+            description = vision_data["choices"][0]["message"]["content"]
+            current_app.logger.info(f"Vision description: {description[:100]}...")
+
+        except Exception as e:
+            current_app.logger.exception("Vision description failed")
+            return jsonify({
+                "ok": False,
+                "error": f"Failed to analyze image: {str(e)}",
+                "details": "Vision API failed - check server logs"
+            }), 502
+
+        # Step 2: Combine description with user's transformation prompt
+        combined_prompt = f"{description}\n\nTransform this to: {prompt}"
+
+        # Get database engine for learning
+        engine = get_db_engine()
+
+        # Smart enhancement with learning and presets
+        enhanced_prompt = _smart_enhance_prompt(combined_prompt, user_id, engine)
+
+        current_app.logger.info(f"Remix prompt: {enhanced_prompt[:200]}...")
+
+        # Step 3: Generate with DALL-E 3
+        try:
+            items = OpenAIImagesClient.create(
+                prompt=enhanced_prompt,
+                size=size,
+                model="dall-e-3",
+                quality="standard",
+                n=1,  # DALL-E 3 only supports n=1
+                timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
+            )
+        except Exception as e:
+            error_msg = str(e)
+            current_app.logger.exception(f"Remix generation failed: {error_msg}")
+            return jsonify({
+                "ok": False,
+                "error": error_msg,
+                "details": "DALL-E 3 generation failed - check server logs for details"
+            }), 502
+
+        storage = PosterStorage()
+        out_items = []
+        for _i, item in enumerate(items):
+            b64 = item.get("b64_json")
+            if not b64:
+                continue
+            filename = f"poster-remix-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.png"
+            poster_id = storage.save(b64, filename, "image/png", enhanced_prompt, size)
+            out_items.append({
+                "poster_id": poster_id,
+                "url": f"/api/poster/file/{poster_id}",
+                "filename": filename
+            })
+
+        if not out_items:
+            return jsonify({"ok": False, "error": "No images returned"}), 502
+
+        # Save to history for future learning
+        if user_id and engine:
+            try:
+                _save_prompt_to_history(user_id, prompt, enhanced_prompt, engine)
+            except Exception:
+                current_app.logger.warning("Failed to save prompt history", exc_info=True)
+
+        return jsonify({
+            "ok": True,
+            "items": out_items,
+            "enhanced_prompt": enhanced_prompt,
+            "original_description": description,
+            "model": "dall-e-3",
+            "mode": "remix"
+        }), 200
+    except Exception as e:
         error_msg = f"Unexpected error: {str(e)}"
         current_app.logger.exception(error_msg)
         return jsonify({

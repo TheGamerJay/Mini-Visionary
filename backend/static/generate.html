@@ -1223,19 +1223,41 @@
 
         let response, data;
 
-        // Check if reference image is provided - use DALL-E 2 edit endpoint
+        // Smart routing based on reference image and prompt
         if (referenceImage) {
           // Compress image on client-side before upload to avoid 413 errors
           const compressedImage = await compressImage(referenceImage, 1024, 0.85);
 
           const formData = new FormData();
-          formData.append('prompt', prompt);
-          formData.append('size', '1024x1024');
-          formData.append('n', '1');
           formData.append('image', compressedImage, 'reference.png');
+          formData.append('size', '1024x1024');
           if (userId) formData.append('user_id', userId);
 
-          response = await fetch('/api/poster/edit', {
+          // Determine which endpoint to use based on prompt
+          const lowerPrompt = prompt.toLowerCase();
+          let endpoint = '/api/poster/remix'; // Default to remix for transformations
+          let mode = 'remix';
+
+          // Check if user wants variations (similar images without transformation)
+          if (lowerPrompt.includes('variation') || lowerPrompt.includes('similar') ||
+              lowerPrompt === 'more' || lowerPrompt === 'another') {
+            endpoint = '/api/poster/variations';
+            mode = 'variations';
+            // Variations don't need a prompt
+          } else if (lowerPrompt.includes('inpaint') || lowerPrompt.includes('fill') ||
+                     lowerPrompt.includes('transparent') || lowerPrompt.includes('background only')) {
+            // User explicitly wants inpainting
+            endpoint = '/api/poster/edit';
+            mode = 'edit';
+            formData.append('prompt', prompt);
+            formData.append('n', '1');
+          } else {
+            // Default: style transformation with remix
+            formData.append('prompt', prompt);
+            formData.append('n', '1');
+          }
+
+          response = await fetch(endpoint, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -1263,21 +1285,23 @@
         // Handle non-OK responses
         if (!response.ok) {
           let errorMsg = `Server error (${response.status})`;
+          let suggestion = '';
           try {
             data = await response.json();
             errorMsg = data.error || errorMsg;
             if (data.details) errorMsg += `\n\n${data.details}`;
+            if (data.suggestion) suggestion = `\n\n💡 ${data.suggestion}`;
           } catch (e) {
             // Response wasn't JSON
             const text = await response.text();
             errorMsg += `\n\n${text.substring(0, 200)}`;
           }
 
-          if (referenceImage) {
-            addMessage('assistant', `⚠️ Reference edit failed: ${errorMsg}\n\n💡 Tip: Try a smaller/simpler reference image, or generate without reference.`);
-          } else {
-            addMessage('assistant', `⚠️ ${errorMsg}`);
+          if (referenceImage && !suggestion) {
+            suggestion = '\n\n💡 Tip: Try a smaller/simpler reference image, or generate without reference.';
           }
+
+          addMessage('assistant', `⚠️ ${errorMsg}${suggestion}`);
           return;
         }
 
@@ -1286,12 +1310,24 @@
         if (data.ok && data.items && data.items.length > 0) {
           const imageUrl = data.items[0].url;
 
-          // Show model used and enhancements
-          let message = referenceImage
-            ? '✨ Reference-based generation complete! (DALL-E 2)'
-            : '✨ Here\'s your generated poster! (DALL-E 3)';
+          // Show model and mode used
+          let message = '';
+          if (data.mode === 'remix') {
+            message = '🎨 Remix complete! Transformed your image with DALL-E 3';
+            if (data.original_description) {
+              message += `\n\n🔍 Vision saw: ${data.original_description.substring(0, 150)}...`;
+            }
+          } else if (data.mode === 'variations') {
+            message = '✨ Variations created! (DALL-E 2)';
+          } else if (data.mode === 'edit/inpaint') {
+            message = '🖌️ Inpainting complete! Filled transparent areas (DALL-E 2)';
+          } else if (referenceImage) {
+            message = '✨ Reference-based generation complete!';
+          } else {
+            message = '✨ Here\'s your generated poster! (DALL-E 3)';
+          }
 
-          if (data.enhanced_prompt && data.enhanced_prompt !== prompt) {
+          if (data.enhanced_prompt && data.enhanced_prompt !== prompt && data.mode !== 'remix') {
             message += `\n\n🔮 Enhanced: ${data.enhanced_prompt}`;
           }
 
