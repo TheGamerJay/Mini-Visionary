@@ -269,6 +269,7 @@ def _enhance_prompt_for_full_body(p: str) -> str:
     """
     Automatically enhance prompts to prefer full-body character images.
     Checks if prompt already specifies framing, otherwise adds full-body guidance.
+    Also adds instructions to prevent text and multiple subjects.
     """
     p_lower = p.lower()
 
@@ -281,9 +282,21 @@ def _enhance_prompt_for_full_body(p: str) -> str:
 
     has_framing = any(keyword in p_lower for keyword in framing_keywords)
 
+    # Build enhancement instructions
+    enhancements = []
+
     if not has_framing:
-        # Add full-body guidance
-        return f"{p}, full body view showing entire character from head to toe"
+        enhancements.append("full body view showing entire character from head to toe")
+
+    # Always add these unless user explicitly wants text/multiple
+    if "text" not in p_lower and "words" not in p_lower and "title" not in p_lower:
+        enhancements.append("no text or words in image")
+
+    if "multiple" not in p_lower and "several" not in p_lower and "many" not in p_lower:
+        enhancements.append("single character only")
+
+    if enhancements:
+        return f"{p}, {', '.join(enhancements)}"
 
     return p
 
