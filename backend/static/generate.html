@@ -1143,14 +1143,16 @@
     }
 
     function handleImageUpload(file) {
+      // Store the original File object (not data URL)
+      referenceImage = file;
+
+      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        referenceImage = e.target.result;
-
         // Update preview image
         const previewImg = document.getElementById('main-reference-img');
         if (previewImg) {
-          previewImg.src = referenceImage;
+          previewImg.src = e.target.result;
         }
 
         // Show preview in input container
