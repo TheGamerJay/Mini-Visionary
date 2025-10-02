@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum as PyEnum
 
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, ForeignKey, Enum, Index, func, event, Text
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, ForeignKey, Enum, Index, func, event, Text, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, mapped_column
 from sqlalchemy.pool import StaticPool
@@ -214,7 +214,7 @@ class ImageJob(Base):
     kind: Mapped[str] = mapped_column(String(32))  # "generate", "edit", "variation", "remix"
     prompt: Mapped[str] = mapped_column(Text)
     size: Mapped[str] = mapped_column(String(16), default="1024x1024")
-    image_png: Mapped[bytes] = mapped_column(Text)  # Binary PNG data stored as BYTEA
+    image_png: Mapped[bytes] = mapped_column(LargeBinary)  # Binary PNG data stored as BYTEA
     credits_used: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
