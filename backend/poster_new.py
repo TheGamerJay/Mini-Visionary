@@ -60,20 +60,29 @@ def ensure_table(engine):
     if engine is None:
         return
     _, _, text = _lazy_imports()
-    ddl = text("""
+
+    # First, create table if it doesn't exist (basic schema)
+    create_ddl = text("""
     CREATE TABLE IF NOT EXISTS posters (
         id UUID PRIMARY KEY,
-        filename TEXT NOT NULL,
-        mime TEXT NOT NULL,
-        width INT,
-        height INT,
-        prompt TEXT,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         data BYTEA NOT NULL
     );
     """)
+
+    # Then add missing columns if they don't exist
+    alter_statements = [
+        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS filename TEXT",
+        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS mime TEXT",
+        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS width INT",
+        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS height INT",
+        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS prompt TEXT",
+        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()"
+    ]
+
     with engine.begin() as conn:
-        conn.execute(ddl)
+        conn.execute(create_ddl)
+        for stmt in alter_statements:
+            conn.execute(text(stmt))
 
 # ---------------------------
 # OpenAI Images client (SDK-free)
