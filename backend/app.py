@@ -17,8 +17,8 @@ from werkzeug.utils import secure_filename
 
 # --- Database models ---
 from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterMode, PosterStatus, PosterStyle
-# Temporarily disabled - needs wallet fixes:
-# from poster import bp as poster_bp
+# Poster generation (now with local storage fallback):
+from poster import bp as poster_bp
 
 # Essential blueprints:
 from app_library import library_bp
@@ -224,7 +224,7 @@ bcrypt.init_app(app)
 
 # Register blueprints - Enable essential core functionality
 app.register_blueprint(new_auth_bp)
-# app.register_blueprint(poster_bp)       # Disabled - needs OpenAI configuration
+app.register_blueprint(poster_bp)       # Poster generation with local storage fallback
 app.register_blueprint(library_bp)        # Essential - poster library and gallery
 app.register_blueprint(legal_bp)          # Essential - privacy policy, terms of service
 app.register_blueprint(profile_upload_bp)  # Clean profile upload endpoint
@@ -700,6 +700,12 @@ def test_logging():
 @app.route('/logo.png')
 def serve_logo():
     return send_from_directory(app.static_folder, 'logo.png')
+
+# Serve uploaded files (when using local storage instead of S3)
+@app.route('/uploads/<path:filename>')
+def serve_uploads(filename):
+    uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+    return send_from_directory(uploads_dir, filename)
 
 # SPA catch-all routes registered LAST so blueprints take precedence
 @app.route("/", defaults={"path": ""})

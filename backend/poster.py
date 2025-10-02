@@ -10,23 +10,39 @@ bp = Blueprint("poster", __name__, url_prefix="/api/poster")
 
 # ---- Config / Clients ----
 openai.api_key = (os.getenv("OPENAI_API_KEY") or "").strip()
-_S3 = boto3.client("s3", region_name=os.getenv("S3_REGION"))
+_S3 = boto3.client("s3", region_name=os.getenv("S3_REGION")) if os.getenv("S3_BUCKET") else None
 _BUCKET = os.getenv("S3_BUCKET")
 _CDN = os.getenv("CDN_BASE")  # e.g., CloudFront
 CREDITS_PER_POSTER = int(os.getenv("CREDITS_PER_POSTER", "10"))
 DEFAULT_IMAGE_MODEL = os.getenv("POSTER_MODEL", "dall-e-3")
 DEFAULT_SIZE = os.getenv("POSTER_SIZE", "1024x1024")  # DALL·E 3 supports 1024x1024, 1024x1792, 1792x1024
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8080")
+
+# Local storage fallback
+UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 def _public_url(key: str) -> str:
-    if _CDN:
-        return f"{_CDN.rstrip('/')}/{key}"
-    return f"https://{_BUCKET}.s3.amazonaws.com/{key}"
+    if _BUCKET:
+        if _CDN:
+            return f"{_CDN.rstrip('/')}/{key}"
+        return f"https://{_BUCKET}.s3.amazonaws.com/{key}"
+    else:
+        # Local storage fallback
+        return f"{PUBLIC_BASE_URL.rstrip('/')}/uploads/{key}"
 
 def _upload_bytes(img_bytes: bytes, key: str, ctype="image/png"):
-    if not _BUCKET:
-        raise RuntimeError("S3_BUCKET not configured")
-    _S3.put_object(Bucket=_BUCKET, Key=key, Body=img_bytes, ContentType=ctype, ACL="public-read")
-    return _public_url(key)
+    if _BUCKET and _S3:
+        # S3 upload
+        _S3.put_object(Bucket=_BUCKET, Key=key, Body=img_bytes, ContentType=ctype, ACL="public-read")
+        return _public_url(key)
+    else:
+        # Local storage fallback
+        local_path = os.path.join(UPLOADS_DIR, key)
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        with open(local_path, "wb") as f:
+            f.write(img_bytes)
+        return _public_url(key)
 
 def _refund_credits(user_id: int, amount: int):
     try:
@@ -44,8 +60,6 @@ def _refund_credits(user_id: int, amount: int):
 def generate():
     if not openai.api_key:
         return jsonify(ok=False, error="openai_not_configured"), 503
-    if not _BUCKET:
-        return jsonify(ok=False, error="storage_not_configured"), 503
 
     data = request.get_json() or {}
     prompt = (data.get("prompt") or "").strip()
