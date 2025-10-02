@@ -948,6 +948,22 @@
       }
     };
 
+    // Migrate old global images to current session (one-time migration)
+    function migrateOldImages() {
+      const oldImages = localStorage.getItem('mv_generated_images');
+      if (oldImages && activeSessionId) {
+        // Check if current session doesn't have images yet
+        const currentImages = localStorage.getItem(`mv_images_${activeSessionId}`);
+        if (!currentImages) {
+          // Migrate old images to current session
+          localStorage.setItem(`mv_images_${activeSessionId}`, oldImages);
+          generatedImages = JSON.parse(oldImages);
+        }
+        // Remove old global storage
+        localStorage.removeItem('mv_generated_images');
+      }
+    }
+
     // Initialize sessions
     function initSessions() {
       if (sessions.length === 0) {
@@ -958,6 +974,7 @@
           localStorage.setItem('mv_current_session', activeSessionId);
         }
         switchToSession(activeSessionId);
+        migrateOldImages(); // Migrate old images after switching
       }
       renderSessions();
     }
