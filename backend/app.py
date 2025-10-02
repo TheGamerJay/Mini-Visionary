@@ -258,8 +258,15 @@ oai_client: Optional["OpenAI"] = None
 if OPENAI_API_KEY and OPENAI_AVAILABLE:
     try:
         oai_client = OpenAI(api_key=OPENAI_API_KEY)
-    except Exception:
+        logging.info(f"OpenAI client initialized successfully (key starts with: {OPENAI_API_KEY[:10]}...)")
+    except Exception as e:
+        logging.error(f"Failed to initialize OpenAI client: {e}")
         oai_client = None
+else:
+    if not OPENAI_API_KEY:
+        logging.warning("OPENAI_API_KEY is not set or empty")
+    if not OPENAI_AVAILABLE:
+        logging.warning("OpenAI library is not available")
 
 # ---------------------- SIMPLE RATE LIMIT ----------------------
 # in-memory IP bucket: { ip: [timestamps...] }
