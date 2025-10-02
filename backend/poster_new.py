@@ -790,85 +790,95 @@ def edit_poster():
     Returns:
       { "ok": true, "items": [ { "poster_id": "...", "url": "/api/poster/file/<id>", "filename": "..." } ] }
     """
-    prompt = _sanitize_prompt(request.form.get("prompt", ""))
-    if not prompt:
-        return jsonify({"ok": False, "error": "Missing 'prompt'"}), 400
-
-    size = request.form.get("size", "1024x1024")
-    if size not in _EDIT_SIZES:
-        size = "1024x1024"
-
     try:
-        n = int(request.form.get("n", "1"))
-    except Exception:
-        n = 1
-    n = max(1, min(n, 4))
+        prompt = _sanitize_prompt(request.form.get("prompt", ""))
+        if not prompt:
+            return jsonify({"ok": False, "error": "Missing 'prompt'"}), 400
 
-    user_id = request.form.get("user_id")
+        size = request.form.get("size", "1024x1024")
+        if size not in _EDIT_SIZES:
+            size = "1024x1024"
 
-    if "image" not in request.files:
-        return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
+        try:
+            n = int(request.form.get("n", "1"))
+        except Exception:
+            n = 1
+        n = max(1, min(n, 4))
 
-    image_file = request.files["image"]
-    try:
-        processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
+        user_id = request.form.get("user_id")
+
+        if "image" not in request.files:
+            return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
+
+        image_file = request.files["image"]
+        try:
+            processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
+        except Exception as e:
+            current_app.logger.exception("Preprocess failed")
+            return jsonify({"ok": False, "error": f"preprocess_failed: {str(e)}"}), 400
+
+        # Get database engine for learning
+        engine = get_db_engine()
+
+        # Smart enhancement with learning and presets
+        enhanced_prompt = _smart_enhance_prompt(prompt, user_id, engine)
+
+        try:
+            items = OpenAIImagesEditClient.edit(
+                prompt=enhanced_prompt,
+                image_blob=processed_png,
+                size=size,
+                n=n,
+                timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
+            )
+        except Exception as e:
+            error_msg = str(e)
+            current_app.logger.exception(f"Edit generation failed: {error_msg}")
+            return jsonify({
+                "ok": False,
+                "error": error_msg,
+                "details": "DALL-E 2 edit failed - check server logs for details"
+            }), 502
+
+        storage = PosterStorage()
+        out_items = []
+        for _i, item in enumerate(items):
+            b64 = item.get("b64_json")
+            if not b64:
+                continue
+            filename = f"poster-edit-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.png"
+            poster_id = storage.save(b64, filename, "image/png", enhanced_prompt, size)
+            out_items.append({
+                "poster_id": poster_id,
+                "url": f"/api/poster/file/{poster_id}",
+                "filename": filename
+            })
+
+        if not out_items:
+            return jsonify({"ok": False, "error": "No images returned"}), 502
+
+        # Save to history for future learning
+        if user_id and engine:
+            try:
+                _save_prompt_to_history(user_id, prompt, enhanced_prompt, engine)
+            except Exception:
+                current_app.logger.warning("Failed to save prompt history", exc_info=True)
+
+        return jsonify({
+            "ok": True,
+            "items": out_items,
+            "enhanced_prompt": enhanced_prompt,
+            "model": "dall-e-2"  # Indicate it used DALL-E 2
+        }), 200
     except Exception as e:
-        current_app.logger.exception("Preprocess failed")
-        return jsonify({"ok": False, "error": f"preprocess_failed: {str(e)}"}), 400
-
-    # Get database engine for learning
-    engine = get_db_engine()
-
-    # Smart enhancement with learning and presets
-    enhanced_prompt = _smart_enhance_prompt(prompt, user_id, engine)
-
-    try:
-        items = OpenAIImagesEditClient.edit(
-            prompt=enhanced_prompt,
-            image_blob=processed_png,
-            size=size,
-            n=n,
-            timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
-        )
-    except Exception as e:
-        error_msg = str(e)
-        current_app.logger.exception(f"Edit generation failed: {error_msg}")
+        # Catch any unexpected errors
+        error_msg = f"Unexpected error: {str(e)}"
+        current_app.logger.exception(error_msg)
         return jsonify({
             "ok": False,
             "error": error_msg,
-            "details": "DALL-E 2 edit failed - check server logs for details"
-        }), 502
-
-    storage = PosterStorage()
-    out_items = []
-    for _i, item in enumerate(items):
-        b64 = item.get("b64_json")
-        if not b64:
-            continue
-        filename = f"poster-edit-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.png"
-        poster_id = storage.save(b64, filename, "image/png", enhanced_prompt, size)
-        out_items.append({
-            "poster_id": poster_id,
-            "url": f"/api/poster/file/{poster_id}",
-            "filename": filename
-        })
-
-    if not out_items:
-        return jsonify({"ok": False, "error": "No images returned"}), 502
-
-    # Save to history for future learning
-    if user_id and engine:
-        try:
-            _save_prompt_to_history(user_id, prompt, enhanced_prompt, engine)
-        except Exception:
-            current_app.logger.warning("Failed to save prompt history", exc_info=True)
-
-    return jsonify({
-        "ok": True,
-        "items": out_items,
-        "enhanced_prompt": enhanced_prompt,
-        "model": "dall-e-2"  # Indicate it used DALL-E 2
-    }), 200
+            "details": "Internal server error - contact support"
+        }), 500
 
 
 @poster_bp.route("/file/<poster_id>", methods=["GET"])
