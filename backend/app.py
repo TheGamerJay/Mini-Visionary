@@ -17,8 +17,8 @@ from werkzeug.utils import secure_filename
 
 # --- Database models ---
 from models import init_db, get_session, User, PosterJob, Poster, Asset, PosterMode, PosterStatus, PosterStyle
-# Poster generation (disabled - archived due to OpenAI SDK conflicts):
-# from poster import bp as poster_bp
+# Poster generation (SDK-free implementation):
+from poster_new import poster_bp
 
 # Essential blueprints:
 from app_library import library_bp
@@ -224,7 +224,7 @@ bcrypt.init_app(app)
 
 # Register blueprints - Enable essential core functionality
 app.register_blueprint(new_auth_bp)
-# app.register_blueprint(poster_bp)       # Disabled - archived due to conflicts
+app.register_blueprint(poster_bp)       # SDK-free poster generation
 app.register_blueprint(library_bp)        # Essential - poster library and gallery
 app.register_blueprint(legal_bp)          # Essential - privacy policy, terms of service
 app.register_blueprint(profile_upload_bp)  # Clean profile upload endpoint
