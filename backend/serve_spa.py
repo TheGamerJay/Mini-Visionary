@@ -1,6 +1,6 @@
 import os
 from flask import send_from_directory, abort
-from app import app as flask_app
+from app_secure import app as flask_app
 
 app = flask_app
 app.static_folder = "static"
