@@ -366,6 +366,7 @@
     // Library state
     let library = [];
     let currentFilter = 'all';
+    let deletingItems = new Set(); // Track items being deleted to prevent re-render
 
     // Load from localStorage
     function loadLibrary() {
@@ -438,11 +439,14 @@
 
       let items = library;
 
+      // Filter out items being deleted
+      items = items.filter(item => !deletingItems.has(item.id));
+
       // Apply filter
       if (currentFilter === 'images') {
-        items = library.filter(item => item.type === 'image');
+        items = items.filter(item => item.type === 'image');
       } else if (currentFilter === 'folders') {
-        items = library.filter(item => item.type === 'folder');
+        items = items.filter(item => item.type === 'folder');
       }
 
       if (items.length === 0) {
@@ -562,6 +566,9 @@
     function deleteItem(id, skipConfirm = false) {
       if (!skipConfirm && !confirm('Delete this item? This cannot be undone.')) return;
 
+      // Mark as deleting to prevent re-render
+      deletingItems.add(id);
+
       // Remove from library immediately
       library = library.filter(item => item.id !== id);
 
@@ -578,7 +585,11 @@
       const grid = document.getElementById('library-grid');
       if (grid) {
         grid.innerHTML = '';
-        setTimeout(() => renderLibrary(), 10); // Small delay to ensure DOM is clear
+        setTimeout(() => {
+          renderLibrary();
+          // Clear deleting flag after render
+          deletingItems.delete(id);
+        }, 10);
       }
     }
 
