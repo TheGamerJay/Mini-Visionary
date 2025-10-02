@@ -599,14 +599,34 @@
     }
 
     // Download image
-    function downloadImage(id) {
+    async function downloadImage(id) {
       const image = library.find(item => item.id === id);
       if (!image || !image.url) return;
 
-      const a = document.createElement('a');
-      a.href = image.url;
-      a.download = image.name;
-      a.click();
+      try {
+        // Fetch the image as blob
+        const response = await fetch(image.url);
+        if (!response.ok) {
+          alert('Failed to download: Image not found on server');
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = image.name || 'image.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Clean up the blob URL
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      } catch (err) {
+        console.error('Download failed:', err);
+        alert('Failed to download image');
+      }
     }
 
     // Open folder (placeholder - can implement folder navigation later)
