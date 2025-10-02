@@ -811,6 +811,11 @@ def edit_poster():
             return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
 
         image_file = request.files["image"]
+        current_app.logger.info(
+            "poster.edit: received file %s size=%s",
+            image_file.filename,
+            image_file.content_length
+        )
         try:
             processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
         except Exception as e:
