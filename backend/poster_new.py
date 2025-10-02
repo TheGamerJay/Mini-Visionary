@@ -1144,6 +1144,9 @@ def remix_poster():
     try:
 
         # Step 1: Describe the image using vision
+        description = None
+        vision_failed = False
+
         try:
             image_bytes = image_file.read()
             image_file.seek(0)  # Reset for potential reuse
@@ -1176,6 +1179,7 @@ def remix_poster():
                 "max_tokens": 500
             }
 
+            current_app.logger.info("Calling vision API...")
             vision_resp = requests.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers=headers,
@@ -1186,30 +1190,31 @@ def remix_poster():
             if vision_resp.status_code >= 400:
                 error_text = vision_resp.text[:500] if vision_resp.text else "No response"
                 current_app.logger.error(f"Vision API error {vision_resp.status_code}: {error_text}")
-                raise RuntimeError(f"Vision API error {vision_resp.status_code}: {error_text}")
+                vision_failed = True
+            else:
+                vision_data = vision_resp.json()
+                current_app.logger.info(f"Vision response keys: {vision_data.keys()}")
 
-            vision_data = vision_resp.json()
-            current_app.logger.info(f"Vision response: {vision_data}")
-
-            # Safely extract description
-            if "choices" not in vision_data or not vision_data["choices"]:
-                raise RuntimeError(f"No choices in vision response: {vision_data}")
-
-            description = vision_data["choices"][0]["message"]["content"]
-            current_app.logger.info(f"Vision description: {description[:100]}...")
+                # Safely extract description
+                if "choices" in vision_data and vision_data["choices"]:
+                    description = vision_data["choices"][0]["message"]["content"]
+                    current_app.logger.info(f"Vision description: {description[:100]}...")
+                else:
+                    current_app.logger.warning(f"No choices in vision response: {vision_data}")
+                    vision_failed = True
 
         except Exception as e:
-            error_msg = f"Failed to analyze image: {str(e)}"
-            current_app.logger.exception(error_msg)
-            return jsonify({
-                "ok": False,
-                "error": error_msg,
-                "details": "Vision API failed - check server logs",
-                "suggestion": "The vision model couldn't process your image. Try a different image or use /variations instead."
-            }), 502
+            current_app.logger.exception(f"Vision call failed: {str(e)}")
+            vision_failed = True
 
         # Step 2: Combine description with user's transformation prompt
-        combined_prompt = f"{description}\n\nTransform this to: {prompt}"
+        if description:
+            combined_prompt = f"{description}\n\nTransform this to: {prompt}"
+            current_app.logger.info("Using vision description + user prompt")
+        else:
+            # Fallback: just use user's prompt directly
+            combined_prompt = f"Create an image based on this reference with the following changes: {prompt}"
+            current_app.logger.warning("Vision failed, using user prompt only")
 
         # Get database engine for learning
         engine = get_db_engine()
@@ -1261,14 +1266,20 @@ def remix_poster():
             except Exception:
                 current_app.logger.warning("Failed to save prompt history", exc_info=True)
 
-        return jsonify({
+        response_data = {
             "ok": True,
             "items": out_items,
             "enhanced_prompt": enhanced_prompt,
-            "original_description": description,
             "model": "dall-e-3",
             "mode": "remix"
-        }), 200
+        }
+
+        if description:
+            response_data["original_description"] = description
+        else:
+            response_data["vision_unavailable"] = True
+
+        return jsonify(response_data), 200
     except Exception as e:
         error_msg = f"Remix unexpected error: {str(e)}"
         current_app.logger.exception(error_msg)
