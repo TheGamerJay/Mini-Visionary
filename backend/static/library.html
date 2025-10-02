@@ -547,8 +547,21 @@
     function deleteItem(id) {
       if (!confirm('Delete this item? This cannot be undone.')) return;
 
+      // Remove from library immediately
       library = library.filter(item => item.id !== id);
+
+      // Also remove from any folder's children
+      library.forEach(item => {
+        if (item.type === 'folder' && item.children) {
+          item.children = item.children.filter(childId => childId !== id);
+        }
+      });
+
       saveLibrary();
+
+      // Force re-render with clean slate
+      const grid = document.getElementById('library-grid');
+      grid.innerHTML = '';
       renderLibrary();
     }
 
