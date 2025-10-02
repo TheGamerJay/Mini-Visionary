@@ -1286,15 +1286,23 @@
         if (!response.ok) {
           let errorMsg = `Server error (${response.status})`;
           let suggestion = '';
+
+          // Clone response before reading so we can try both JSON and text
+          const responseClone = response.clone();
+
           try {
             data = await response.json();
             errorMsg = data.error || errorMsg;
             if (data.details) errorMsg += `\n\n${data.details}`;
             if (data.suggestion) suggestion = `\n\n💡 ${data.suggestion}`;
           } catch (e) {
-            // Response wasn't JSON
-            const text = await response.text();
-            errorMsg += `\n\n${text.substring(0, 200)}`;
+            // Response wasn't JSON, read as text from clone
+            try {
+              const text = await responseClone.text();
+              if (text) errorMsg += `\n\n${text.substring(0, 200)}`;
+            } catch (textErr) {
+              // Ignore - just use status code
+            }
           }
 
           if (referenceImage && !suggestion) {
