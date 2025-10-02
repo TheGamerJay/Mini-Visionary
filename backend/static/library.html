@@ -628,7 +628,7 @@
 
       try {
         // Get auth token
-        const token = localStorage.getItem('auth_token') || '';
+        const token = localStorage.getItem('jwt_token') || '';
 
         // Fetch the image as blob
         const response = await fetch(image.url, {
@@ -668,9 +668,9 @@
       const image = library.find(item => item.id === id);
       if (!image || !image.url) return;
 
-      try {
+      try:
         // Get auth token
-        const token = localStorage.getItem('auth_token') || '';
+        const token = localStorage.getItem('jwt_token') || '';
 
         // Fetch the image as blob with auth
         const response = await fetch(image.url, {
@@ -706,48 +706,6 @@
     function openFolder(id) {
       alert('Folder navigation coming soon! For now, folders are used to organize items.');
     }
-
-    // Clean up broken image references
-    async function cleanupBrokenImages() {
-      if (!confirm('Remove all images that fail to load? This will check each image.')) return;
-
-      const imagesToCheck = library.filter(item => item.type !== 'folder');
-      const broken = [];
-
-      for (const item of imagesToCheck) {
-        try {
-          const response = await fetch(item.url, { method: 'HEAD' });
-          if (!response.ok) {
-            broken.push(item.id);
-          }
-        } catch {
-          broken.push(item.id);
-        }
-      }
-
-      if (broken.length === 0) {
-        alert('No broken images found!');
-        return;
-      }
-
-      library = library.filter(item => !broken.includes(item.id));
-      saveLibrary();
-      renderLibrary();
-      alert(`Removed ${broken.length} broken image(s)`);
-    }
-
-    // Add cleanup button to header
-    window.addEventListener('load', () => {
-      const header = document.querySelector('.header');
-      if (header) {
-        const cleanupBtn = document.createElement('button');
-        cleanupBtn.className = 'btn';
-        cleanupBtn.textContent = '🧹 Clean Broken';
-        cleanupBtn.onclick = cleanupBrokenImages;
-        cleanupBtn.style.marginLeft = '12px';
-        header.appendChild(cleanupBtn);
-      }
-    });
 
     // Initialize
     loadLibrary();
