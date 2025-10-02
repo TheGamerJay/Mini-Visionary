@@ -811,16 +811,18 @@
     }
 
     function switchToSession(sessionId) {
-      // Save current chat history to session-specific storage
+      // Save current chat history and images to session-specific storage
       if (activeSessionId && chatHistory.length > 0) {
         localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
+        localStorage.setItem(`mv_images_${activeSessionId}`, JSON.stringify(generatedImages));
       }
 
       activeSessionId = sessionId;
       localStorage.setItem('mv_current_session', sessionId);
 
-      // Load chat history for this session
+      // Load chat history and images for this session
       chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+      generatedImages = JSON.parse(localStorage.getItem(`mv_images_${sessionId}`) || '[]');
 
       if (chatHistory.length === 0) {
         showWelcomeMode();
@@ -829,6 +831,7 @@
       }
 
       renderChatHistory();
+      updateImageGrid();
       renderSessions();
     }
 
@@ -838,6 +841,7 @@
       sessions = sessions.filter(s => s.id !== sessionId);
       localStorage.setItem('mv_sessions', JSON.stringify(sessions));
       localStorage.removeItem(`mv_chat_${sessionId}`);
+      localStorage.removeItem(`mv_images_${sessionId}`); // Clear images for this session
 
       if (activeSessionId === sessionId) {
         switchToSession(sessions[0].id);
@@ -1377,8 +1381,8 @@
         generatedImages = generatedImages.slice(0, 20);
       }
 
-      // Save to localStorage
-      localStorage.setItem('mv_generated_images', JSON.stringify(generatedImages));
+      // Save to session-specific localStorage
+      localStorage.setItem(`mv_images_${activeSessionId}`, JSON.stringify(generatedImages));
       updateImageGrid();
     }
 
@@ -1397,26 +1401,13 @@
       `).join('');
     }
 
-    // Load generated images from localStorage
-    function loadGeneratedImages() {
-      const stored = localStorage.getItem('mv_generated_images');
-      if (stored) {
-        try {
-          generatedImages = JSON.parse(stored);
-          updateImageGrid();
-        } catch (e) {
-          console.error('Failed to load generated images:', e);
-          generatedImages = [];
-        }
-      }
-    }
+    // Images are now loaded per-session in switchToSession()
 
     // Initialize
     setupReferenceUpload();
     initSessions();
     initInterface();
     initMiniPlusMenu();
-    loadGeneratedImages();
   </script>
 </body>
 </html>
