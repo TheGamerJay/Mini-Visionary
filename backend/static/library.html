@@ -738,13 +738,13 @@
 
     // Add cleanup button to header
     window.addEventListener('load', () => {
-      const header = document.querySelector('.library-header');
+      const header = document.querySelector('.header');
       if (header) {
         const cleanupBtn = document.createElement('button');
-        cleanupBtn.className = 'btn-secondary';
+        cleanupBtn.className = 'btn';
         cleanupBtn.textContent = '🧹 Clean Broken';
         cleanupBtn.onclick = cleanupBrokenImages;
-        cleanupBtn.style.marginLeft = 'auto';
+        cleanupBtn.style.marginLeft = '12px';
         header.appendChild(cleanupBtn);
       }
     });
