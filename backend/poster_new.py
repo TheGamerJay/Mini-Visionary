@@ -188,6 +188,7 @@ class OpenAIImagesClient:
 class OpenAIImagesEditClient:
     """DALL-E 2 image editing with reference image support"""
     EDITS_URL = "https://api.openai.com/v1/images/edits"
+    VARIATIONS_URL = "https://api.openai.com/v1/images/variations"
     MODEL = "dall-e-2"
 
     @staticmethod
