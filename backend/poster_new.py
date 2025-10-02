@@ -268,7 +268,7 @@ class PosterStorage:
         width, height = _parse_size(size)
 
         if self.engine:
-            _, _, text = _lazy_imports()
+            _, _, text, _ = _lazy_imports()
             with self.engine.begin() as conn:
                 insert_sql = text("""
                     INSERT INTO posters (id, filename, mime, width, height, prompt, data)
@@ -297,7 +297,7 @@ class PosterStorage:
         Returns (filename, mime, bytes) or None.
         """
         if self.engine:
-            _, _, text = _lazy_imports()
+            _, _, text, _ = _lazy_imports()
             with self.engine.begin() as conn:
                 row = conn.execute(
                     text("SELECT filename, mime, data FROM posters WHERE id = :id"),
@@ -422,7 +422,7 @@ def _learn_from_history(user_id: str, engine) -> dict:
     if not engine or not user_id:
         return {}
 
-    _, _, text = _lazy_imports()
+    _, _, text, _ = _lazy_imports()
 
     # Get last 50 prompts from this user
     with engine.begin() as conn:
@@ -745,7 +745,7 @@ def user_preferences():
     if not engine:
         return jsonify({"ok": False, "error": "Database not configured"}), 500
 
-    _, _, text = _lazy_imports()
+    _, _, text, _ = _lazy_imports()
 
     try:
         with engine.begin() as conn:
