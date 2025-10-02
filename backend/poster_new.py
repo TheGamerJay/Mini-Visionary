@@ -61,28 +61,56 @@ def ensure_table(engine):
         return
     _, _, text = _lazy_imports()
 
-    # First, create table if it doesn't exist (basic schema)
-    create_ddl = text("""
-    CREATE TABLE IF NOT EXISTS posters (
-        id UUID PRIMARY KEY,
-        data BYTEA NOT NULL
-    );
-    """)
-
-    # Then add missing columns if they don't exist
-    alter_statements = [
-        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS filename TEXT",
-        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS mime TEXT",
-        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS width INT",
-        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS height INT",
-        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS prompt TEXT",
-        "ALTER TABLE posters ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()"
-    ]
-
     with engine.begin() as conn:
-        conn.execute(create_ddl)
-        for stmt in alter_statements:
-            conn.execute(text(stmt))
+        # Check if table exists
+        check_table = text("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_name = 'posters'
+            );
+        """)
+        table_exists = conn.execute(check_table).scalar()
+
+        if not table_exists:
+            # Create table with full schema
+            create_ddl = text("""
+                CREATE TABLE posters (
+                    id UUID PRIMARY KEY,
+                    filename TEXT NOT NULL,
+                    mime TEXT NOT NULL,
+                    width INT,
+                    height INT,
+                    prompt TEXT,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    data BYTEA NOT NULL
+                );
+            """)
+            conn.execute(create_ddl)
+        else:
+            # Add missing columns to existing table
+            # PostgreSQL doesn't support IF NOT EXISTS in older versions, so we check each column
+            add_columns = [
+                ("filename", "ALTER TABLE posters ADD COLUMN filename TEXT"),
+                ("mime", "ALTER TABLE posters ADD COLUMN mime TEXT"),
+                ("width", "ALTER TABLE posters ADD COLUMN width INT"),
+                ("height", "ALTER TABLE posters ADD COLUMN height INT"),
+                ("prompt", "ALTER TABLE posters ADD COLUMN prompt TEXT"),
+                ("created_at", "ALTER TABLE posters ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW()"),
+                ("data", "ALTER TABLE posters ADD COLUMN data BYTEA")
+            ]
+
+            for col_name, alter_sql in add_columns:
+                # Check if column exists
+                check_col = text(f"""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns
+                        WHERE table_name = 'posters' AND column_name = '{col_name}'
+                    );
+                """)
+                col_exists = conn.execute(check_col).scalar()
+
+                if not col_exists:
+                    conn.execute(text(alter_sql))
 
 # ---------------------------
 # OpenAI Images client (SDK-free)
