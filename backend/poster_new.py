@@ -1209,10 +1209,9 @@ def remix_poster():
 
         # Step 3: Generate with DALL-E 3
         try:
-            items = OpenAIImagesClient.create(
+            items = OpenAIImagesClient.generate(
                 prompt=enhanced_prompt,
                 size=size,
-                model="dall-e-3",
                 quality="standard",
                 n=1,  # DALL-E 3 only supports n=1
                 timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
