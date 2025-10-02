@@ -265,6 +265,28 @@ def _sanitize_prompt(p: str) -> str:
         p = p[:2000]
     return p
 
+def _enhance_prompt_for_full_body(p: str) -> str:
+    """
+    Automatically enhance prompts to prefer full-body character images.
+    Checks if prompt already specifies framing, otherwise adds full-body guidance.
+    """
+    p_lower = p.lower()
+
+    # Check if user already specified framing
+    framing_keywords = [
+        "full body", "full-body", "head to toe", "entire body", "complete body",
+        "whole body", "character sheet", "close-up", "closeup", "portrait only",
+        "face only", "headshot", "bust", "waist up", "half body"
+    ]
+
+    has_framing = any(keyword in p_lower for keyword in framing_keywords)
+
+    if not has_framing:
+        # Add full-body guidance
+        return f"{p}, full body view showing entire character from head to toe"
+
+    return p
+
 # ---------------------------
 # Routes
 # ---------------------------
@@ -299,6 +321,9 @@ def generate_poster():
     prompt = _sanitize_prompt(data.get("prompt", ""))
     if not prompt:
         return jsonify({"ok": False, "error": "Missing 'prompt'"}), 400
+
+    # Automatically enhance prompt for full-body images unless user specified otherwise
+    prompt = _enhance_prompt_for_full_body(prompt)
 
     size = data.get("size", "1024x1024")
     if size not in _ALLOWED_SIZES:
