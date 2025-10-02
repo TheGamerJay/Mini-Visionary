@@ -192,19 +192,21 @@ class PosterStorage:
         if self.engine:
             _, _, text = _lazy_imports()
             with self.engine.begin() as conn:
+                # Use explicit column names to avoid order issues
+                insert_sql = text("""
+                    INSERT INTO posters (id, data, filename, mime, width, height, prompt, created_at)
+                    VALUES (:id, :data, :filename, :mime, :width, :height, :prompt, NOW())
+                """)
                 conn.execute(
-                    text("""
-                    INSERT INTO posters (id, filename, mime, width, height, prompt, data)
-                    VALUES (:id, :filename, :mime, :width, :height, :prompt, :data)
-                    """),
+                    insert_sql,
                     {
                         "id": poster_id,
+                        "data": binary,
                         "filename": filename,
                         "mime": mime,
                         "width": width,
                         "height": height,
-                        "prompt": prompt[:10000],  # safety cap
-                        "data": binary
+                        "prompt": prompt[:10000]  # safety cap
                     }
                 )
         else:
