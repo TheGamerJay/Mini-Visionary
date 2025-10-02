@@ -392,9 +392,9 @@
       if (saved) {
         try {
           const legacy = JSON.parse(saved);
-          // Merge with main library, avoiding duplicates
+          // Merge with main library, avoiding duplicates by ID
           legacy.forEach(item => {
-            if (!library.some(l => l.url === item.url)) {
+            if (!library.some(l => l.id === item.id)) {
               library.push(item);
             }
           });
