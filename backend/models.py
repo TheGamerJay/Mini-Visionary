@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import datetime
 from typing import Optional
 from enum import Enum as PyEnum
@@ -182,10 +183,10 @@ def init_db():
             """))
 
             if not result.fetchone():
-                print("Adding missing display_name column to users table...")
+                sys.stderr.write("Adding missing display_name column to users table...\n")
                 conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR(100)"))
                 conn.commit()
-                print("✅ Added display_name column")
+                sys.stderr.write("✅ Added display_name column\n")
 
             # Check if avatar_url column exists, add if missing
             result = conn.execute(text("""
@@ -195,10 +196,26 @@ def init_db():
             """))
 
             if not result.fetchone():
-                print("Adding missing avatar_url column to users table...")
+                sys.stderr.write("Adding missing avatar_url column to users table...\n")
                 conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url TEXT"))
                 conn.commit()
-                print("✅ Added avatar_url column")
+                sys.stderr.write("✅ Added avatar_url column\n")
     except Exception as e:
-        print(f"Migration warning: {e}")
+        sys.stderr.write(f"Migration warning: {e}\n")
         # Continue anyway - this might be a new database
+
+
+class ImageJob(Base):
+    """Secure image generation jobs with binary PNG storage"""
+    __tablename__ = "image_jobs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(32))  # "generate", "edit", "variation", "remix"
+    prompt: Mapped[str] = mapped_column(Text)
+    size: Mapped[str] = mapped_column(String(16), default="1024x1024")
+    image_png: Mapped[bytes] = mapped_column(Text)  # Binary PNG data stored as BYTEA
+    credits_used: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    user: Mapped["User"] = relationship("User")

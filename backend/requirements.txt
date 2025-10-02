@@ -5,6 +5,8 @@ flask-cors==4.0.1
 # --- Auth ---
 flask-bcrypt==1.0.1
 pyjwt==2.9.0
+flask-jwt-extended==4.6.0
+flask-limiter==3.5.0
 
 # --- DB / ORM ---
 sqlalchemy==2.0.32
