@@ -1323,7 +1323,15 @@
           if (data.mode === 'remix') {
             message = '🎨 Remix complete! Transformed your image with DALL-E 3';
             if (data.original_description) {
-              message += `\n\n🔍 Vision saw: ${data.original_description.substring(0, 150)}...`;
+              // Show full description with better formatting
+              const desc = data.original_description;
+              if (desc.length > 200) {
+                message += `\n\n🔍 Vision analysis:\n${desc.substring(0, 200)}... [+${desc.length - 200} chars]`;
+              } else {
+                message += `\n\n🔍 Vision analysis: ${desc}`;
+              }
+            } else if (data.vision_unavailable) {
+              message += '\n\n⚠️ Vision analysis unavailable - used your prompt directly';
             }
           } else if (data.mode === 'variations') {
             message = '✨ Variations created! (DALL-E 2)';
