@@ -209,7 +209,13 @@ class PosterStorage:
                 ).mappings().first()
                 if not row:
                     return None
-                return row["filename"], row["mime"], bytes(row["data"])
+                # Handle PostgreSQL BYTEA - can be bytes, memoryview, or buffer
+                data = row["data"]
+                if isinstance(data, memoryview):
+                    data = data.tobytes()
+                elif not isinstance(data, bytes):
+                    data = bytes(data)
+                return row["filename"], row["mime"], data
         else:
             return _MemoryCache.get(poster_id)
 
