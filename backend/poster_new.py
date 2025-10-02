@@ -55,10 +55,20 @@ def get_db_engine():
     # Railway often provides a full postgres URL. SQLAlchemy accepts it directly.
     return create_engine(db_url, pool_pre_ping=True, pool_recycle=300)
 
+# Track if table has been initialized in this process
+_TABLE_INITIALIZED = False
+
 def ensure_table(engine):
     # Create a small table to store generated images (bytea) if it doesn't exist
+    global _TABLE_INITIALIZED
+
     if engine is None:
         return
+
+    # Only initialize once per process
+    if _TABLE_INITIALIZED:
+        return
+
     _, _, text = _lazy_imports()
 
     with engine.begin() as conn:
@@ -81,6 +91,8 @@ def ensure_table(engine):
             );
         """)
         conn.execute(create_ddl)
+
+    _TABLE_INITIALIZED = True
 
 # ---------------------------
 # OpenAI Images client (SDK-free)
