@@ -51,7 +51,7 @@
     .logout-btn:hover{color:var(--text); border-color:var(--text)}
 
     /* Sidebar */
-    .sidebar{position:fixed; top:0; left:0; width:320px; height:100vh; background:var(--card); border-right:1px solid var(--ring); z-index:200; transform:translateX(-100%); transition:transform 0.3s ease; display:flex; flex-direction:column}
+    .sidebar{position:fixed; top:0; left:0; width:280px; height:100vh; background:var(--card); border-right:1px solid var(--ring); z-index:200; transform:translateX(-100%); transition:transform 0.3s ease; display:flex; flex-direction:column}
     .sidebar.open{transform:translateX(0)}
     .sidebar-header{padding:16px; border-bottom:1px solid var(--ring)}
     .new-chat-btn{width:100%; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.2s}
@@ -90,7 +90,7 @@
     }
     @media (min-width: 769px) {
       .sidebar{transform:translateX(0)}
-      .main-content{margin-left:320px}
+      .main-content{margin-left:280px}
       .sidebar-overlay{display:none}
     }
 
@@ -163,7 +163,7 @@
     .message.user .message-content{background:var(--sunken)}
     .message-header{font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px}
     .message-text{color:var(--text); white-space:pre-wrap; word-break:break-word}
-    .message-image{max-width:100%; border-radius:8px; margin-top:12px}
+    .message-image{max-width:400px; width:100%; border-radius:8px; margin-top:12px}
     .message-actions{margin-top:12px; display:flex; gap:8px}
     .save-btn{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; transition:all 0.2s; display:inline-flex; align-items:center; gap:4px}
     .save-btn:hover{background:var(--sunken); border-color:var(--line)}
@@ -1164,11 +1164,8 @@
           n: 1
         };
 
-        // Note: reference_image not yet supported in new endpoint
-        // Will be added in future update
-        if (referenceImage) {
-          addMessage('assistant', '⚠️ Reference images coming soon! Generating without reference...');
-        }
+        // Reference images not yet supported - silently ignore for now
+        // Will be added in future update with OpenAI image edit endpoint
 
         const response = await fetch('/api/poster/generate', {
           method: 'POST',

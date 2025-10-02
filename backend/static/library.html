@@ -369,10 +369,35 @@
 
     // Load from localStorage
     function loadLibrary() {
+      // Load from main library (saved from Mini Library)
+      const mainLib = localStorage.getItem('mv_main_library');
+      if (mainLib) {
+        try {
+          const mainImages = JSON.parse(mainLib);
+          // Convert Mini Library format to Library format
+          library = mainImages.map(img => ({
+            id: img.id || `i_${Date.now()}_${Math.random()}`,
+            name: img.prompt || 'Generated Image',
+            type: 'image',
+            url: img.url,
+            timestamp: img.timestamp
+          }));
+        } catch(e) {
+          console.error('Failed to load main library:', e);
+        }
+      }
+
+      // Also check legacy mv_library
       const saved = localStorage.getItem('mv_library');
       if (saved) {
         try {
-          library = JSON.parse(saved);
+          const legacy = JSON.parse(saved);
+          // Merge with main library, avoiding duplicates
+          legacy.forEach(item => {
+            if (!library.some(l => l.url === item.url)) {
+              library.push(item);
+            }
+          });
         } catch(e) {
           console.error('Failed to load library:', e);
         }
@@ -380,6 +405,16 @@
     }
 
     function saveLibrary() {
+      // Save back to main library
+      const mainImages = library.filter(item => item.type === 'image').map(img => ({
+        id: img.id,
+        url: img.url,
+        prompt: img.name,
+        timestamp: img.timestamp || new Date().toISOString()
+      }));
+      localStorage.setItem('mv_main_library', JSON.stringify(mainImages));
+
+      // Also save to legacy for backwards compatibility
       localStorage.setItem('mv_library', JSON.stringify(library));
     }
 
