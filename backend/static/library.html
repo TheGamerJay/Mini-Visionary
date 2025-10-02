@@ -471,7 +471,7 @@
             return `
               <div class="library-item" onclick="viewImage('${item.id}')">
                 <div class="library-item-image">
-                  <img src="${item.url}" alt="${item.name}">
+                  <img src="${item.url}" alt="${item.name}" onerror="handleImageError(this, '${item.id}')">
                 </div>
                 <div class="library-item-info">
                   <div class="library-item-name">${item.name}</div>
@@ -541,6 +541,21 @@
 
       reader.readAsDataURL(file);
       fileInput.value = '';
+    }
+
+    // Handle image load errors (404s from missing posters)
+    function handleImageError(img, itemId) {
+      img.style.display = 'none';
+      const container = img.parentElement;
+      container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;padding:20px;text-align:center;">
+          <div style="color:var(--muted);font-size:32px;">❌</div>
+          <div style="color:var(--muted);font-size:12px;">Image not found</div>
+          <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${itemId}')" style="margin-top:8px;">
+            🗑️ Remove
+          </button>
+        </div>
+      `;
     }
 
     // Delete item
