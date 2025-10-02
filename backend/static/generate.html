@@ -1157,30 +1157,67 @@
       });
 
       try {
-        const requestBody = {
-          prompt,
-          size: '1024x1024',
-          quality: 'standard',
-          n: 1
-        };
+        // Get user ID from cached data
+        let userId = null;
+        try {
+          const cached = localStorage.getItem('cached_user_data');
+          if (cached) {
+            const userData = JSON.parse(cached);
+            userId = userData.id || userData.user_id || userData.username;
+          }
+        } catch (e) {}
 
-        // Reference images not yet supported - silently ignore for now
-        // Will be added in future update with OpenAI image edit endpoint
+        let response, data;
 
-        const response = await fetch('/api/poster/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(requestBody)
-        });
+        // Check if reference image is provided - use DALL-E 2 edit endpoint
+        if (referenceImage) {
+          const formData = new FormData();
+          formData.append('prompt', prompt);
+          formData.append('size', '1024x1024');
+          formData.append('n', '1');
+          formData.append('image', referenceImage);
+          if (userId) formData.append('user_id', userId);
 
-        const data = await response.json();
+          response = await fetch('/api/poster/edit', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+        } else {
+          // No reference - use DALL-E 3 generate endpoint
+          response = await fetch('/api/poster/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              prompt,
+              size: '1024x1024',
+              quality: 'standard',
+              n: 1,
+              user_id: userId
+            })
+          });
+        }
+
+        data = await response.json();
 
         if (data.ok && data.items && data.items.length > 0) {
           const imageUrl = data.items[0].url;
-          addMessage('assistant', '✨ Here\'s your generated poster!', imageUrl);
+
+          // Show model used and enhancements
+          let message = referenceImage
+            ? '✨ Reference-based generation complete! (DALL-E 2)'
+            : '✨ Here\'s your generated poster! (DALL-E 3)';
+
+          if (data.enhanced_prompt && data.enhanced_prompt !== prompt) {
+            message += `\n\n🔮 Enhanced: ${data.enhanced_prompt}`;
+          }
+
+          addMessage('assistant', message, imageUrl);
           addToImageGrid(imageUrl, prompt);
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);

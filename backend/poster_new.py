@@ -13,12 +13,18 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 # ---- Optional deps kept local to avoid global import conflicts ----
 def _lazy_imports():
     import requests  # SDK-free HTTP calls
+    create_engine = text = None
     try:
         # SQLAlchemy is optional but recommended (DB persistence)
         from sqlalchemy import create_engine, text
-        return requests, create_engine, text
     except Exception:
-        return requests, None, None
+        pass
+    Image = None
+    try:
+        from PIL import Image  # Pillow for preprocessing reference images
+    except Exception:
+        pass
+    return requests, create_engine, text, Image
 
 poster_bp = Blueprint("poster", __name__, url_prefix="/api/poster")
 
@@ -48,7 +54,7 @@ def get_openai_headers() -> Dict[str, str]:
 
 def get_db_engine():
     # If DATABASE_URL is missing or SQLAlchemy not installed, we'll return None (fallback: base64 response only)
-    _, create_engine, _ = _lazy_imports()
+    _, create_engine, _, _ = _lazy_imports()
     db_url = os.getenv("DATABASE_URL")
     if not db_url or create_engine is None:
         return None
@@ -69,7 +75,7 @@ def ensure_table(engine):
     if _TABLE_INITIALIZED:
         return
 
-    _, _, text = _lazy_imports()
+    _, _, text, _ = _lazy_imports()
 
     with engine.begin() as conn:
         # Drop and recreate posters table to ensure correct schema
@@ -145,7 +151,7 @@ class OpenAIImagesClient:
         Calls OpenAI Images (DALL·E) via HTTPS and returns list of items with base64 data.
         We request base64 to manage storage ourselves (DB/local/file).
         """
-        requests, _, _ = _lazy_imports()
+        requests, _, _, _ = _lazy_imports()
         headers = get_openai_headers()
         payload = {
             "model": "dall-e-3",
@@ -181,6 +187,65 @@ class OpenAIImagesClient:
         items = out.get("data", [])
         if not items:
             raise RuntimeError("No image returned from OpenAI.")
+        return items
+
+
+class OpenAIImagesEditClient:
+    """DALL-E 2 image editing with reference image support"""
+    EDITS_URL = "https://api.openai.com/v1/images/edits"
+    MODEL = "dall-e-2"
+
+    @staticmethod
+    def edit(
+        prompt: str,
+        image_blob: bytes,
+        size: str = "1024x1024",
+        n: int = 1,
+        timeout_seconds: int = 60
+    ) -> List[Dict]:
+        """
+        Calls OpenAI images/edits with multipart form (SDK-free).
+        image_blob must be PNG bytes with alpha (transparent areas to edit).
+        """
+        requests, _, _, _ = _lazy_imports()
+        headers = get_openai_headers()
+        # Remove Content-Type header - requests will set it for multipart/form-data
+        if "Content-Type" in headers:
+            del headers["Content-Type"]
+
+        data = {
+            "prompt": prompt,
+            "model": OpenAIImagesEditClient.MODEL,
+            "size": size,
+            "n": str(max(1, min(int(n or 1), 4))),
+            "response_format": "b64_json",
+        }
+        files = {
+            "image": ("reference.png", image_blob, "image/png"),
+        }
+
+        try:
+            resp = requests.post(
+                OpenAIImagesEditClient.EDITS_URL,
+                headers=headers,
+                data=data,
+                files=files,
+                timeout=timeout_seconds
+            )
+        except Exception as e:
+            raise RuntimeError(f"Image edit request failed: {e}")
+
+        if resp.status_code >= 400:
+            try:
+                err = resp.json()
+            except Exception:
+                err = {"message": resp.text}
+            raise RuntimeError(f"OpenAI edit error {resp.status_code}: {err}")
+
+        out = resp.json()
+        items = out.get("data", [])
+        if not items:
+            raise RuntimeError("No edited image returned from OpenAI.")
         return items
 
 # ---------------------------
@@ -283,6 +348,8 @@ class _MemoryCache:
 # Input validation
 # ---------------------------
 _ALLOWED_SIZES = {"256x256", "512x512", "1024x1024", "1024x1792", "1792x1024"}
+_EDIT_SIZES = {"256x256", "512x512", "1024x1024"}  # DALL-E 2 edits only support square
+
 def _parse_size(size: str) -> Tuple[int, int]:
     if size not in _ALLOWED_SIZES:
         size = "1024x1024"
@@ -295,6 +362,57 @@ def _sanitize_prompt(p: str) -> str:
     if len(p) > 2000:
         p = p[:2000]
     return p
+
+def _preprocess_reference_to_square_png_alpha(file_storage, size: str) -> bytes:
+    """
+    - Loads uploaded image via Pillow
+    - Converts to RGBA
+    - Makes it square by transparent padding (centered)
+    - Resizes to target (256|512|1024)
+    - Saves PNG (optimize), ensures < 4MB (downscales if needed)
+    Returns PNG bytes ready for /images/edits.
+    """
+    *_, Image = _lazy_imports()
+    if Image is None:
+        raise RuntimeError("Pillow (PIL) not installed. Install with: pip install Pillow")
+
+    # Read into Pillow
+    file_storage.stream.seek(0)
+    img = Image.open(file_storage.stream).convert("RGBA")
+
+    # Square pad with transparency
+    w, h = img.size
+    side = max(w, h)
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    offset = ((side - w) // 2, (side - h) // 2)
+    canvas.paste(img, offset)
+
+    # Resize to requested size (must be square for DALL-E 2 edits)
+    if size not in _EDIT_SIZES:
+        size = "1024x1024"
+    target_w, target_h = _parse_size(size)
+    target_size = max(target_w, target_h)  # Ensure square
+    canvas = canvas.resize((target_size, target_size), Image.LANCZOS)
+
+    # Save to PNG bytes with optimization; enforce < 4MB
+    def encode(pil_image) -> bytes:
+        buf = io.BytesIO()
+        pil_image.save(buf, format="PNG", optimize=True)
+        return buf.getvalue()
+
+    png_bytes = encode(canvas)
+    # If still > 4MB, progressively downscale
+    max_bytes = 4 * 1024 * 1024
+    current = canvas
+    while len(png_bytes) > max_bytes and current.size[0] > 256:
+        new_side = int(current.size[0] * 0.85)
+        current = current.resize((new_side, new_side), Image.LANCZOS)
+        png_bytes = encode(current)
+
+    if len(png_bytes) > max_bytes:
+        raise RuntimeError("Reference image exceeds 4MB after processing. Try a smaller size.")
+
+    return png_bytes
 
 def _learn_from_history(user_id: str, engine) -> dict:
     """
@@ -358,7 +476,7 @@ def _get_user_preferences(user_id: str, engine) -> dict:
     if not engine or not user_id:
         return {}
 
-    _, _, text = _lazy_imports()
+    _, _, text, _ = _lazy_imports()
 
     with engine.begin() as conn:
         row = conn.execute(
@@ -386,7 +504,7 @@ def _save_prompt_to_history(user_id: str, original: str, enhanced: str, engine):
     if not engine or not user_id:
         return
 
-    _, _, text = _lazy_imports()
+    _, _, text, _ = _lazy_imports()
 
     with engine.begin() as conn:
         conn.execute(
@@ -655,6 +773,97 @@ def user_preferences():
         return jsonify({"ok": False, "error": str(e)}), 500
 
     return jsonify({"ok": True, "message": "Preferences saved"}), 200
+
+
+@poster_bp.route("/edit", methods=["POST"])
+def edit_poster():
+    """
+    Multipart form endpoint to perform DALL·E 2-style edits with a reference image.
+
+    FORM FIELDS:
+      - prompt: text prompt describing changes/style (required)
+      - size: 256x256 | 512x512 | 1024x1024 (optional, default 1024x1024)
+      - n: number of images (1..4, optional, default 1)
+      - image: the reference image file (required) — will be converted to square PNG with alpha
+      - user_id: optional user ID for learning
+
+    Returns:
+      { "ok": true, "items": [ { "poster_id": "...", "url": "/api/poster/file/<id>", "filename": "..." } ] }
+    """
+    prompt = _sanitize_prompt(request.form.get("prompt", ""))
+    if not prompt:
+        return jsonify({"ok": False, "error": "Missing 'prompt'"}), 400
+
+    size = request.form.get("size", "1024x1024")
+    if size not in _EDIT_SIZES:
+        size = "1024x1024"
+
+    try:
+        n = int(request.form.get("n", "1"))
+    except Exception:
+        n = 1
+    n = max(1, min(n, 4))
+
+    user_id = request.form.get("user_id")
+
+    if "image" not in request.files:
+        return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
+
+    image_file = request.files["image"]
+    try:
+        processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
+    except Exception as e:
+        current_app.logger.exception("Preprocess failed")
+        return jsonify({"ok": False, "error": f"preprocess_failed: {e}"}), 400
+
+    # Get database engine for learning
+    engine = get_db_engine()
+
+    # Smart enhancement with learning and presets
+    enhanced_prompt = _smart_enhance_prompt(prompt, user_id, engine)
+
+    try:
+        items = OpenAIImagesEditClient.edit(
+            prompt=enhanced_prompt,
+            image_blob=processed_png,
+            size=size,
+            n=n,
+            timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
+        )
+    except Exception as e:
+        current_app.logger.exception("Edit generation failed")
+        return jsonify({"ok": False, "error": str(e)}), 502
+
+    storage = PosterStorage()
+    out_items = []
+    for _i, item in enumerate(items):
+        b64 = item.get("b64_json")
+        if not b64:
+            continue
+        filename = f"poster-edit-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.png"
+        poster_id = storage.save(b64, filename, "image/png", enhanced_prompt, size)
+        out_items.append({
+            "poster_id": poster_id,
+            "url": f"/api/poster/file/{poster_id}",
+            "filename": filename
+        })
+
+    if not out_items:
+        return jsonify({"ok": False, "error": "No images returned"}), 502
+
+    # Save to history for future learning
+    if user_id and engine:
+        try:
+            _save_prompt_to_history(user_id, prompt, enhanced_prompt, engine)
+        except Exception:
+            current_app.logger.warning("Failed to save prompt history", exc_info=True)
+
+    return jsonify({
+        "ok": True,
+        "items": out_items,
+        "enhanced_prompt": enhanced_prompt,
+        "model": "dall-e-2"  # Indicate it used DALL-E 2
+    }), 200
 
 
 @poster_bp.route("/file/<poster_id>", methods=["GET"])
