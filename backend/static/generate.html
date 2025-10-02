@@ -1380,34 +1380,28 @@
       saveBtn.innerHTML = '⏳ Saving...';
 
       try {
-        const response = await fetch('/api/library/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            image_url: imageUrl,
-            prompt: chatHistory[messageIndex-1]?.content || 'Generated poster',
-            session_id: activeSessionId
-          })
-        });
+        // Get the prompt from chat history
+        const prompt = chatHistory[messageIndex-1]?.content || 'Generated poster';
 
-        const data = await response.json();
+        // Save to localStorage (mv_main_library)
+        const library = JSON.parse(localStorage.getItem('mv_main_library') || '[]');
 
-        if (data.ok) {
-          saveBtn.innerHTML = '✅ Saved';
-          setTimeout(() => {
-            saveBtn.innerHTML = originalText;
-            saveBtn.disabled = false;
-          }, 2000);
-        } else {
-          saveBtn.innerHTML = '❌ Error';
-          setTimeout(() => {
-            saveBtn.innerHTML = originalText;
-            saveBtn.disabled = false;
-          }, 2000);
-        }
+        const newItem = {
+          id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          url: imageUrl,
+          prompt: prompt,
+          timestamp: new Date().toISOString()
+        };
+
+        library.push(newItem);
+        localStorage.setItem('mv_main_library', JSON.stringify(library));
+
+        saveBtn.innerHTML = '✅ Saved';
+        setTimeout(() => {
+          saveBtn.innerHTML = originalText;
+          saveBtn.disabled = false;
+        }, 2000);
+
       } catch (error) {
         saveBtn.innerHTML = '❌ Error';
         setTimeout(() => {
