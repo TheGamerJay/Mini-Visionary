@@ -78,14 +78,9 @@ def ensure_table(engine):
     _, _, text, _ = _lazy_imports()
 
     with engine.begin() as conn:
-        # Drop and recreate posters table to ensure correct schema
-        # This is safe since poster data is temporary/regeneratable
-        drop_ddl = text("DROP TABLE IF EXISTS posters;")
-        conn.execute(drop_ddl)
-
-        # Create posters table with correct schema
+        # Create posters table if not exists (don't drop to preserve data)
         create_ddl = text("""
-            CREATE TABLE posters (
+            CREATE TABLE IF NOT EXISTS posters (
                 id UUID PRIMARY KEY,
                 filename TEXT NOT NULL,
                 mime TEXT NOT NULL,
