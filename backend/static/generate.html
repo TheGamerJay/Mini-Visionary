@@ -1260,6 +1260,27 @@
           });
         }
 
+        // Handle non-OK responses
+        if (!response.ok) {
+          let errorMsg = `Server error (${response.status})`;
+          try {
+            data = await response.json();
+            errorMsg = data.error || errorMsg;
+            if (data.details) errorMsg += `\n\n${data.details}`;
+          } catch (e) {
+            // Response wasn't JSON
+            const text = await response.text();
+            errorMsg += `\n\n${text.substring(0, 200)}`;
+          }
+
+          if (referenceImage) {
+            addMessage('assistant', `⚠️ Reference edit failed: ${errorMsg}\n\n💡 Tip: Try a smaller/simpler reference image, or generate without reference.`);
+          } else {
+            addMessage('assistant', `⚠️ ${errorMsg}`);
+          }
+          return;
+        }
+
         data = await response.json();
 
         if (data.ok && data.items && data.items.length > 0) {
