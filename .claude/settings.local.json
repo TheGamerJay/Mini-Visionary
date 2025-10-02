@@ -24,7 +24,11 @@
       "Bash(cat:*)",
       "Bash(rm:*)",
       "Bash(docker build:*)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(curl:*)",
+      "Bash(git restore:*)",
+      "Bash(python3:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
