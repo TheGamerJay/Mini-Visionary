@@ -153,6 +153,61 @@ def generate(db):
     except Exception as e:
         return fail("Image generation failed.", 500, e)
 
+# --- Legacy endpoint for backward compatibility ---
+@app.post("/api/poster/generate")
+@jwt_required()
+@limiter.limit("12/minute")
+@with_session
+def poster_generate(db):
+    """Legacy endpoint that calls the new generate() logic"""
+    try:
+        uid = get_jwt_identity()
+        user = db.query(User).get(uid)
+        body = request.get_json() or {}
+        prompt = body.get("prompt") or ""
+        size = body.get("size") or "1024x1024"
+
+        if not prompt:
+            return fail("Prompt required.")
+
+        if size not in ALLOWED_SIZES:
+            return fail(f"Invalid size. Allowed: {', '.join(ALLOWED_SIZES)}")
+
+        ok, err = ensure_credits(user, COST_GEN)
+        if not ok:
+            return fail(err, 402)
+
+        # OpenAI call
+        resp = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size=size,
+            n=1,
+            response_format="b64_json"
+        )
+        b64 = resp.data[0].b64_json
+        png = base64.b64decode(b64)
+
+        job = ImageJob(
+            user_id=user.id,
+            kind="generate",
+            prompt=prompt,
+            size=size,
+            image_png=png,
+            credits_used=COST_GEN
+        )
+        db.add(job); db.commit()
+
+        # Return format compatible with old frontend
+        return jsonify({
+            "ok": True,
+            "job_id": job.id,
+            "credits": user.credits,
+            "image_b64_png": b64
+        })
+    except Exception as e:
+        return fail("Image generation failed.", 500, e)
+
 # --- Image History (paginated) ---
 @app.get("/api/history")
 @jwt_required()
