@@ -814,7 +814,7 @@ def edit_poster():
         processed_png = _preprocess_reference_to_square_png_alpha(image_file, size)
     except Exception as e:
         current_app.logger.exception("Preprocess failed")
-        return jsonify({"ok": False, "error": f"preprocess_failed: {e}"}), 400
+        return jsonify({"ok": False, "error": f"preprocess_failed: {str(e)}"}), 400
 
     # Get database engine for learning
     engine = get_db_engine()
@@ -831,8 +831,13 @@ def edit_poster():
             timeout_seconds=int(os.getenv("POSTER_TIMEOUT_SECONDS", "60")),
         )
     except Exception as e:
-        current_app.logger.exception("Edit generation failed")
-        return jsonify({"ok": False, "error": str(e)}), 502
+        error_msg = str(e)
+        current_app.logger.exception(f"Edit generation failed: {error_msg}")
+        return jsonify({
+            "ok": False,
+            "error": error_msg,
+            "details": "DALL-E 2 edit failed - check server logs for details"
+        }), 502
 
     storage = PosterStorage()
     out_items = []

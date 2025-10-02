@@ -1277,7 +1277,9 @@
           addMessage('assistant', message, imageUrl);
           addToImageGrid(imageUrl, prompt);
         } else {
-          addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
+          const errorMsg = data.error || 'Failed to generate poster';
+          const details = data.details ? `\n\n${data.details}` : '';
+          addMessage('assistant', `⚠️ ${errorMsg}${details}`);
         }
       } catch (error) {
         addMessage('assistant', `⚠️ Network error: ${error.message}`);
