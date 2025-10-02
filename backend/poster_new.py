@@ -268,12 +268,28 @@ def _sanitize_prompt(p: str) -> str:
 def _enhance_prompt_for_full_body(p: str) -> str:
     """
     Automatically enhance prompts to prefer full-body character images.
-    Checks if prompt already specifies framing, otherwise adds full-body guidance.
-    Also adds instructions to prevent text and multiple subjects.
+    Only adds enhancements if prompt is very simple/short to avoid interfering
+    with detailed style requests.
     """
     p_lower = p.lower()
 
-    # Check if user already specified framing
+    # If prompt is detailed (mentions style, composition, etc.), don't modify it
+    style_keywords = [
+        "3d", "2d", "cartoon", "anime", "realistic", "oil painting", "watercolor",
+        "digital art", "sketch", "drawing", "illustration", "render", "style",
+        "background", "scene", "landscape", "environment", "composition"
+    ]
+
+    has_style = any(keyword in p_lower for keyword in style_keywords)
+
+    # If user has detailed style/composition preferences, respect them completely
+    if has_style:
+        # Only prevent text if not explicitly requested
+        if "text" not in p_lower and "words" not in p_lower and "title" not in p_lower and "sign" not in p_lower:
+            return f"{p}, no text or words"
+        return p
+
+    # For simple prompts, check if user already specified framing
     framing_keywords = [
         "full body", "full-body", "head to toe", "entire body", "complete body",
         "whole body", "character sheet", "close-up", "closeup", "portrait only",
@@ -282,18 +298,18 @@ def _enhance_prompt_for_full_body(p: str) -> str:
 
     has_framing = any(keyword in p_lower for keyword in framing_keywords)
 
-    # Build enhancement instructions
+    # Build enhancement instructions only for very simple prompts
     enhancements = []
 
-    if not has_framing:
-        enhancements.append("full body view showing entire character from head to toe")
+    if not has_framing and len(p.split()) < 10:  # Only for simple prompts
+        enhancements.append("full body view")
 
-    # Always add these unless user explicitly wants text/multiple
+    # Prevent text and multiple subjects only for simple prompts
     if "text" not in p_lower and "words" not in p_lower and "title" not in p_lower:
-        enhancements.append("no text or words in image")
+        enhancements.append("no text")
 
-    if "multiple" not in p_lower and "several" not in p_lower and "many" not in p_lower:
-        enhancements.append("single character only")
+    if "multiple" not in p_lower and "several" not in p_lower and "many" not in p_lower and len(p.split()) < 10:
+        enhancements.append("single character")
 
     if enhancements:
         return f"{p}, {', '.join(enhancements)}"
