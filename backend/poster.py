@@ -2,14 +2,15 @@ import base64, io, os, uuid, boto3, requests
 from flask import Blueprint, request, jsonify, g
 from auth import auth_required
 from PIL import Image
-import openai
+from openai import OpenAI
 from wallet import spend_credits
 from models import get_session, User
 
 bp = Blueprint("poster", __name__, url_prefix="/api/poster")
 
 # ---- Config / Clients ----
-openai.api_key = (os.getenv("OPENAI_API_KEY") or "").strip()
+OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 _S3 = boto3.client("s3", region_name=os.getenv("S3_REGION")) if os.getenv("S3_BUCKET") else None
 _BUCKET = os.getenv("S3_BUCKET")
 _CDN = os.getenv("CDN_BASE")  # e.g., CloudFront
@@ -58,7 +59,7 @@ def _refund_credits(user_id: int, amount: int):
 @bp.post("/generate")
 @auth_required
 def generate():
-    if not openai.api_key:
+    if not openai_client:
         return jsonify(ok=False, error="openai_not_configured"), 503
 
     data = request.get_json() or {}
@@ -75,7 +76,7 @@ def generate():
 
     try:
         # 1) Request image
-        result = openai.images.generate(
+        result = openai_client.images.generate(
             model=DEFAULT_IMAGE_MODEL,
             prompt=f"Poster: {prompt}. Style: {style}. Aspect should match {size}. Print-quality.",
             size=size,
