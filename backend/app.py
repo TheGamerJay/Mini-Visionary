@@ -39,6 +39,7 @@ from webhooks import bp as webhooks_bp
 from app_chat import bp as chat_bp
 from app_health import health_bp
 from app_gallery import bp as gallery_bp
+from app_debug import debug_bp
 
 # --- Optional OpenAI (auto-disabled if key missing) ---
 OPENAI_AVAILABLE = False
@@ -238,6 +239,7 @@ app.register_blueprint(webhooks_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(health_bp)         # Essential - health monitoring endpoint
 app.register_blueprint(gallery_bp)        # Essential - gallery posting with credit deduction
+app.register_blueprint(debug_bp)          # Debug - config checks
 
 # JSON error handlers (prevent HTML error pages from breaking JSON APIs)
 @app.errorhandler(405)

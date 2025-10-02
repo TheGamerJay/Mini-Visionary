@@ -681,20 +681,26 @@
       });
 
       try {
-        const response = await fetch('/api/generate', {
+        const response = await fetch('/api/poster/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ prompt, style: 'cinematic' })
+          body: JSON.stringify({
+            prompt,
+            size: '1024x1024',
+            quality: 'standard',
+            n: 1
+          })
         });
 
         const data = await response.json();
 
-        if (data.ok) {
-          addMessage('assistant', '✨ Here\'s your generated poster!', data.image_url);
-          addToImageGrid(data.image_url, prompt);
+        if (data.ok && data.items && data.items.length > 0) {
+          const imageUrl = data.items[0].url;
+          addMessage('assistant', '✨ Here\'s your generated poster!', imageUrl);
+          addToImageGrid(imageUrl, prompt);
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
         }
@@ -1053,15 +1059,18 @@
       try {
         const requestBody = {
           prompt,
-          style: 'cinematic'
+          size: '1024x1024',
+          quality: 'standard',
+          n: 1
         };
 
-        // Include reference image if uploaded
+        // Note: reference_image not yet supported in new endpoint
+        // Will be added in future update
         if (referenceImage) {
-          requestBody.reference_image = referenceImage;
+          addMessage('assistant', '⚠️ Reference images coming soon! Generating without reference...');
         }
 
-        const response = await fetch('/api/generate', {
+        const response = await fetch('/api/poster/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1072,9 +1081,10 @@
 
         const data = await response.json();
 
-        if (data.ok) {
-          addMessage('assistant', '✨ Here\'s your generated poster!', data.image_url);
-          addToImageGrid(data.image_url, prompt);
+        if (data.ok && data.items && data.items.length > 0) {
+          const imageUrl = data.items[0].url;
+          addMessage('assistant', '✨ Here\'s your generated poster!', imageUrl);
+          addToImageGrid(imageUrl, prompt);
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
         }
