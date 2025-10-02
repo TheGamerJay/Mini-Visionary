@@ -155,15 +155,15 @@
     .action-chip:hover{background:var(--sunken); border-color:var(--line)}
 
     .chat-section{flex:1; overflow-y:auto; padding:20px 0}
-    .chat-messages{display:flex; flex-direction:column; gap:16px}
-    .message{display:flex; max-width:85%}
+    .chat-messages{display:flex; flex-direction:column; gap:20px; padding:0 4px}
+    .message{display:flex; max-width:90%}
     .message.user{margin-left:auto}
     .message.assistant{margin-right:auto}
-    .message-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px}
+    .message-content{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px; max-width:100%}
     .message.user .message-content{background:var(--sunken)}
     .message-header{font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px}
-    .message-text{color:var(--text); white-space:pre-wrap; word-break:break-word}
-    .message-image{max-width:400px; width:100%; border-radius:8px; margin-top:12px}
+    .message-text{color:var(--text); white-space:pre-wrap; word-break:break-word; line-height:1.6}
+    .message-image{max-width:min(400px, 100%); width:100%; height:auto; border-radius:8px; margin-top:12px; display:block}
     .message-actions{margin-top:12px; display:flex; gap:8px}
     .save-btn{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; transition:all 0.2s; display:inline-flex; align-items:center; gap:4px}
     .save-btn:hover{background:var(--sunken); border-color:var(--line)}
