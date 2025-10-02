@@ -72,12 +72,12 @@ def ensure_table(engine):
     _, _, text = _lazy_imports()
 
     with engine.begin() as conn:
-        # Drop and recreate table to ensure correct schema
+        # Drop and recreate posters table to ensure correct schema
         # This is safe since poster data is temporary/regeneratable
         drop_ddl = text("DROP TABLE IF EXISTS posters;")
         conn.execute(drop_ddl)
 
-        # Create table with correct schema
+        # Create posters table with correct schema
         create_ddl = text("""
             CREATE TABLE posters (
                 id UUID PRIMARY KEY,
@@ -91,6 +91,37 @@ def ensure_table(engine):
             );
         """)
         conn.execute(create_ddl)
+
+        # Create user_prompt_history table for learning patterns
+        history_ddl = text("""
+            CREATE TABLE IF NOT EXISTS user_prompt_history (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id TEXT NOT NULL,
+                original_prompt TEXT NOT NULL,
+                enhanced_prompt TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+        """)
+        conn.execute(history_ddl)
+
+        # Create index for faster user lookups
+        index_ddl = text("""
+            CREATE INDEX IF NOT EXISTS idx_prompt_history_user
+            ON user_prompt_history(user_id, created_at DESC);
+        """)
+        conn.execute(index_ddl)
+
+        # Create user_style_preferences table for manual presets
+        prefs_ddl = text("""
+            CREATE TABLE IF NOT EXISTS user_style_preferences (
+                user_id TEXT PRIMARY KEY,
+                default_style TEXT,
+                auto_apply BOOLEAN DEFAULT TRUE,
+                custom_instructions TEXT,
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+        """)
+        conn.execute(prefs_ddl)
 
     _TABLE_INITIALIZED = True
 
@@ -265,56 +296,179 @@ def _sanitize_prompt(p: str) -> str:
         p = p[:2000]
     return p
 
-def _enhance_prompt_for_full_body(p: str) -> str:
+def _learn_from_history(user_id: str, engine) -> dict:
     """
-    Automatically enhance prompts to prefer full-body character images.
-    Only adds enhancements if prompt is very simple/short to avoid interfering
-    with detailed style requests.
+    Analyze user's prompt history to learn their patterns.
+    Returns learned preferences like common styles, keywords, etc.
+    """
+    if not engine or not user_id:
+        return {}
+
+    _, _, text = _lazy_imports()
+
+    # Get last 50 prompts from this user
+    with engine.begin() as conn:
+        rows = conn.execute(
+            text("""
+                SELECT original_prompt
+                FROM user_prompt_history
+                WHERE user_id = :user_id
+                ORDER BY created_at DESC
+                LIMIT 50
+            """),
+            {"user_id": user_id}
+        ).fetchall()
+
+    if not rows or len(rows) < 5:  # Need at least 5 prompts to learn
+        return {}
+
+    # Analyze patterns
+    prompts = [row[0].lower() for row in rows]
+    total = len(prompts)
+
+    # Common style keywords to detect
+    style_patterns = {
+        "3d": 0, "2d": 0, "cartoon": 0, "anime": 0, "realistic": 0,
+        "oil painting": 0, "watercolor": 0, "digital art": 0,
+        "sketch": 0, "illustration": 0, "pixel art": 0, "render": 0
+    }
+
+    # Count occurrences
+    for prompt in prompts:
+        for style in style_patterns:
+            if style in prompt:
+                style_patterns[style] += 1
+
+    # Find dominant styles (appears in >50% of prompts)
+    learned = {}
+    for style, count in style_patterns.items():
+        if count / total >= 0.5:  # 50% threshold
+            learned[style] = count / total
+
+    # Sort by frequency
+    if learned:
+        learned = dict(sorted(learned.items(), key=lambda x: x[1], reverse=True))
+
+    return learned
+
+def _get_user_preferences(user_id: str, engine) -> dict:
+    """
+    Get user's manual style preferences from database.
+    """
+    if not engine or not user_id:
+        return {}
+
+    _, _, text = _lazy_imports()
+
+    with engine.begin() as conn:
+        row = conn.execute(
+            text("""
+                SELECT default_style, auto_apply, custom_instructions
+                FROM user_style_preferences
+                WHERE user_id = :user_id
+            """),
+            {"user_id": user_id}
+        ).fetchone()
+
+    if not row:
+        return {}
+
+    return {
+        "default_style": row[0],
+        "auto_apply": row[1],
+        "custom_instructions": row[2]
+    }
+
+def _save_prompt_to_history(user_id: str, original: str, enhanced: str, engine):
+    """
+    Save prompt to history for learning.
+    """
+    if not engine or not user_id:
+        return
+
+    _, _, text = _lazy_imports()
+
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+                INSERT INTO user_prompt_history (user_id, original_prompt, enhanced_prompt)
+                VALUES (:user_id, :original, :enhanced)
+            """),
+            {"user_id": user_id, "original": original, "enhanced": enhanced}
+        )
+
+def _smart_enhance_prompt(p: str, user_id: str = None, engine = None) -> str:
+    """
+    Smart prompt enhancement combining:
+    1. User's manual preferences (presets)
+    2. Auto-learned patterns from history
+    3. Basic quality enhancements
     """
     p_lower = p.lower()
+    enhancements = []
 
-    # If prompt is detailed (mentions style, composition, etc.), don't modify it
+    # Step 1: Get user's manual preferences
+    prefs = _get_user_preferences(user_id, engine) if user_id and engine else {}
+
+    # Step 2: Learn from user's history
+    learned = _learn_from_history(user_id, engine) if user_id and engine else {}
+
+    # Step 3: Check if prompt already has style info
     style_keywords = [
         "3d", "2d", "cartoon", "anime", "realistic", "oil painting", "watercolor",
         "digital art", "sketch", "drawing", "illustration", "render", "style",
         "background", "scene", "landscape", "environment", "composition"
     ]
-
     has_style = any(keyword in p_lower for keyword in style_keywords)
 
-    # If user has detailed style/composition preferences, respect them completely
-    if has_style:
-        # Only prevent text if not explicitly requested
-        if "text" not in p_lower and "words" not in p_lower and "title" not in p_lower and "sign" not in p_lower:
-            return f"{p}, no text or words"
-        return p
+    # Step 4: Apply manual preset if enabled and no style specified
+    if prefs.get("auto_apply") and prefs.get("default_style") and not has_style:
+        enhancements.append(prefs["default_style"])
 
-    # For simple prompts, check if user already specified framing
-    framing_keywords = [
-        "full body", "full-body", "head to toe", "entire body", "complete body",
-        "whole body", "character sheet", "close-up", "closeup", "portrait only",
-        "face only", "headshot", "bust", "waist up", "half body"
-    ]
+    # Step 5: Apply learned patterns if no style specified
+    elif learned and not has_style:
+        # Use the most common learned style (first in sorted dict)
+        top_style = next(iter(learned.keys()), None)
+        if top_style:
+            # Build natural style string
+            if top_style == "3d" and "cartoon" in learned:
+                enhancements.append("3D cartoon style")
+            elif top_style == "2d" and "anime" in learned:
+                enhancements.append("2D anime style")
+            else:
+                enhancements.append(f"{top_style} style")
 
-    has_framing = any(keyword in p_lower for keyword in framing_keywords)
+    # Step 6: Add custom instructions if set
+    if prefs.get("custom_instructions"):
+        enhancements.append(prefs["custom_instructions"])
 
-    # Build enhancement instructions only for very simple prompts
-    enhancements = []
+    # Step 7: Basic quality enhancements (only for simple prompts)
+    if len(p.split()) < 10 and not has_style:
+        framing_keywords = [
+            "full body", "full-body", "head to toe", "close-up", "closeup",
+            "portrait", "headshot", "bust", "waist up"
+        ]
+        has_framing = any(keyword in p_lower for keyword in framing_keywords)
 
-    if not has_framing and len(p.split()) < 10:  # Only for simple prompts
-        enhancements.append("full body view")
+        if not has_framing:
+            enhancements.append("full body view")
 
-    # Prevent text and multiple subjects only for simple prompts
-    if "text" not in p_lower and "words" not in p_lower and "title" not in p_lower:
+    # Step 8: Always prevent text unless requested
+    if "text" not in p_lower and "words" not in p_lower and "title" not in p_lower and "sign" not in p_lower:
         enhancements.append("no text")
 
-    if "multiple" not in p_lower and "several" not in p_lower and "many" not in p_lower and len(p.split()) < 10:
-        enhancements.append("single character")
-
+    # Build final prompt
     if enhancements:
         return f"{p}, {', '.join(enhancements)}"
 
     return p
+
+def _enhance_prompt_for_full_body(p: str) -> str:
+    """
+    Legacy function - kept for backward compatibility.
+    Use _smart_enhance_prompt instead for learning capabilities.
+    """
+    return _smart_enhance_prompt(p, None, None)
 
 # ---------------------------
 # Routes
@@ -329,7 +483,8 @@ def generate_poster():
       "size": "1024x1024",      # optional: 256x256|512x512|1024x1024|1024x1792|1792x1024
       "quality": "standard",    # or "hd" (if your plan supports it)
       "n": 1,                   # 1..4 (we cap it to 4)
-      "transparent": false      # if true, ask for transparent background
+      "transparent": false,     # if true, ask for transparent background
+      "user_id": "user123"      # optional: for learning patterns
     }
 
     Response JSON:
@@ -337,7 +492,9 @@ def generate_poster():
       "ok": true,
       "items": [
          {"poster_id": "...", "url": "/api/poster/file/<id>", "filename": "poster-....png"}
-      ]
+      ],
+      "enhanced_prompt": "...",  # shows what was sent to DALL-E
+      "learned_styles": {...}    # shows detected patterns
     }
 
     On failure: {"ok": false, "error": "..."}
@@ -347,12 +504,21 @@ def generate_poster():
     except Exception:
         return jsonify({"ok": False, "error": "Invalid JSON body"}), 400
 
-    prompt = _sanitize_prompt(data.get("prompt", ""))
-    if not prompt:
+    original_prompt = _sanitize_prompt(data.get("prompt", ""))
+    if not original_prompt:
         return jsonify({"ok": False, "error": "Missing 'prompt'"}), 400
 
-    # Automatically enhance prompt for full-body images unless user specified otherwise
-    prompt = _enhance_prompt_for_full_body(prompt)
+    # Get user ID for learning (optional)
+    user_id = data.get("user_id")
+
+    # Get database engine for learning
+    engine = get_db_engine()
+
+    # Smart enhancement with learning and presets
+    enhanced_prompt = _smart_enhance_prompt(original_prompt, user_id, engine)
+
+    # Get learned patterns for response
+    learned_styles = _learn_from_history(user_id, engine) if user_id and engine else {}
 
     size = data.get("size", "1024x1024")
     if size not in _ALLOWED_SIZES:
@@ -371,7 +537,7 @@ def generate_poster():
 
     try:
         items = OpenAIImagesClient.generate(
-            prompt=prompt,
+            prompt=enhanced_prompt,
             size=size,
             n=n,
             quality=quality,
@@ -389,7 +555,7 @@ def generate_poster():
         if not b64:
             continue
         filename = f"poster-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.png"
-        poster_id = storage.save(b64, filename, "image/png", prompt, size)
+        poster_id = storage.save(b64, filename, "image/png", enhanced_prompt, size)
         out_items.append({
             "poster_id": poster_id,
             "url": f"/api/poster/file/{poster_id}",
@@ -399,7 +565,96 @@ def generate_poster():
     if not out_items:
         return jsonify({"ok": False, "error": "No images returned"}), 502
 
-    return jsonify({"ok": True, "items": out_items}), 200
+    # Save to history for future learning
+    if user_id and engine:
+        try:
+            _save_prompt_to_history(user_id, original_prompt, enhanced_prompt, engine)
+        except Exception:
+            current_app.logger.warning("Failed to save prompt history", exc_info=True)
+
+    return jsonify({
+        "ok": True,
+        "items": out_items,
+        "enhanced_prompt": enhanced_prompt,
+        "learned_styles": learned_styles
+    }), 200
+
+
+@poster_bp.route("/preferences", methods=["GET", "POST"])
+def user_preferences():
+    """
+    GET: Returns user's style preferences and learned patterns
+    POST: Updates user's style preferences
+
+    POST body:
+    {
+      "user_id": "user123",
+      "default_style": "3D cartoon style",
+      "auto_apply": true,
+      "custom_instructions": "vibrant colors, dynamic pose"
+    }
+    """
+    if request.method == "GET":
+        user_id = request.args.get("user_id")
+        if not user_id:
+            return jsonify({"ok": False, "error": "Missing user_id"}), 400
+
+        engine = get_db_engine()
+        prefs = _get_user_preferences(user_id, engine)
+        learned = _learn_from_history(user_id, engine)
+
+        return jsonify({
+            "ok": True,
+            "preferences": prefs,
+            "learned_styles": learned
+        }), 200
+
+    # POST - update preferences
+    try:
+        data = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "Invalid JSON"}), 400
+
+    user_id = data.get("user_id")
+    if not user_id:
+        return jsonify({"ok": False, "error": "Missing user_id"}), 400
+
+    default_style = data.get("default_style", "")
+    auto_apply = data.get("auto_apply", True)
+    custom_instructions = data.get("custom_instructions", "")
+
+    engine = get_db_engine()
+    if not engine:
+        return jsonify({"ok": False, "error": "Database not configured"}), 500
+
+    _, _, text = _lazy_imports()
+
+    try:
+        with engine.begin() as conn:
+            # Upsert preferences
+            conn.execute(
+                text("""
+                    INSERT INTO user_style_preferences (user_id, default_style, auto_apply, custom_instructions, updated_at)
+                    VALUES (:user_id, :style, :auto, :custom, NOW())
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET
+                        default_style = :style,
+                        auto_apply = :auto,
+                        custom_instructions = :custom,
+                        updated_at = NOW()
+                """),
+                {
+                    "user_id": user_id,
+                    "style": default_style,
+                    "auto": auto_apply,
+                    "custom": custom_instructions
+                }
+            )
+    except Exception as e:
+        current_app.logger.exception("Failed to save preferences")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    return jsonify({"ok": True, "message": "Preferences saved"}), 200
 
 
 @poster_bp.route("/file/<poster_id>", methods=["GET"])
