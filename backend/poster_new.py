@@ -1120,26 +1120,28 @@ def remix_poster():
     Returns:
       { "ok": true, "items": [ { "poster_id": "...", "url": "/api/poster/file/<id>", "filename": "..." } ] }
     """
+    prompt = _sanitize_prompt(request.form.get("prompt", ""))
+    if not prompt:
+        return jsonify({"ok": False, "error": "Missing 'prompt' - describe how to transform the image"}), 400
+
+    size = request.form.get("size", "1024x1024")
+    if size not in _IMAGE_SIZES:
+        size = "1024x1024"
+
+    user_id = request.form.get("user_id")
+
+    if "image" not in request.files:
+        return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
+
+    image_file = request.files["image"]
+    current_app.logger.info(
+        "poster.remix: START - file=%s size=%s prompt=%s",
+        image_file.filename,
+        image_file.content_length,
+        prompt[:50]
+    )
+
     try:
-        prompt = _sanitize_prompt(request.form.get("prompt", ""))
-        if not prompt:
-            return jsonify({"ok": False, "error": "Missing 'prompt' - describe how to transform the image"}), 400
-
-        size = request.form.get("size", "1024x1024")
-        if size not in _IMAGE_SIZES:
-            size = "1024x1024"
-
-        user_id = request.form.get("user_id")
-
-        if "image" not in request.files:
-            return jsonify({"ok": False, "error": "Missing reference 'image' file"}), 400
-
-        image_file = request.files["image"]
-        current_app.logger.info(
-            "poster.remix: received file %s size=%s",
-            image_file.filename,
-            image_file.content_length
-        )
 
         # Step 1: Describe the image using vision
         try:
@@ -1182,18 +1184,28 @@ def remix_poster():
             )
 
             if vision_resp.status_code >= 400:
-                raise RuntimeError(f"Vision API error {vision_resp.status_code}: {vision_resp.text}")
+                error_text = vision_resp.text[:500] if vision_resp.text else "No response"
+                current_app.logger.error(f"Vision API error {vision_resp.status_code}: {error_text}")
+                raise RuntimeError(f"Vision API error {vision_resp.status_code}: {error_text}")
 
             vision_data = vision_resp.json()
+            current_app.logger.info(f"Vision response: {vision_data}")
+
+            # Safely extract description
+            if "choices" not in vision_data or not vision_data["choices"]:
+                raise RuntimeError(f"No choices in vision response: {vision_data}")
+
             description = vision_data["choices"][0]["message"]["content"]
             current_app.logger.info(f"Vision description: {description[:100]}...")
 
         except Exception as e:
-            current_app.logger.exception("Vision description failed")
+            error_msg = f"Failed to analyze image: {str(e)}"
+            current_app.logger.exception(error_msg)
             return jsonify({
                 "ok": False,
-                "error": f"Failed to analyze image: {str(e)}",
-                "details": "Vision API failed - check server logs"
+                "error": error_msg,
+                "details": "Vision API failed - check server logs",
+                "suggestion": "The vision model couldn't process your image. Try a different image or use /variations instead."
             }), 502
 
         # Step 2: Combine description with user's transformation prompt
@@ -1258,12 +1270,12 @@ def remix_poster():
             "mode": "remix"
         }), 200
     except Exception as e:
-        error_msg = f"Unexpected error: {str(e)}"
+        error_msg = f"Remix unexpected error: {str(e)}"
         current_app.logger.exception(error_msg)
         return jsonify({
             "ok": False,
             "error": error_msg,
-            "details": "Internal server error - contact support"
+            "details": "Internal server error in remix endpoint - check logs"
         }), 500
 
 
