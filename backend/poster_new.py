@@ -62,55 +62,25 @@ def ensure_table(engine):
     _, _, text = _lazy_imports()
 
     with engine.begin() as conn:
-        # Check if table exists
-        check_table = text("""
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables
-                WHERE table_name = 'posters'
+        # Drop and recreate table to ensure correct schema
+        # This is safe since poster data is temporary/regeneratable
+        drop_ddl = text("DROP TABLE IF EXISTS posters;")
+        conn.execute(drop_ddl)
+
+        # Create table with correct schema
+        create_ddl = text("""
+            CREATE TABLE posters (
+                id UUID PRIMARY KEY,
+                filename TEXT NOT NULL,
+                mime TEXT NOT NULL,
+                width INT,
+                height INT,
+                prompt TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                data BYTEA NOT NULL
             );
         """)
-        table_exists = conn.execute(check_table).scalar()
-
-        if not table_exists:
-            # Create table with full schema
-            create_ddl = text("""
-                CREATE TABLE posters (
-                    id UUID PRIMARY KEY,
-                    filename TEXT NOT NULL,
-                    mime TEXT NOT NULL,
-                    width INT,
-                    height INT,
-                    prompt TEXT,
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                    data BYTEA NOT NULL
-                );
-            """)
-            conn.execute(create_ddl)
-        else:
-            # Add missing columns to existing table
-            # PostgreSQL doesn't support IF NOT EXISTS in older versions, so we check each column
-            add_columns = [
-                ("filename", "ALTER TABLE posters ADD COLUMN filename TEXT"),
-                ("mime", "ALTER TABLE posters ADD COLUMN mime TEXT"),
-                ("width", "ALTER TABLE posters ADD COLUMN width INT"),
-                ("height", "ALTER TABLE posters ADD COLUMN height INT"),
-                ("prompt", "ALTER TABLE posters ADD COLUMN prompt TEXT"),
-                ("created_at", "ALTER TABLE posters ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW()"),
-                ("data", "ALTER TABLE posters ADD COLUMN data BYTEA")
-            ]
-
-            for col_name, alter_sql in add_columns:
-                # Check if column exists
-                check_col = text(f"""
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.columns
-                        WHERE table_name = 'posters' AND column_name = '{col_name}'
-                    );
-                """)
-                col_exists = conn.execute(check_col).scalar()
-
-                if not col_exists:
-                    conn.execute(text(alter_sql))
+        conn.execute(create_ddl)
 
 # ---------------------------
 # OpenAI Images client (SDK-free)
@@ -192,21 +162,20 @@ class PosterStorage:
         if self.engine:
             _, _, text = _lazy_imports()
             with self.engine.begin() as conn:
-                # Use explicit column names to avoid order issues
                 insert_sql = text("""
-                    INSERT INTO posters (id, data, filename, mime, width, height, prompt, created_at)
-                    VALUES (:id, :data, :filename, :mime, :width, :height, :prompt, NOW())
+                    INSERT INTO posters (id, filename, mime, width, height, prompt, data)
+                    VALUES (:id, :filename, :mime, :width, :height, :prompt, :data)
                 """)
                 conn.execute(
                     insert_sql,
                     {
                         "id": poster_id,
-                        "data": binary,
                         "filename": filename,
                         "mime": mime,
                         "width": width,
                         "height": height,
-                        "prompt": prompt[:10000]  # safety cap
+                        "prompt": prompt[:10000],  # safety cap
+                        "data": binary
                     }
                 )
         else:
