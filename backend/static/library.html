@@ -551,7 +551,7 @@
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;padding:20px;text-align:center;">
           <div style="color:var(--muted);font-size:32px;">❌</div>
           <div style="color:var(--muted);font-size:12px;">Image not found</div>
-          <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${itemId}')" style="margin-top:8px;">
+          <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${itemId}', true)" style="margin-top:8px;">
             🗑️ Remove
           </button>
         </div>
@@ -559,8 +559,8 @@
     }
 
     // Delete item
-    function deleteItem(id) {
-      if (!confirm('Delete this item? This cannot be undone.')) return;
+    function deleteItem(id, skipConfirm = false) {
+      if (!skipConfirm && !confirm('Delete this item? This cannot be undone.')) return;
 
       // Remove from library immediately
       library = library.filter(item => item.id !== id);
@@ -576,8 +576,10 @@
 
       // Force re-render with clean slate
       const grid = document.getElementById('library-grid');
-      grid.innerHTML = '';
-      renderLibrary();
+      if (grid) {
+        grid.innerHTML = '';
+        setTimeout(() => renderLibrary(), 10); // Small delay to ensure DOM is clear
+      }
     }
 
     // View image
