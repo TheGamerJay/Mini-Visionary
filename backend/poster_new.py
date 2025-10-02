@@ -401,6 +401,7 @@ class _MemoryCache:
 # Input validation
 # ---------------------------
 _ALLOWED_SIZES = {"256x256", "512x512", "1024x1024", "1024x1792", "1792x1024"}
+_IMAGE_SIZES = _ALLOWED_SIZES  # DALL-E 3 supports all sizes
 _EDIT_SIZES = {"256x256", "512x512", "1024x1024"}  # DALL-E 2 edits only support square
 
 def _parse_size(size: str) -> Tuple[int, int]:
