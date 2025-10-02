@@ -1160,7 +1160,7 @@ def remix_poster():
                         "content": [
                             {
                                 "type": "text",
-                                "text": "Describe this image in detail, focusing on the subject, composition, style, colors, and mood. Be concise but thorough."
+                                "text": "Describe this ENTIRE image in detail for art recreation. Include: 1) Full body pose and framing (full body, upper body, etc), 2) Subject details (character, outfit, expression), 3) Background and environment, 4) Art style and technique, 5) Colors and lighting, 6) Overall composition. Be thorough and precise about the framing - if it's full body, say 'full body shot', if cropped say exactly where."
                             },
                             {
                                 "type": "image_url",
@@ -1171,7 +1171,7 @@ def remix_poster():
                         ]
                     }
                 ],
-                "max_tokens": 300
+                "max_tokens": 500
             }
 
             vision_resp = requests.post(
