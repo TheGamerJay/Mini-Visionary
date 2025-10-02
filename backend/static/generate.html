@@ -1818,12 +1818,39 @@
       });
     });
 
+    // Check for reference image from library
+    function checkForReferenceFromLibrary() {
+      const imageData = sessionStorage.getItem('reference_image_data');
+      const imageName = sessionStorage.getItem('reference_image_name');
+
+      if (imageData && imageName) {
+        // Convert data URL to File object
+        fetch(imageData)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], imageName, { type: 'image/png' });
+            handleImageUpload(file);
+
+            // Clear sessionStorage
+            sessionStorage.removeItem('reference_image_data');
+            sessionStorage.removeItem('reference_image_name');
+
+            // Show confirmation message
+            addMessage('assistant', `✨ Loaded "${imageName}" as reference image! You can now add a prompt to transform it.`);
+          })
+          .catch(err => {
+            addMessage('assistant', `⚠️ Failed to load reference image: ${err.message}`);
+          });
+      }
+    }
+
     // Initialize
     setupReferenceUpload();
     initSessions();
     initInterface();
     initMiniPlusMenu();
     renderMiniLibrary();
+    checkForReferenceFromLibrary();
   </script>
 </body>
 </html>

@@ -140,7 +140,8 @@
     }
     .library-item-actions{
       display:flex;
-      gap:8px;
+      flex-direction:column;
+      gap:6px;
       margin-top:12px;
       opacity:0;
       transform:translateY(4px);
@@ -162,8 +163,9 @@
       display:flex;
       align-items:center;
       gap:6px;
-      flex:1;
+      width:100%;
       justify-content:center;
+      white-space:nowrap;
     }
     .btn-icon:hover{
       border-color:var(--line);
@@ -472,6 +474,7 @@
               </div>
             `;
           } else {
+            const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Unknown date';
             return `
               <div class="library-item" onclick="viewImage('${item.id}')">
                 <div class="library-item-image">
@@ -480,11 +483,18 @@
                 <div class="library-item-info">
                   <div class="library-item-name">${item.name}</div>
                   <div class="library-item-meta">
-                    <span>Image</span>
+                    <span style="font-size:11px;color:var(--muted);">${timestamp}</span>
                   </div>
                   <div class="library-item-actions">
-                    <button class="btn-icon" onclick="event.stopPropagation(); downloadImage('${item.id}')">⬇️ Download</button>
-                    <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${item.id}')">🗑️</button>
+                    <button class="btn-icon" onclick="event.stopPropagation(); useAsReference('${item.id}')" title="Use as reference image">
+                      🎨 Reference
+                    </button>
+                    <button class="btn-icon" onclick="event.stopPropagation(); downloadImage('${item.id}')" title="Download to device">
+                      ⬇️ Download
+                    </button>
+                    <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteItem('${item.id}')" title="Delete permanently">
+                      🗑️ Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -609,6 +619,48 @@
       document.body.appendChild(viewer);
 
       viewer.onclick = () => viewer.remove();
+    }
+
+    // Use image as reference for generation
+    async function useAsReference(id) {
+      const image = library.find(item => item.id === id);
+      if (!image || !image.url) return;
+
+      try {
+        // Get auth token
+        const token = localStorage.getItem('auth_token') || '';
+
+        // Fetch the image as blob
+        const response = await fetch(image.url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          alert('Failed to load image as reference');
+          return;
+        }
+
+        const blob = await response.blob();
+
+        // Create a File object from the blob
+        const file = new File([blob], image.name || 'reference.png', { type: 'image/png' });
+
+        // Store in sessionStorage for the generate page
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          sessionStorage.setItem('reference_image_data', e.target.result);
+          sessionStorage.setItem('reference_image_name', file.name);
+
+          // Redirect to generate page
+          window.location.href = '/generate.html';
+        };
+        reader.readAsDataURL(file);
+
+      } catch (err) {
+        alert(`Failed to use as reference: ${err.message}`);
+      }
     }
 
     // Download image
