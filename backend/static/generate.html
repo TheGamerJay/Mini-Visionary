@@ -57,6 +57,14 @@
     .new-chat-btn{width:100%; background:linear-gradient(90deg, var(--btn-start), var(--btn-end)); color:#081018; font-weight:700; border:none; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.2s}
     .new-chat-btn:hover{transform:translateY(-1px)}
     .sidebar-title{padding:16px 16px 8px; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted)}
+    .mini-library{max-height:200px; overflow-y:auto; padding:0 12px; margin-bottom:16px}
+    .library-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:8px}
+    .library-item{position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; cursor:pointer; transition:transform 0.2s}
+    .library-item:hover{transform:scale(1.05)}
+    .library-item img{width:100%; height:100%; object-fit:cover}
+    .library-item-overlay{position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,0.8)); padding:4px; opacity:0; transition:opacity 0.2s}
+    .library-item:hover .library-item-overlay{opacity:1}
+    .library-count{font-size:11px; color:var(--muted); text-align:center; padding:8px}
     .chat-sessions{flex:1; overflow-y:auto; padding:0 12px}
     .session-item{display:flex; align-items:center; justify-content:space-between; padding:12px; margin:4px 0; border-radius:12px; cursor:pointer; transition:all 0.2s; border:1px solid transparent}
     .session-item:hover{background:var(--sunken)}
@@ -235,6 +243,8 @@
     <div class="sidebar-header">
       <button id="new-chat-btn" class="new-chat-btn">+ New Chat</button>
     </div>
+    <div class="sidebar-title">Mini Library</div>
+    <div id="mini-library" class="mini-library"></div>
     <div class="sidebar-title">Chats</div>
     <div id="chat-sessions" class="chat-sessions"></div>
     <div class="sidebar-footer">
@@ -1186,6 +1196,7 @@
 
     // MiniPlusMenu functionality
     let generatedImages = [];
+    let miniLibrary = JSON.parse(localStorage.getItem('mv_mini_library') || '[]');
 
     function initMiniPlusMenu() {
       const plusBtn = document.getElementById('main-plus-btn');
@@ -1408,6 +1419,9 @@
       // Save to session-specific localStorage
       localStorage.setItem(`mv_images_${activeSessionId}`, JSON.stringify(generatedImages));
       updateImageGrid();
+
+      // Auto-save to Mini Library (backup)
+      addToMiniLibrary(imageUrl, prompt);
     }
 
     function updateImageGrid() {
@@ -1427,11 +1441,56 @@
 
     // Images are now loaded per-session in switchToSession()
 
+    // Mini Library Functions (Auto-backup of all generated images)
+    function addToMiniLibrary(imageUrl, prompt) {
+      miniLibrary.unshift({
+        id: Date.now(),
+        url: imageUrl,
+        prompt: prompt,
+        timestamp: new Date().toISOString()
+      });
+
+      // Keep last 50 images in Mini Library
+      if (miniLibrary.length > 50) {
+        miniLibrary = miniLibrary.slice(0, 50);
+      }
+
+      localStorage.setItem('mv_mini_library', JSON.stringify(miniLibrary));
+      renderMiniLibrary();
+    }
+
+    function renderMiniLibrary() {
+      const container = document.getElementById('mini-library');
+      if (!container) return;
+
+      if (miniLibrary.length === 0) {
+        container.innerHTML = '<div class="library-count">No images yet</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="library-grid">
+          ${miniLibrary.slice(0, 6).map(img => `
+            <div class="library-item" onclick="viewLibraryImage('${img.url}', '${img.prompt.replace(/'/g, "\\'")}')">
+              <img src="${img.url}" alt="${img.prompt}" onerror="this.parentElement.remove();">
+              <div class="library-item-overlay"></div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="library-count">${miniLibrary.length} image${miniLibrary.length !== 1 ? 's' : ''} saved</div>
+      `;
+    }
+
+    function viewLibraryImage(url, prompt) {
+      addMessage('assistant', `📚 From Mini Library: "${prompt}"`, url);
+    }
+
     // Initialize
     setupReferenceUpload();
     initSessions();
     initInterface();
     initMiniPlusMenu();
+    renderMiniLibrary();
   </script>
 </body>
 </html>
