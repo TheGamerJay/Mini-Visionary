@@ -262,6 +262,96 @@ def poster_generate(db):
     except Exception as e:
         return fail("Image generation failed.", 500, e)
 
+# --- Image Edit ---
+@app.post("/api/poster/edit")
+@jwt_required()
+@with_session
+def edit_poster(db):
+    try:
+        uid = get_jwt_identity()
+        user = db.query(User).get(uid)
+        body = request.get_json() or {}
+        prompt = body.get("prompt") or ""
+        job_id = body.get("job_id")
+
+        if not prompt:
+            return fail("Prompt required.")
+
+        if not job_id:
+            return fail("job_id required.")
+
+        # Get original image
+        orig_job = db.query(ImageJob).filter_by(id=job_id, user_id=uid).first()
+        if not orig_job:
+            return fail("Original image not found.", 404)
+
+        ok, err = ensure_credits(user, COST_EDIT)
+        if not ok:
+            return fail(err, 402)
+
+        # Save original image to temp file for OpenAI API
+        import tempfile
+        from PIL import Image
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp.write(orig_job.image_png)
+            tmp_path = tmp.name
+
+        # Create transparent mask (full edit)
+        img = Image.open(tmp_path)
+        mask = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        mask_path = tmp_path.replace(".png", "_mask.png")
+        mask.save(mask_path)
+
+        # OpenAI edit call
+        with open(tmp_path, "rb") as img_file, open(mask_path, "rb") as mask_file:
+            resp = client.images.edit(
+                model="dall-e-2",  # Only dall-e-2 supports edit
+                image=img_file,
+                mask=mask_file,
+                prompt=prompt,
+                n=1,
+                size="512x512",  # dall-e-2 only supports 256x256, 512x512, 1024x1024
+                response_format="b64_json"
+            )
+
+        b64 = resp.data[0].b64_json
+        png = base64.b64decode(b64)
+
+        # Clean up temp files
+        import os
+        os.unlink(tmp_path)
+        os.unlink(mask_path)
+
+        job = ImageJob(
+            user_id=user.id,
+            kind="edit",
+            prompt=prompt,
+            size="512x512",
+            image_png=png,
+            credits_used=COST_EDIT
+        )
+        db.add(job)
+        db.flush()
+
+        # Auto-add to Mini Library
+        lib_item = Library(
+            user_id=user.id,
+            image_job_id=job.id,
+            collection_name="mini_library"
+        )
+        db.add(lib_item)
+        db.commit()
+
+        return jsonify({
+            "ok": True,
+            "job_id": job.id,
+            "credits": user.credits,
+            "image_b64_png": b64
+        })
+    except Exception as e:
+        return fail("Image edit failed.", 500, e)
+
 # --- Image History (paginated) ---
 @app.get("/api/history")
 @jwt_required()

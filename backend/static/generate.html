@@ -165,9 +165,11 @@
     .message-text{color:var(--text); white-space:pre-wrap; word-break:break-word; line-height:1.6}
     .message-image{max-width:min(400px, 100%); width:100%; height:auto; border-radius:8px; margin-top:12px; display:block}
     .message-actions{margin-top:12px; display:flex; gap:8px}
-    .save-btn{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; transition:all 0.2s; display:inline-flex; align-items:center; gap:4px}
-    .save-btn:hover{background:var(--sunken); border-color:var(--line)}
-    .save-btn:disabled{opacity:0.6; cursor:not-allowed}
+    .save-btn, .edit-btn{background:var(--card); border:1px solid var(--ring); color:var(--text); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; transition:all 0.2s; display:inline-flex; align-items:center; gap:4px}
+    .save-btn:hover, .edit-btn:hover{background:var(--sunken); border-color:var(--line)}
+    .save-btn:disabled, .edit-btn:disabled{opacity:0.6; cursor:not-allowed}
+    .edit-btn{border-color:var(--btn-start)}
+    .edit-btn:hover{background:var(--btn-start); color:#081018}
 
     .bottom-input{border-top:1px solid var(--ring); padding:16px 0; background:var(--bg-0)}
     .bottom-input .input-container{min-width:auto; margin-bottom:0}
@@ -790,7 +792,10 @@
             <div class="message-header">${msg.role === 'user' ? 'You' : 'Mini Visionary'} · ${new Date(msg.timestamp).toLocaleTimeString()}</div>
             <div class="message-text">${msg.content}</div>
             ${msg.jobId ? `<img id="msg-img-${msg.jobId}" src="" alt="Generated poster" class="message-image" style="display:none;">` : ''}
-            ${msg.jobId ? `<div class="message-actions"><button class="save-btn" onclick="saveToLibrary('${msg.jobId}', ${index})">💾 Save to Library</button></div>` : ''}
+            ${msg.jobId ? `<div class="message-actions">
+              <button class="save-btn" onclick="saveToLibrary('${msg.jobId}', ${index})">💾 Save to Library</button>
+              <button class="edit-btn" onclick="startEdit('${msg.jobId}')">✏️ Edit (1 credit)</button>
+            </div>` : ''}
           </div>
         </div>
       `).join('');
@@ -920,7 +925,18 @@
     if (chatBtn) {
       chatBtn.addEventListener('click', () => {
         const prompt = document.getElementById('chat-input').value.trim();
-        if (prompt) generatePoster(prompt);
+        if (!prompt) return;
+
+        if (editingJobId) {
+          // Edit mode
+          editImage(editingJobId, prompt);
+          editingJobId = null;
+          document.getElementById('chat-input').placeholder = 'Describe the poster you want...';
+          document.getElementById('chat-input').value = '';
+        } else {
+          // Generate mode
+          generatePoster(prompt);
+        }
       });
     }
 
@@ -929,7 +945,18 @@
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         const prompt = document.getElementById(inputId).value.trim();
-        if (prompt) generatePoster(prompt);
+        if (!prompt) return;
+
+        if (inputId === 'chat-input' && editingJobId) {
+          // Edit mode
+          editImage(editingJobId, prompt);
+          editingJobId = null;
+          document.getElementById('chat-input').placeholder = 'Describe the poster you want...';
+          document.getElementById('chat-input').value = '';
+        } else {
+          // Generate mode
+          generatePoster(prompt);
+        }
       }
     }
 
@@ -1788,6 +1815,62 @@
 
     function viewLibraryImage(url, prompt) {
       addMessage('assistant', `📚 From Mini Library: "${prompt}"`, url);
+    }
+
+    // Edit Image Functions
+    let editingJobId = null;
+
+    function startEdit(jobId) {
+      editingJobId = jobId;
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.placeholder = '✏️ Describe how to edit this image... (1 credit)';
+        chatInput.focus();
+      }
+    }
+
+    async function editImage(jobId, prompt) {
+      if (!prompt.trim()) return;
+
+      addMessage('user', prompt);
+
+      try {
+        const response = await fetch('/api/poster/edit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            job_id: jobId,
+            prompt: prompt
+          })
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          addMessage('assistant', `⚠️ Edit failed (${response.status}): ${data.error || 'Unknown error'}`);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.ok && data.image_b64_png) {
+          // Update credits display
+          const creditsEl = document.getElementById('user-credits');
+          if (creditsEl) creditsEl.textContent = data.credits || 0;
+
+          let message = '✏️ Image edited!';
+          message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
+
+          addMessage('assistant', message, null, data.job_id);
+          await loadMiniLibraryForUser();
+        } else {
+          addMessage('assistant', `⚠️ ${data.error || 'Edit failed'}`);
+        }
+      } catch (error) {
+        addMessage('assistant', `⚠️ Network error: ${error.message}`);
+      }
     }
 
     // Full Library Modal Functions
