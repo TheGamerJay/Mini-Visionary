@@ -479,18 +479,9 @@
           // Load user-specific Mini Library
           loadMiniLibraryForUser();
 
-          // Load user-specific sessions (unless data was just cleared)
+          // Load user-specific sessions
           currentUserId = data.user.id || data.user.user_id;
-
-          // Check if we just cleared data
-          const justCleared = localStorage.getItem('just_cleared_data');
-          if (justCleared) {
-            // Don't load any old sessions
-            sessions = [];
-            activeSessionId = null;
-            localStorage.removeItem('just_cleared_data');
-          } else if (currentUserId) {
-            // Load user-specific sessions normally
+          if (currentUserId) {
             sessions = JSON.parse(localStorage.getItem(`mv_sessions_${currentUserId}`) || '[]');
             activeSessionId = localStorage.getItem(`mv_current_session_${currentUserId}`);
           }
@@ -548,27 +539,11 @@
     }
 
     function clearAllLocalData() {
-      if (!confirm('This will clear ALL old session chats and Mini Library items from your browser. Page will reload. Continue?')) {
+      if (!confirm('This will clear ALL old data and log you out. You will need to login again. Continue?')) {
         return;
       }
-
-      // Save token and user data
-      const savedToken = localStorage.getItem('jwt_token');
-      const savedUserData = localStorage.getItem('cached_user_data');
-
-      // Clear EVERYTHING
-      localStorage.clear();
-      sessionStorage.clear();
-
-      // Restore only what we need
-      if (savedToken) localStorage.setItem('jwt_token', savedToken);
-      if (savedUserData) localStorage.setItem('cached_user_data', savedUserData);
-
-      // Set flag in localStorage (will be checked and removed on load)
-      localStorage.setItem('just_cleared_data', 'true');
-
-      // Hard reload
-      window.location.reload(true);
+      // Logout clears everything
+      logout();
     }
 
     // Show message
