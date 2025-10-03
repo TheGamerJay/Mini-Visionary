@@ -1940,7 +1940,9 @@
       }
     }
 
-    // IMMEDIATE GHOST CLEANUP - Run before anything else!
+    // GHOST CLEANUP ARCHIVED - was deleting ALL mv_ keys including sessions and chats!
+    // This cleanup is too aggressive and prevents chat persistence
+    /*
     (function() {
       const allKeys = Object.keys(localStorage);
       const ghostKeys = [];
@@ -1958,6 +1960,7 @@
 
       // Ghosts removed silently
     })();
+    */
 
     // Initialize
     setupReferenceUpload();
