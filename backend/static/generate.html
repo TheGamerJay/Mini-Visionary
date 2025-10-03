@@ -479,12 +479,14 @@
           // Load user-specific Mini Library
           loadMiniLibraryForUser();
 
-          // Load user-specific sessions
+          // Load user-specific sessions (unless data was just cleared)
           currentUserId = data.user.id || data.user.user_id;
-          if (currentUserId) {
+          if (currentUserId && !sessionStorage.getItem('data_cleared')) {
             sessions = JSON.parse(localStorage.getItem(`mv_sessions_${currentUserId}`) || '[]');
             activeSessionId = localStorage.getItem(`mv_current_session_${currentUserId}`);
           }
+          // Clear the flag after checking
+          sessionStorage.removeItem('data_cleared');
         }
       })
       .catch(err => {
@@ -534,35 +536,25 @@
     }
 
     function clearAllLocalData() {
-      if (!confirm('This will clear ALL old session chats and Mini Library items from your browser. This cannot be undone. Continue?')) {
+      if (!confirm('This will clear ALL old session chats and Mini Library items from your browser. Page will reload. Continue?')) {
         return;
       }
 
-      // Save token before clearing
-      const savedToken = localStorage.getItem('jwt_token');
-      const savedUserData = localStorage.getItem('cached_user_data');
-
-      // Clear everything except what we need
+      // Clear everything except token and user data
       const keys = Object.keys(localStorage);
+      const keep = ['jwt_token', 'cached_user_data'];
       keys.forEach(key => {
-        if (key !== 'jwt_token' && key !== 'cached_user_data') {
+        if (!keep.includes(key)) {
           localStorage.removeItem(key);
         }
       });
       sessionStorage.clear();
 
-      // Reset in-memory state
-      sessions = [];
-      chatHistory = [];
-      generatedImages = [];
-      miniLibrary = [];
+      // Set flag to prevent loading old data on reload
+      sessionStorage.setItem('data_cleared', 'true');
 
-      // Re-render to show empty state
-      renderSessions();
-      renderMiniLibrary();
-      showWelcomeMode();
-
-      alert('All old data cleared! You can now generate fresh images.');
+      // Hard reload
+      window.location.reload(true);
     }
 
     // Show message
@@ -604,23 +596,6 @@
       return crypto.randomUUID();
     }
 
-    function createNewSession() {
-      const sessionId = generateSessionId();
-      const session = {
-        id: sessionId,
-        title: 'New chat',
-        titleChanged: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      sessions.unshift(session); // Add to beginning
-      saveSessions();
-      if (currentUserId) localStorage.setItem(`mv_chat_${currentUserId}_${sessionId}`, JSON.stringify([]));
-
-      setActiveSession(sessionId);
-      renderSessions();
-      showWelcomeMode();
-    }
 
     function setActiveSession(sessionId) {
       activeSessionId = sessionId;
