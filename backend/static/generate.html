@@ -542,13 +542,14 @@
       const savedToken = localStorage.getItem('jwt_token');
       const savedUserData = localStorage.getItem('cached_user_data');
 
-      // Clear everything
-      localStorage.clear();
+      // Clear everything except what we need
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key !== 'jwt_token' && key !== 'cached_user_data') {
+          localStorage.removeItem(key);
+        }
+      });
       sessionStorage.clear();
-
-      // Restore token and user data
-      if (savedToken) localStorage.setItem('jwt_token', savedToken);
-      if (savedUserData) localStorage.setItem('cached_user_data', savedUserData);
 
       // Reset in-memory state
       sessions = [];
@@ -556,8 +557,12 @@
       generatedImages = [];
       miniLibrary = [];
 
-      // Reload page to show fresh state
-      window.location.reload();
+      // Re-render to show empty state
+      renderSessions();
+      renderMiniLibrary();
+      showWelcomeMode();
+
+      alert('All old data cleared! You can now generate fresh images.');
     }
 
     // Show message
