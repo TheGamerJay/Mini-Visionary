@@ -538,9 +538,17 @@
         return;
       }
 
+      // Save token before clearing
+      const savedToken = localStorage.getItem('token');
+      const savedUserData = localStorage.getItem('cached_user_data');
+
       // Clear everything
       localStorage.clear();
       sessionStorage.clear();
+
+      // Restore token and user data
+      if (savedToken) localStorage.setItem('token', savedToken);
+      if (savedUserData) localStorage.setItem('cached_user_data', savedUserData);
 
       // Reset in-memory state
       sessions = [];
