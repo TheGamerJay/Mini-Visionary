@@ -539,7 +539,7 @@
       }
 
       // Save token before clearing
-      const savedToken = localStorage.getItem('token');
+      const savedToken = localStorage.getItem('jwt_token');
       const savedUserData = localStorage.getItem('cached_user_data');
 
       // Clear everything
@@ -547,7 +547,7 @@
       sessionStorage.clear();
 
       // Restore token and user data
-      if (savedToken) localStorage.setItem('token', savedToken);
+      if (savedToken) localStorage.setItem('jwt_token', savedToken);
       if (savedUserData) localStorage.setItem('cached_user_data', savedUserData);
 
       // Reset in-memory state
