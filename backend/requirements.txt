@@ -20,7 +20,7 @@ requests==2.32.3
 pillow==10.4.0
 
 # --- OpenAI SDK (new 1.x client) ---
-openai==1.43.0
+openai>=1.50.0
 
 # --- Payments ---
 stripe==12.3.0
