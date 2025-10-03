@@ -167,11 +167,19 @@ def poster_generate(db):
         prompt = body.get("prompt") or ""
         size = body.get("size") or "1024x1024"
 
+        # Map common sizes to DALL-E 3 supported sizes
+        size_map = {
+            "1200x1500": "1024x1792",  # Portrait
+            "1500x1200": "1792x1024",  # Landscape
+            "512x512": "1024x1024",
+            "1024x1024": "1024x1024",
+            "1024x1792": "1024x1792",
+            "1792x1024": "1792x1024"
+        }
+        size = size_map.get(size, "1024x1024")
+
         if not prompt:
             return fail("Prompt required.")
-
-        if size not in ALLOWED_SIZES:
-            return fail(f"Invalid size. Allowed: {', '.join(ALLOWED_SIZES)}")
 
         ok, err = ensure_credits(user, COST_GEN)
         if not ok:
