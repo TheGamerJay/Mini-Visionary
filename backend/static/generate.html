@@ -1822,6 +1822,50 @@
       }
     }
 
+    // Load user's generation history from server
+    async function loadUserHistory() {
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/history?per=20', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data.ok && data.items) {
+          // Clear localStorage images for current session
+          generatedImages = [];
+
+          // Load images from server history
+          for (const item of data.items) {
+            // Fetch the actual image
+            const imgResponse = await fetch(`/api/history/${item.id}/png`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (imgResponse.ok) {
+              const blob = await imgResponse.blob();
+              const imageUrl = URL.createObjectURL(blob);
+
+              generatedImages.push({
+                id: item.id,
+                url: imageUrl,
+                prompt: item.prompt,
+                timestamp: item.created_at
+              });
+            }
+          }
+
+          // Update the grid display
+          updateImageGrid();
+        }
+      } catch (error) {
+        // Silently fail - user can still generate new images
+      }
+    }
+
     // Initialize
     setupReferenceUpload();
     initSessions();
@@ -1829,6 +1873,7 @@
     initMiniPlusMenu();
     renderMiniLibrary();
     checkForReferenceFromLibrary();
+    loadUserHistory(); // Load user-specific images from server
   </script>
 </body>
 </html>
