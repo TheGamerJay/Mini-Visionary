@@ -744,25 +744,21 @@
 
         const data = await response.json();
 
-        if (data.ok && data.items && data.items.length > 0) {
-          const imageUrl = data.items[0].url;
+        if (data.ok && data.image_b64_png) {
+          // Convert base64 to data URL
+          const imageUrl = `data:image/png;base64,${data.image_b64_png}`;
 
-          // Show what was learned
-          let message = '✨ Here\'s your generated poster!';
-          if (data.enhanced_prompt && data.enhanced_prompt !== prompt) {
-            message += `\n\n🔮 Enhanced: ${data.enhanced_prompt}`;
-          }
-          if (data.learned_styles && Object.keys(data.learned_styles).length > 0) {
-            const styles = Object.entries(data.learned_styles)
-              .map(([style, freq]) => `${style} (${Math.round(freq * 100)}%)`)
-              .join(', ');
-            message += `\n\n📊 Learned: ${styles}`;
-          }
+          // Update credits display
+          const creditsEl = document.getElementById('user-credits');
+          if (creditsEl) creditsEl.textContent = data.credits || 0;
+
+          let message = '✨ Here\'s your generated image!';
+          message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
 
           addMessage('assistant', message, imageUrl);
           addToImageGrid(imageUrl, prompt);
         } else {
-          addMessage('assistant', `⚠️ ${data.error || 'Failed to generate poster'}`);
+          addMessage('assistant', `⚠️ ${data.error || 'Failed to generate image'}`);
         }
       } catch (error) {
         addMessage('assistant', `⚠️ Network error: ${error.message}`);
