@@ -761,12 +761,13 @@
       document.getElementById('bottom-input').style.display = 'block';
     }
 
-    function addMessage(role, content, imageUrl = null) {
+    function addMessage(role, content, imageUrl = null, jobId = null) {
       const message = {
         id: crypto.randomUUID(),
         role,
         content,
-        imageUrl,
+        imageUrl: imageUrl && imageUrl.startsWith('data:') ? null : imageUrl, // Don't save base64, only save job_id
+        jobId: jobId, // Store job_id to load image from backend
         timestamp: new Date().toISOString()
       };
       chatHistory.push(message);
@@ -779,18 +780,43 @@
       scrollToBottom();
     }
 
-    function renderChatHistory() {
+    async function renderChatHistory() {
       const container = document.getElementById('chat-messages');
+
+      // First render with placeholders for images
       container.innerHTML = chatHistory.map((msg, index) => `
         <div class="message ${msg.role}">
           <div class="message-content">
             <div class="message-header">${msg.role === 'user' ? 'You' : 'Mini Visionary'} · ${new Date(msg.timestamp).toLocaleTimeString()}</div>
             <div class="message-text">${msg.content}</div>
-            ${msg.imageUrl ? `<img src="${msg.imageUrl}" alt="Generated poster" class="message-image" onerror="this.style.display='none'; this.parentElement.querySelector('.save-btn')?.remove();">` : ''}
-            ${msg.imageUrl ? `<div class="message-actions"><button class="save-btn" onclick="saveToLibrary('${msg.imageUrl}', ${index})">💾 Save to Library</button></div>` : ''}
+            ${msg.jobId ? `<img id="msg-img-${msg.jobId}" src="" alt="Generated poster" class="message-image" style="display:none;">` : ''}
+            ${msg.jobId ? `<div class="message-actions"><button class="save-btn" onclick="saveToLibrary('${msg.jobId}', ${index})">💾 Save to Library</button></div>` : ''}
           </div>
         </div>
       `).join('');
+
+      // Load images from backend using job_id
+      for (const msg of chatHistory) {
+        if (msg.jobId && token) {
+          try {
+            const imgEl = document.getElementById(`msg-img-${msg.jobId}`);
+            if (imgEl) {
+              const response = await fetch(`/api/history/${msg.jobId}/png`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+
+              if (response.ok) {
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+                imgEl.src = imageUrl;
+                imgEl.style.display = 'block';
+              }
+            }
+          } catch (e) {
+            // Silent fail - image won't display
+          }
+        }
+      }
     }
 
     function scrollToBottom() {
@@ -846,7 +872,7 @@
         const data = await response.json();
 
         if (data.ok && data.image_b64_png) {
-          // Convert base64 to data URL
+          // Convert base64 to data URL for immediate display
           const imageUrl = `data:image/png;base64,${data.image_b64_png}`;
 
           // Update credits display
@@ -856,7 +882,8 @@
           let message = '✨ Here\'s your generated image!';
           message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
 
-          addMessage('assistant', message, imageUrl);
+          // Pass job_id instead of base64 imageUrl to avoid localStorage quota
+          addMessage('assistant', message, null, data.job_id);
           addToImageGrid(imageUrl, prompt, data.job_id);
           addToMiniLibrary(imageUrl, prompt, data.job_id);
         } else {
