@@ -278,7 +278,7 @@
       }
 
       try {
-        const response = await fetch('/api/auth/me', {
+        const response = await fetch('/api/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -290,7 +290,6 @@
         }
 
         if (!response.ok) {
-          console.log('Profile auth check failed with status ' + response.status + ', but keeping session');
           return;
         }
 
@@ -318,8 +317,7 @@
           }
         }
       } catch (error) {
-        // Network errors - don't logout, just log
-        console.log('Profile auth check network error (keeping session):', error);
+        // Network errors - don't logout
       }
     }
 
@@ -403,16 +401,13 @@
 
     function handleMediaSelect(event) {
       const file = event.target.files[0];
-      console.log('File selected:', file);
 
       if (!file) {
-        console.log('No file selected');
         return;
       }
 
       // Check file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        console.log('File too large:', file.size);
         alert('File size exceeds 10MB');
         return;
       }
@@ -421,22 +416,18 @@
       if (!file.type.startsWith('video/')) {
         selectedMedia = file;
         document.getElementById('file-name').textContent = file.name;
-        console.log('Image file set:', file.name);
         return;
       }
 
       // Check video duration
-      console.log('Checking video duration...');
       const video = document.createElement('video');
       video.preload = 'metadata';
       video.onerror = function() {
-        console.error('Error loading video metadata');
         alert('Could not load video file');
         document.getElementById('media-input').value = '';
       };
       video.onloadedmetadata = function() {
         window.URL.revokeObjectURL(video.src);
-        console.log('Video duration:', video.duration);
 
         if (video.duration > 11) {
           alert('Video duration exceeds 11 seconds (max 11s)');
@@ -449,7 +440,6 @@
         // Video is valid
         selectedMedia = file;
         document.getElementById('file-name').textContent = file.name;
-        console.log('Video file set:', file.name);
       };
       video.src = URL.createObjectURL(file);
     }
@@ -458,7 +448,6 @@
     async function safeParseJson(resp) {
       const ct = resp.headers.get("content-type") || "";
       if (!ct.toLowerCase().includes("application/json")) {
-        console.error("[Non-JSON Response]", await resp.text().catch(() => ""));
         return null;
       }
       try { return await resp.json(); } catch { return null; }
@@ -500,15 +489,11 @@
         });
 
         const data = await resp.json();
-        console.log('Upload response:', data);
 
         if (resp.status === 200 && data.ok) {
           // Success!
           const avatarDisplay = document.getElementById('avatar-display');
           const profilePicUrl = data.profile_picture_url;
-
-          console.log('Profile picture URL:', profilePicUrl);
-          console.log('Is video:', data.is_video);
 
           // Update userData
           userData.profile_picture_url = profilePicUrl;
@@ -537,7 +522,6 @@
           alert('Upload failed: ' + msg);
         }
       } catch (error) {
-        console.error('Upload error:', error);
         alert('Network error: ' + error.message);
       }
     }
@@ -603,7 +587,6 @@
           alert(`Failed to update password: ${data.error}`);
         }
       } catch (error) {
-        console.error('Password update error:', error);
         alert('Failed to update password. Please try again.');
       }
     }
