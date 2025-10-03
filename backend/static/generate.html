@@ -477,6 +477,13 @@
 
           // Load user-specific Mini Library
           loadMiniLibraryForUser();
+
+          // Load user-specific sessions
+          currentUserId = data.user.id || data.user.user_id;
+          if (currentUserId) {
+            sessions = JSON.parse(localStorage.getItem(`mv_sessions_${currentUserId}`) || '[]');
+            activeSessionId = localStorage.getItem(`mv_current_session_${currentUserId}`);
+          }
         }
       })
       .catch(err => {
@@ -539,10 +546,25 @@
     }
 
     // Multi-session chat state
-    let sessions = JSON.parse(localStorage.getItem('mv_sessions') || '[]');
+    let sessions = [];
     let activeSessionId = null;
     let chatHistory = [];
     let isGenerating = false;
+    let currentUserId = null;
+
+    // Helper function to save sessions with user-specific key
+    function saveSessions() {
+      if (currentUserId) {
+        localStorage.setItem(`mv_sessions_${currentUserId}`, JSON.stringify(sessions));
+      }
+    }
+
+    // Helper function to save current session ID
+    function saveCurrentSession() {
+      if (currentUserId && activeSessionId) {
+        localStorage.setItem(`mv_current_session_${currentUserId}`, activeSessionId);
+      }
+    }
 
     // Session management
     function generateSessionId() {
@@ -559,8 +581,8 @@
         updatedAt: new Date().toISOString()
       };
       sessions.unshift(session); // Add to beginning
-      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
-      localStorage.setItem(`mv_chat_${sessionId}`, JSON.stringify([]));
+      saveSessions();
+      if (currentUserId) localStorage.setItem(`mv_chat_${currentUserId}_${sessionId}`, JSON.stringify([]));
 
       setActiveSession(sessionId);
       renderSessions();
@@ -569,7 +591,7 @@
 
     function setActiveSession(sessionId) {
       activeSessionId = sessionId;
-      chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+      chatHistory = currentUserId ? JSON.parse(localStorage.getItem(`mv_chat_${currentUserId}_${sessionId}`) || '[]') : [];
 
       if (chatHistory.length > 0) {
         showChatMode();
@@ -585,7 +607,7 @@
         session.title = title;
         session.titleChanged = true;
         session.updatedAt = new Date().toISOString();
-        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        saveSessions();
         renderSessions();
       }
     }
@@ -594,7 +616,7 @@
       if (sessions.length <= 1) return; // Keep at least one session
 
       sessions = sessions.filter(s => s.id !== sessionId);
-      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      saveSessions();
       localStorage.removeItem(`mv_chat_${sessionId}`);
 
       if (activeSessionId === sessionId) {
@@ -612,7 +634,7 @@
         session.title = newTitle.trim();
         session.titleChanged = true;
         session.updatedAt = new Date().toISOString();
-        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        saveSessions();
         renderSessions();
       }
     }
@@ -847,7 +869,7 @@
       // First, ensure current session is saved and updated
       if (activeSessionId && chatHistory.length > 0) {
         // Save current chat history
-        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
+        if (currentUserId) localStorage.setItem(`mv_chat_${currentUserId}_${activeSessionId}`, JSON.stringify(chatHistory));
 
         // Update current session title if it hasn't been changed and has messages
         updateSessionTitle(activeSessionId);
@@ -871,7 +893,7 @@
 
       // Add new session to the beginning of the list
       sessions.unshift(session);
-      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+      saveSessions();
 
       // Switch to new session (this will clear chatHistory and show welcome screen)
       switchToSession(sessionId);
@@ -884,16 +906,16 @@
     function switchToSession(sessionId) {
       // Save current chat history and images to session-specific storage
       if (activeSessionId && chatHistory.length > 0) {
-        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
-        localStorage.setItem(`mv_images_${activeSessionId}`, JSON.stringify(generatedImages));
+        if (currentUserId) localStorage.setItem(`mv_chat_${currentUserId}_${activeSessionId}`, JSON.stringify(chatHistory));
+        if (currentUserId) localStorage.setItem(`mv_images_${currentUserId}_${activeSessionId}`, JSON.stringify(generatedImages));
       }
 
       activeSessionId = sessionId;
-      localStorage.setItem('mv_current_session', sessionId);
+      saveCurrentSession();
 
       // Load chat history and images for this session
-      chatHistory = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
-      generatedImages = JSON.parse(localStorage.getItem(`mv_images_${sessionId}`) || '[]');
+      chatHistory = currentUserId ? JSON.parse(localStorage.getItem(`mv_chat_${currentUserId}_${sessionId}`) || '[]') : [];
+      generatedImages = currentUserId ? JSON.parse(localStorage.getItem(`mv_images_${currentUserId}_${sessionId}`) || '[]') : [];
 
       if (chatHistory.length === 0) {
         showWelcomeMode();
@@ -910,9 +932,9 @@
       if (sessions.length <= 1) return; // Keep at least one session
 
       sessions = sessions.filter(s => s.id !== sessionId);
-      localStorage.setItem('mv_sessions', JSON.stringify(sessions));
-      localStorage.removeItem(`mv_chat_${sessionId}`);
-      localStorage.removeItem(`mv_images_${sessionId}`); // Clear images for this session
+      saveSessions();
+      if (currentUserId) localStorage.removeItem(`mv_chat_${currentUserId}_${sessionId}`);
+      if (currentUserId) localStorage.removeItem(`mv_images_${currentUserId}_${sessionId}`); // Clear images for this session
 
       if (activeSessionId === sessionId) {
         switchToSession(sessions[0].id);
@@ -927,14 +949,14 @@
         session.title = newTitle.trim() || 'Untitled';
         session.titleChanged = true;
         session.updatedAt = new Date().toISOString();
-        localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+        saveSessions();
         renderSessions();
       }
     }
 
     function updateSessionTitle(sessionId) {
       const session = sessions.find(s => s.id === sessionId);
-      const sessionMessages = JSON.parse(localStorage.getItem(`mv_chat_${sessionId}`) || '[]');
+      const sessionMessages = currentUserId ? JSON.parse(localStorage.getItem(`mv_chat_${currentUserId}_${sessionId}`) || '[]') : [];
 
       if (session && !session.titleChanged && sessionMessages.length > 0) {
         const firstUserMessage = sessionMessages.find(m => m.role === 'user');
@@ -948,7 +970,7 @@
           // Truncate to 40 characters for better readability
           session.title = title.slice(0, 40) + (title.length > 40 ? '...' : '');
           session.updatedAt = new Date().toISOString();
-          localStorage.setItem('mv_sessions', JSON.stringify(sessions));
+          saveSessions();
         }
       }
     }
@@ -1015,19 +1037,19 @@
 
       // Save to session-specific storage
       if (activeSessionId) {
-        localStorage.setItem(`mv_chat_${activeSessionId}`, JSON.stringify(chatHistory));
+        if (currentUserId) localStorage.setItem(`mv_chat_${currentUserId}_${activeSessionId}`, JSON.stringify(chatHistory));
       }
     };
 
     // Migrate old global images to current session (one-time migration)
     function migrateOldImages() {
       const oldImages = localStorage.getItem('mv_generated_images');
-      if (oldImages && activeSessionId) {
+      if (oldImages && activeSessionId && currentUserId) {
         // Check if current session doesn't have images yet
-        const currentImages = localStorage.getItem(`mv_images_${activeSessionId}`);
+        const currentImages = localStorage.getItem(`mv_images_${currentUserId}_${activeSessionId}`);
         if (!currentImages) {
           // Migrate old images to current session
-          localStorage.setItem(`mv_images_${activeSessionId}`, oldImages);
+          localStorage.setItem(`mv_images_${currentUserId}_${activeSessionId}`, oldImages);
           generatedImages = JSON.parse(oldImages);
         }
         // Remove old global storage
@@ -1042,7 +1064,7 @@
       } else {
         if (!activeSessionId || !sessions.find(s => s.id === activeSessionId)) {
           activeSessionId = sessions[0].id;
-          localStorage.setItem('mv_current_session', activeSessionId);
+          saveCurrentSession();
         }
         switchToSession(activeSessionId);
         migrateOldImages(); // Migrate old images after switching
@@ -1687,7 +1709,7 @@
       }
 
       // Save to session-specific localStorage (temporary, for this session only)
-      localStorage.setItem(`mv_images_${activeSessionId}`, JSON.stringify(generatedImages));
+      if (currentUserId) localStorage.setItem(`mv_images_${currentUserId}_${activeSessionId}`, JSON.stringify(generatedImages));
       updateImageGrid();
     }
 
