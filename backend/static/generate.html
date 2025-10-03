@@ -265,7 +265,7 @@
   <!-- Sidebar -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
-      <button id="new-chat-btn" class="new-chat-btn">+ Session Chats</button>
+      <button id="new-chat-btn" class="new-chat-btn">+ New Session Chat</button>
     </div>
     <div class="sidebar-title" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center" onclick="openFullLibrary()">
       <span>Mini Library</span>
@@ -885,7 +885,7 @@
       const sessionId = generateSessionId();
       const session = {
         id: sessionId,
-        title: 'Untitled chat',
+        title: 'Session Chat',
         titleChanged: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
