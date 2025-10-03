@@ -275,8 +275,6 @@
     <div class="sidebar-title">Your Chats</div>
     <div id="chat-sessions" class="chat-sessions"></div>
     <div class="sidebar-footer">
-      <button onclick="clearMyLibrary()" style="background:#ff4444;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:8px;width:100%;font-size:12px;">🗑️ Clear My Library (DB)</button>
-      <button onclick="clearMySessions()" style="background:#ff6600;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:12px;width:100%;font-size:12px;">🔥 Clear My Sessions</button>
       <img src="/logo.png" alt="Mini Visionary Logo" class="sidebar-logo">
     </div>
   </div>
@@ -552,6 +550,8 @@
       window.location.href = '/auth.html#login';
     }
 
+    /* ARCHIVED GHOST BUSTER FUNCTIONS - Saved for future debugging
+
     async function clearMyLibrary() {
       if (!confirm('⚠️ This will DELETE ALL images from your Mini Library in the DATABASE. This cannot be undone! Continue?')) {
         return;
@@ -577,7 +577,6 @@
           renderMiniLibrary();
           alert(`✅ Database cleared!\n\nStatus: ${response.status}\nMessage: ${data.message}\n\nReloading to confirm...`);
 
-          // Reload from server to confirm it's really gone
           await loadMiniLibraryForUser();
         } else {
           alert(`❌ Failed!\n\nStatus: ${response.status}\nError: ${data.error || 'Unknown'}\nDetails: ${JSON.stringify(data)}`);
@@ -592,7 +591,6 @@
         return;
       }
 
-      // Clear ALL session-related localStorage keys for current user
       if (currentUserId) {
         const keys = Object.keys(localStorage);
         keys.forEach(key => {
@@ -602,9 +600,10 @@
         });
       }
 
-      // Reload page to start fresh
       window.location.reload();
     }
+
+    END ARCHIVED GHOST BUSTER FUNCTIONS */
 
     // Show message
     function showMessage(text, type) {
