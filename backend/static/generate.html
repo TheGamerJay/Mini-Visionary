@@ -1704,18 +1704,10 @@
 
     // Mini Library Functions - images auto-saved to PostgreSQL on backend
     // This just updates the frontend display after generation
-    function addToMiniLibrary(imageUrl, prompt, jobId) {
+    async function addToMiniLibrary(imageUrl, prompt, jobId) {
       // The image is already saved to PostgreSQL via the backend
-      // Just update the frontend display
-      miniLibrary.unshift({
-        id: jobId,  // Use the database job_id
-        image_job_id: jobId,
-        url: imageUrl,
-        prompt: prompt,
-        timestamp: new Date().toISOString()
-      });
-
-      renderMiniLibrary();
+      // Reload the library to get the correct library.id
+      await loadMiniLibraryForUser();
     }
 
     function renderMiniLibrary() {
