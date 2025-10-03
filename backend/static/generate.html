@@ -275,6 +275,7 @@
     <div class="sidebar-title">Your Chats</div>
     <div id="chat-sessions" class="chat-sessions"></div>
     <div class="sidebar-footer">
+      <button onclick="clearAllLocalData()" style="background:#ff4444;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:12px;width:100%;font-size:12px;">🗑️ Clear All Old Data</button>
       <img src="/logo.png" alt="Mini Visionary Logo" class="sidebar-logo">
     </div>
   </div>
@@ -530,6 +531,25 @@
       });
 
       window.location.href = '/auth.html#login';
+    }
+
+    function clearAllLocalData() {
+      if (!confirm('This will clear ALL old session chats and Mini Library items from your browser. This cannot be undone. Continue?')) {
+        return;
+      }
+
+      // Clear everything
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Reset in-memory state
+      sessions = [];
+      chatHistory = [];
+      generatedImages = [];
+      miniLibrary = [];
+
+      // Reload page to show fresh state
+      window.location.reload();
     }
 
     // Show message
