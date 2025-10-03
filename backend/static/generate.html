@@ -456,6 +456,10 @@
         if (!data) return; // Skip if we already handled error above
 
         if (data.ok) {
+          // Store user ID globally for user-specific data
+          window.currentUserId = data.user.id;
+          window.currentUserEmail = data.user.email;
+
           // Safely update DOM elements if they exist
           const userCreditsEl = document.getElementById('user-credits');
 
@@ -470,6 +474,9 @@
           } catch (e) {
             // Error updating cached credits
           }
+
+          // Load user-specific Mini Library
+          loadMiniLibraryForUser();
         }
       })
       .catch(err => {
@@ -506,8 +513,15 @@
 
     // Logout function
     function logout() {
-      localStorage.removeItem('jwt_token');
-      localStorage.removeItem('cached_user_data');
+      // Clear all user-specific data
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Clear cookies
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
       window.location.href = '/auth.html#login';
     }
 
@@ -1402,7 +1416,15 @@
 
     // MiniPlusMenu functionality
     let generatedImages = [];
-    let miniLibrary = JSON.parse(localStorage.getItem('mv_mini_library') || '[]');
+    let miniLibrary = [];
+
+    // Load user-specific Mini Library
+    function loadMiniLibraryForUser() {
+      if (!window.currentUserId) return;
+      const key = `mv_mini_library_${window.currentUserId}`;
+      miniLibrary = JSON.parse(localStorage.getItem(key) || '[]');
+      renderMiniLibrary();
+    }
 
     function initMiniPlusMenu() {
       const plusBtn = document.getElementById('main-plus-btn');
@@ -1661,7 +1683,11 @@
         miniLibrary = miniLibrary.slice(0, 50);
       }
 
-      localStorage.setItem('mv_mini_library', JSON.stringify(miniLibrary));
+      // Save with user-specific key
+      if (window.currentUserId) {
+        const key = `mv_mini_library_${window.currentUserId}`;
+        localStorage.setItem(key, JSON.stringify(miniLibrary));
+      }
       renderMiniLibrary();
     }
 
@@ -1780,7 +1806,12 @@
       if (!confirm('Delete this image from Mini Library?')) return;
 
       miniLibrary = miniLibrary.filter(i => i.id != imageId);
-      localStorage.setItem('mv_mini_library', JSON.stringify(miniLibrary));
+
+      // Save with user-specific key
+      if (window.currentUserId) {
+        const key = `mv_mini_library_${window.currentUserId}`;
+        localStorage.setItem(key, JSON.stringify(miniLibrary));
+      }
 
       renderMiniLibrary();
       renderFullLibrary();
