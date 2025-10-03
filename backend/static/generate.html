@@ -481,12 +481,19 @@
 
           // Load user-specific sessions (unless data was just cleared)
           currentUserId = data.user.id || data.user.user_id;
-          if (currentUserId && !sessionStorage.getItem('data_cleared')) {
+
+          // Check if we just cleared data
+          const justCleared = localStorage.getItem('just_cleared_data');
+          if (justCleared) {
+            // Don't load any old sessions
+            sessions = [];
+            activeSessionId = null;
+            localStorage.removeItem('just_cleared_data');
+          } else if (currentUserId) {
+            // Load user-specific sessions normally
             sessions = JSON.parse(localStorage.getItem(`mv_sessions_${currentUserId}`) || '[]');
             activeSessionId = localStorage.getItem(`mv_current_session_${currentUserId}`);
           }
-          // Clear the flag after checking
-          sessionStorage.removeItem('data_cleared');
 
           // Initialize sessions now that we have currentUserId
           initSessions();
@@ -545,18 +552,20 @@
         return;
       }
 
-      // Clear everything except token and user data
-      const keys = Object.keys(localStorage);
-      const keep = ['jwt_token', 'cached_user_data'];
-      keys.forEach(key => {
-        if (!keep.includes(key)) {
-          localStorage.removeItem(key);
-        }
-      });
+      // Save token and user data
+      const savedToken = localStorage.getItem('jwt_token');
+      const savedUserData = localStorage.getItem('cached_user_data');
+
+      // Clear EVERYTHING
+      localStorage.clear();
       sessionStorage.clear();
 
-      // Set flag to prevent loading old data on reload
-      sessionStorage.setItem('data_cleared', 'true');
+      // Restore only what we need
+      if (savedToken) localStorage.setItem('jwt_token', savedToken);
+      if (savedUserData) localStorage.setItem('cached_user_data', savedUserData);
+
+      // Set flag in localStorage (will be checked and removed on load)
+      localStorage.setItem('just_cleared_data', 'true');
 
       // Hard reload
       window.location.reload(true);
