@@ -219,3 +219,22 @@ class ImageJob(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     user: Mapped["User"] = relationship("User")
+
+
+class Library(Base):
+    """User's saved image library (references ImageJob)"""
+    __tablename__ = "library"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    image_job_id: Mapped[int] = mapped_column(ForeignKey("image_jobs.id", ondelete="CASCADE"), index=True)
+    collection_name: Mapped[str] = mapped_column(String(64), default="mini_library")  # "mini_library" or "main_library"
+    notes: Mapped[Optional[str]] = mapped_column(Text)  # User notes about this image
+    is_favorite: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    user: Mapped["User"] = relationship("User")
+    image_job: Mapped["ImageJob"] = relationship("ImageJob")
+
+
+Index("ix_library_user_collection", Library.user_id, Library.collection_name)

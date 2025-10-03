@@ -11,7 +11,7 @@ from flask_limiter.util import get_remote_address
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Use existing Mini-Visionary models and session management
-from models import User, ImageJob, get_session
+from models import User, ImageJob, Library, get_session
 
 # --- OpenAI new SDK ---
 from openai import OpenAI
@@ -168,7 +168,18 @@ def generate(db):
             image_png=png,
             credits_used=COST_GEN
         )
-        db.add(job); db.commit()
+        db.add(job)
+        db.flush()  # Get job.id
+
+        # Auto-add to Mini Library
+        lib_item = Library(
+            user_id=user.id,
+            image_job_id=job.id,
+            collection_name="mini_library"
+        )
+        db.add(lib_item)
+        db.commit()
+
         return jsonify({
             "ok": True,
             "job_id": job.id,
@@ -229,7 +240,17 @@ def poster_generate(db):
             image_png=png,
             credits_used=COST_GEN
         )
-        db.add(job); db.commit()
+        db.add(job)
+        db.flush()  # Get job.id
+
+        # Auto-add to Mini Library
+        lib_item = Library(
+            user_id=user.id,
+            image_job_id=job.id,
+            collection_name="mini_library"
+        )
+        db.add(lib_item)
+        db.commit()
 
         # Return format compatible with old frontend
         return jsonify({
@@ -318,6 +339,84 @@ def refine_prompt(db):
         return jsonify({"ok": True, "refined": refined})
     except Exception as e:
         return fail("Refine failed.", 500, e)
+
+# --- Library API (PostgreSQL storage) ---
+@app.post("/api/library/add")
+@jwt_required()
+@with_session
+def add_to_library(db):
+    uid = get_jwt_identity()
+    data = request.get_json() or {}
+    image_job_id = data.get("image_job_id")
+    collection = data.get("collection", "mini_library")  # mini_library or main_library
+
+    if not image_job_id:
+        return fail("image_job_id required")
+
+    # Check if image exists and belongs to user
+    job = db.query(ImageJob).filter_by(id=image_job_id, user_id=uid).first()
+    if not job:
+        return fail("Image not found", 404)
+
+    # Check if already in library
+    existing = db.query(Library).filter_by(
+        user_id=uid,
+        image_job_id=image_job_id,
+        collection_name=collection
+    ).first()
+
+    if existing:
+        return jsonify({"ok": True, "message": "Already in library"})
+
+    # Add to library
+    lib_item = Library(
+        user_id=uid,
+        image_job_id=image_job_id,
+        collection_name=collection
+    )
+    db.add(lib_item)
+    db.commit()
+
+    return jsonify({"ok": True, "id": lib_item.id})
+
+
+@app.get("/api/library")
+@jwt_required()
+@with_session
+def get_library(db):
+    uid = get_jwt_identity()
+    collection = request.args.get("collection", "mini_library")
+
+    items = db.query(Library).filter_by(
+        user_id=uid,
+        collection_name=collection
+    ).order_by(Library.created_at.desc()).all()
+
+    result = [{
+        "id": item.id,
+        "image_job_id": item.image_job_id,
+        "prompt": item.image_job.prompt,
+        "created_at": item.created_at.isoformat()
+    } for item in items]
+
+    return jsonify({"ok": True, "items": result, "count": len(result)})
+
+
+@app.delete("/api/library/<int:lib_id>")
+@jwt_required()
+@with_session
+def delete_from_library(db, lib_id):
+    uid = get_jwt_identity()
+
+    item = db.query(Library).filter_by(id=lib_id, user_id=uid).first()
+    if not item:
+        return fail("Library item not found", 404)
+
+    db.delete(item)
+    db.commit()
+
+    return jsonify({"ok": True})
+
 
 # --- Health ---
 @app.get("/api/health")
