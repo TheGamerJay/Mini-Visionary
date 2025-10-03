@@ -1423,17 +1423,21 @@
     async function loadMiniLibraryForUser() {
       if (!token) return;
 
+      // Always clear library first
+      miniLibrary = [];
+
       try {
         const response = await fetch('/api/library?collection=mini_library', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+          renderMiniLibrary();
+          return;
+        }
 
         const data = await response.json();
         if (data.ok && data.items) {
-          miniLibrary = [];
-
           // Load images for each library item
           for (const item of data.items) {
             const imgResponse = await fetch(`/api/history/${item.image_job_id}/png`, {
@@ -1455,9 +1459,11 @@
           }
 
           renderMiniLibrary();
+        } else {
+          renderMiniLibrary();
         }
       } catch (error) {
-        // Silently fail
+        renderMiniLibrary();
       }
     }
 
