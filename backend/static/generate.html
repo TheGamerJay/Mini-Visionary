@@ -562,14 +562,24 @@
           headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` }
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          alert(`Server error - not JSON:\n${responseText.substring(0, 300)}`);
+          return;
+        }
 
         if (response.ok) {
           miniLibrary = [];
           renderMiniLibrary();
-          alert('✅ All library items cleared from database!');
+          alert(`✅ Database cleared!\n\nStatus: ${response.status}\nMessage: ${data.message}\n\nReloading to confirm...`);
+
+          // Reload from server to confirm it's really gone
+          await loadMiniLibraryForUser();
         } else {
-          alert('❌ Error: ' + (data.error || 'Failed to clear library'));
+          alert(`❌ Failed!\n\nStatus: ${response.status}\nError: ${data.error || 'Unknown'}\nDetails: ${JSON.stringify(data)}`);
         }
       } catch (error) {
         alert('❌ Network error: ' + error.message);
