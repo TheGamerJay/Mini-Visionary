@@ -432,6 +432,24 @@ def delete_from_library(db, lib_id):
     return jsonify({"ok": True})
 
 
+# --- Add Credits (Testing) ---
+@app.post("/api/admin/add-credits")
+@jwt_required()
+@with_session
+def add_credits_admin(db):
+    """Add 100 credits to current user for testing."""
+    uid = get_jwt_identity()
+    user = db.query(User).get(uid)
+
+    if not user:
+        return fail("User not found", 404)
+
+    user.credits += 100
+    db.commit()
+
+    return jsonify({"ok": True, "credits": user.credits, "message": "Added 100 credits"})
+
+
 # --- Health ---
 @app.get("/api/health")
 def health():
