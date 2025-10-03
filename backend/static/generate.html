@@ -1257,7 +1257,9 @@
       }
     }
 
-    // Update generatePoster function to include reference image
+    // GHOST ARCHIVED: Old generatePoster function that expected wrong response format (data.items)
+    // The correct generatePoster is defined earlier and expects data.image_b64_png
+    /*
     const originalGeneratePoster = generatePoster;
     generatePoster = async function(prompt) {
       if (!prompt.trim() || isGenerating) return;
@@ -1432,6 +1434,7 @@
         if (chatInput) chatInput.value = '';
       }
     };
+    END ARCHIVED GHOST - Old generatePoster function */
 
     // OLD GHOST CODE ARCHIVED - saveToLibrary used old localStorage
 
