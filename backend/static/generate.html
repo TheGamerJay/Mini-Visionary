@@ -275,7 +275,8 @@
     <div class="sidebar-title">Your Chats</div>
     <div id="chat-sessions" class="chat-sessions"></div>
     <div class="sidebar-footer">
-      <button onclick="clearMyLibrary()" style="background:#ff4444;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:12px;width:100%;font-size:12px;">🗑️ Clear My Library (DB)</button>
+      <button onclick="clearMyLibrary()" style="background:#ff4444;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:8px;width:100%;font-size:12px;">🗑️ Clear My Library (DB)</button>
+      <button onclick="clearMySessions()" style="background:#ff6600;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:12px;width:100%;font-size:12px;">🔥 Clear My Sessions</button>
       <img src="/logo.png" alt="Mini Visionary Logo" class="sidebar-logo">
     </div>
   </div>
@@ -584,6 +585,25 @@
       } catch (error) {
         alert('❌ Network error: ' + error.message);
       }
+    }
+
+    function clearMySessions() {
+      if (!confirm('⚠️ This will DELETE ALL session chats from localStorage and reload the page. Continue?')) {
+        return;
+      }
+
+      // Clear ALL session-related localStorage keys for current user
+      if (currentUserId) {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.includes(`_${currentUserId}_`) || key.includes(`_${currentUserId}`)) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+
+      // Reload page to start fresh
+      window.location.reload();
     }
 
     // Show message
