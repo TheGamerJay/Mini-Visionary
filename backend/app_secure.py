@@ -402,6 +402,20 @@ def get_library(db):
     return jsonify({"ok": True, "items": result, "count": len(result)})
 
 
+@app.delete("/api/library/clear-all")
+@jwt_required()
+@with_session
+def clear_all_library(db):
+    """Delete ALL library items for current user."""
+    uid = get_jwt_identity()
+
+    # Delete all library entries for this user
+    db.query(Library).filter_by(user_id=uid).delete()
+    db.commit()
+
+    return jsonify({"ok": True, "message": "All library items cleared"})
+
+
 @app.delete("/api/library/<int:lib_id>")
 @jwt_required()
 @with_session
@@ -416,20 +430,6 @@ def delete_from_library(db, lib_id):
     db.commit()
 
     return jsonify({"ok": True})
-
-
-@app.delete("/api/library/clear-all")
-@jwt_required()
-@with_session
-def clear_all_library(db):
-    """Delete ALL library items for current user."""
-    uid = get_jwt_identity()
-
-    # Delete all library entries for this user
-    db.query(Library).filter_by(user_id=uid).delete()
-    db.commit()
-
-    return jsonify({"ok": True, "message": "All library items cleared"})
 
 
 # --- Health ---
