@@ -80,8 +80,19 @@ def login(db):
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
     user = db.query(User).filter_by(email=email).first()
-    if not user or not user.password_hash or not check_password_hash(user.password_hash, password):
+
+    # Check if user exists and has valid password hash
+    if not user or not user.password_hash or not user.password_hash.strip():
         return fail("Invalid credentials.", 401)
+
+    # Verify password
+    try:
+        if not check_password_hash(user.password_hash, password):
+            return fail("Invalid credentials.", 401)
+    except ValueError:
+        # Invalid password hash format
+        return fail("Invalid credentials.", 401)
+
     token = create_access_token(identity=user.id)
     return jsonify({"ok": True, "token": token, "credits": user.credits})
 
