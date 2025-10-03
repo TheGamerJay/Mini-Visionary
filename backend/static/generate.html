@@ -1891,6 +1891,25 @@
       }
     }
 
+    // IMMEDIATE GHOST CLEANUP - Run before anything else!
+    (function() {
+      const allKeys = Object.keys(localStorage);
+      const ghostKeys = [];
+
+      allKeys.forEach(key => {
+        // Remove ANY mv_ key that doesn't have jwt_token, cached_user_data, or mv_username
+        if (key.startsWith('mv_') &&
+            key !== 'jwt_token' &&
+            key !== 'cached_user_data' &&
+            key !== 'mv_username') {
+          ghostKeys.push(key);
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Ghosts removed silently
+    })();
+
     // Initialize
     setupReferenceUpload();
     // Don't init sessions yet - wait for /api/me to load user-specific sessions
