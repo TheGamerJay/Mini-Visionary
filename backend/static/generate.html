@@ -336,14 +336,14 @@
           }
 
           // Background refresh from API
-          fetch("/api/auth/me", {
+          fetch("/api/me", {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
             }
           })
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(data => {
-              if (data && data.user && data.user.display_name) {
+              if (data && data.ok && data.user && data.user.display_name) {
                 const newName = data.user.display_name;
                 document.getElementById("username-placeholder").textContent = newName;
                 setCaches(newName);
