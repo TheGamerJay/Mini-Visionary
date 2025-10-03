@@ -438,7 +438,7 @@
       }
 
       // Load user info - only logout on actual auth failures (401), not network issues
-      fetch('/api/auth/me', {
+      fetch('/api/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(r => {
@@ -455,23 +455,11 @@
       .then(data => {
         if (!data) return; // Skip if we already handled error above
 
-        if (data.ok && data.user) {
-          // Cache user data to prevent username flash on refresh
-          try {
-            localStorage.setItem('cached_user_data', JSON.stringify(data.user));
-            // Also cache username separately for faster access
-            localStorage.setItem('mv_username', data.user.display_name || '');
-            document.cookie = "mv_username=" + encodeURIComponent(data.user.display_name || '') + "; path=/; max-age=15552000";
-          } catch (e) {
-            // Error caching data
-          }
-
+        if (data.ok) {
           // Safely update DOM elements if they exist
-          const userNameEl = document.getElementById('user-name');
           const userCreditsEl = document.getElementById('user-credits');
 
-          if (userNameEl) userNameEl.textContent = data.user.display_name || 'User';
-          if (userCreditsEl) userCreditsEl.textContent = data.user.credits || 0;
+          if (userCreditsEl) userCreditsEl.textContent = data.credits || 0;
           // username-placeholder is already updated by inline script
 
           // Update cached credits to prevent flash on next refresh
