@@ -770,7 +770,8 @@
           message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
 
           addMessage('assistant', message, imageUrl);
-          addToImageGrid(imageUrl, prompt);
+          addToImageGrid(imageUrl, prompt, data.job_id);
+          addToMiniLibrary(imageUrl, prompt, data.job_id);
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate image'}`);
         }
@@ -1418,12 +1419,46 @@
     let generatedImages = [];
     let miniLibrary = [];
 
-    // Load user-specific Mini Library
-    function loadMiniLibraryForUser() {
-      if (!window.currentUserId) return;
-      const key = `mv_mini_library_${window.currentUserId}`;
-      miniLibrary = JSON.parse(localStorage.getItem(key) || '[]');
-      renderMiniLibrary();
+    // Load user-specific Mini Library from PostgreSQL
+    async function loadMiniLibraryForUser() {
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/library?collection=mini_library', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data.ok && data.items) {
+          miniLibrary = [];
+
+          // Load images for each library item
+          for (const item of data.items) {
+            const imgResponse = await fetch(`/api/history/${item.image_job_id}/png`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (imgResponse.ok) {
+              const blob = await imgResponse.blob();
+              const imageUrl = URL.createObjectURL(blob);
+
+              miniLibrary.push({
+                id: item.id,
+                image_job_id: item.image_job_id,
+                url: imageUrl,
+                prompt: item.prompt,
+                timestamp: item.created_at
+              });
+            }
+          }
+
+          renderMiniLibrary();
+        }
+      } catch (error) {
+        // Silently fail
+      }
     }
 
     function initMiniPlusMenu() {
@@ -1631,9 +1666,10 @@
     }
 
     // Add generated images to the grid
-    function addToImageGrid(imageUrl, prompt) {
+    function addToImageGrid(imageUrl, prompt, jobId) {
       generatedImages.unshift({
-        id: Date.now(),
+        id: jobId || Date.now(),
+        image_job_id: jobId,
         url: imageUrl,
         prompt: prompt,
         timestamp: new Date().toISOString()
@@ -1644,12 +1680,9 @@
         generatedImages = generatedImages.slice(0, 20);
       }
 
-      // Save to session-specific localStorage
+      // Save to session-specific localStorage (temporary, for this session only)
       localStorage.setItem(`mv_images_${activeSessionId}`, JSON.stringify(generatedImages));
       updateImageGrid();
-
-      // Auto-save to Mini Library (backup)
-      addToMiniLibrary(imageUrl, prompt);
     }
 
     function updateImageGrid() {
@@ -1669,25 +1702,19 @@
 
     // Images are now loaded per-session in switchToSession()
 
-    // Mini Library Functions (Auto-backup of all generated images)
-    function addToMiniLibrary(imageUrl, prompt) {
+    // Mini Library Functions - images auto-saved to PostgreSQL on backend
+    // This just updates the frontend display after generation
+    function addToMiniLibrary(imageUrl, prompt, jobId) {
+      // The image is already saved to PostgreSQL via the backend
+      // Just update the frontend display
       miniLibrary.unshift({
-        id: Date.now(),
+        id: jobId,  // Use the database job_id
+        image_job_id: jobId,
         url: imageUrl,
         prompt: prompt,
         timestamp: new Date().toISOString()
       });
 
-      // Keep last 50 images in Mini Library
-      if (miniLibrary.length > 50) {
-        miniLibrary = miniLibrary.slice(0, 50);
-      }
-
-      // Save with user-specific key
-      if (window.currentUserId) {
-        const key = `mv_mini_library_${window.currentUserId}`;
-        localStorage.setItem(key, JSON.stringify(miniLibrary));
-      }
       renderMiniLibrary();
     }
 
@@ -1800,21 +1827,28 @@
       alert('✅ Saved to Main Library!');
     }
 
-    function deleteFromMiniLibrary(imageId, event) {
+    async function deleteFromMiniLibrary(imageId, event) {
       event?.stopPropagation();
 
       if (!confirm('Delete this image from Mini Library?')) return;
 
-      miniLibrary = miniLibrary.filter(i => i.id != imageId);
+      try {
+        const response = await fetch(`/api/library/${imageId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-      // Save with user-specific key
-      if (window.currentUserId) {
-        const key = `mv_mini_library_${window.currentUserId}`;
-        localStorage.setItem(key, JSON.stringify(miniLibrary));
+        if (response.ok) {
+          // Remove from local array
+          miniLibrary = miniLibrary.filter(i => i.id != imageId);
+          renderMiniLibrary();
+          renderFullLibrary();
+        } else {
+          alert('Failed to delete from library');
+        }
+      } catch (error) {
+        alert('Error deleting from library');
       }
-
-      renderMiniLibrary();
-      renderFullLibrary();
     }
 
     // Close modal on background click
