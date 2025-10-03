@@ -30,6 +30,25 @@ def spa_frontend(path=""):
         if os.path.exists(candidate):
             return send_from_directory(app.static_folder, path)
 
+    # Specific page routes - serve corresponding HTML files
+    page_routes = {
+        "generate": "generate.html",
+        "gallery": "gallery.html",
+        "library": "library.html",
+        "profile": "profile.html",
+        "wallet": "wallet.html",
+        "store": "store.html",
+        "community": "community.html",
+        "guide": "guide.html",
+        "faq": "faq.html",
+        "terms": "terms.html",
+        "privacy": "privacy.html",
+        "auth": "auth.html"
+    }
+
+    if path in page_routes:
+        return send_from_directory(app.static_folder, page_routes[path])
+
     # SPA fallback for all other routes
     return send_from_directory(app.static_folder, "index.html")
 
