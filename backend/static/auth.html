@@ -179,11 +179,12 @@
           <img src="/logo.png" alt="Mini Visionary Logo" class="login-logo">
           <div class="field">
             <label class="label" for="li-email">Email</label>
-            <input id="li-email" class="input" type="email" placeholder="Enter your email address" autocomplete="email" required />
+            <input id="li-email" class="input" type="email" placeholder="Enter your email address" autocomplete="username email" required />
           </div>
 
           <div class="field pwd">
             <label class="label" for="li-pass">Password</label>
+            <input type="text" name="username" autocomplete="username" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" tabindex="-1" aria-hidden="true" />
             <input id="li-pass"
                    class="input"
                    type="password"
