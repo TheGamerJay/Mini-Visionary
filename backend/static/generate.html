@@ -481,6 +481,19 @@
 
           // Load user-specific sessions
           currentUserId = data.user.id || data.user.user_id;
+
+          // FORCE WIPE: Remove ALL old mv_ keys that aren't user-specific
+          const allKeys = Object.keys(localStorage);
+          allKeys.forEach(key => {
+            if (key.startsWith('mv_') &&
+                !key.includes(`_${currentUserId}_`) &&
+                !key.includes(`_${currentUserId}`) &&
+                key !== 'jwt_token' &&
+                key !== 'cached_user_data') {
+              localStorage.removeItem(key);
+            }
+          });
+
           if (currentUserId) {
             sessions = JSON.parse(localStorage.getItem(`mv_sessions_${currentUserId}`) || '[]');
             activeSessionId = localStorage.getItem(`mv_current_session_${currentUserId}`);
