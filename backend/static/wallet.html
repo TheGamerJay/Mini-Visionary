@@ -165,7 +165,7 @@
     // Load real data from API
     async function loadData() {
       try {
-        const response = await fetch('/api/auth/me', {
+        const response = await fetch('/api/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -177,21 +177,19 @@
         }
 
         if (!response.ok) {
-          console.log('Wallet auth check failed with status ' + response.status + ', but keeping session');
           return;
         }
 
         const data = await response.json();
 
-        if (data.ok && data.user) {
-          userCredits = data.user.credits || 0;
+        if (data.ok) {
+          userCredits = data.credits || 0;
           // For now, show empty until we have transaction API
           transactions = [];
           purchases = [];
         }
       } catch (error) {
-        // Network errors - don't logout, just log
-        console.log('Wallet auth check network error (keeping session):', error);
+        // Network errors - don't logout
       }
     }
 

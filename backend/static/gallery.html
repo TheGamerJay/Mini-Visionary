@@ -479,19 +479,19 @@
 
       // Check user credits first
       try {
-        const response = await fetch('/api/auth/whoami', {
+        const response = await fetch('/api/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
 
-        if (!data.ok || !data.user) {
+        if (!data.ok) {
           alert('Failed to verify your account. Please try again.');
           return;
         }
 
-        const userCredits = data.user.credits || 0;
+        const userCredits = data.credits || 0;
 
         if (userCredits < 3) {
           alert(`Insufficient credits!\n\nYou need 3 credits to post to the gallery.\nYou currently have ${userCredits} credits.\n\nVisit the Store to purchase more credits.`);
@@ -570,22 +570,20 @@
     // Load user credits and ID
     async function loadUserCredits() {
       try {
-        const response = await fetch('/api/auth/whoami', {
+        const response = await fetch('/api/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
-        if (data.ok && data.user) {
-          currentUserId = data.user.id;
-          document.getElementById('user-credits').textContent = data.user.credits || 0;
+        if (data.ok) {
+          document.getElementById('user-credits').textContent = data.credits || 0;
           // Reload demo data to apply user reactions
           loadDemoData();
         } else {
           document.getElementById('user-credits').textContent = '0';
         }
       } catch (error) {
-        console.error('Failed to load credits:', error);
         document.getElementById('user-credits').textContent = '0';
       }
     }

@@ -102,7 +102,21 @@ def login(db):
 def me(db):
     uid = get_jwt_identity()
     user = db.query(User).get(uid)
-    return jsonify({"ok": True, "email": user.email, "credits": user.credits})
+    return jsonify({
+        "ok": True,
+        "email": user.email,
+        "credits": user.credits,
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "profile_picture_url": user.profile_picture_url,
+            "avatar_url": user.avatar_url,
+            "credits": user.credits,
+            "ad_free": user.ad_free,
+            "created_at": user.created_at.isoformat() if user.created_at else None
+        }
+    })
 
 # --- Credits ---
 def ensure_credits(user, needed):
