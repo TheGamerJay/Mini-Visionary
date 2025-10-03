@@ -567,24 +567,28 @@ def _get_user_preferences(user_id: str, engine) -> dict:
 
     _, _, text, _ = _lazy_imports()
 
-    with engine.begin() as conn:
-        row = conn.execute(
-            text("""
-                SELECT default_style, auto_apply, custom_instructions
-                FROM user_style_preferences
-                WHERE user_id = :user_id
-            """),
-            {"user_id": user_id}
-        ).fetchone()
+    try:
+        with engine.begin() as conn:
+            row = conn.execute(
+                text("""
+                    SELECT default_style, auto_apply, custom_instructions
+                    FROM user_style_preferences
+                    WHERE user_id = :user_id
+                """),
+                {"user_id": user_id}
+            ).fetchone()
 
-    if not row:
+        if not row:
+            return {}
+
+        return {
+            "default_style": row[0],
+            "auto_apply": row[1],
+            "custom_instructions": row[2]
+        }
+    except Exception:
+        # Table doesn't exist or other error - return empty prefs
         return {}
-
-    return {
-        "default_style": row[0],
-        "auto_apply": row[1],
-        "custom_instructions": row[2]
-    }
 
 def _save_prompt_to_history(user_id: str, original: str, enhanced: str, engine):
     """
