@@ -618,7 +618,7 @@
 
       sessions = sessions.filter(s => s.id !== sessionId);
       saveSessions();
-      localStorage.removeItem(`mv_chat_${sessionId}`);
+      // OLD GHOST: localStorage.removeItem(`mv_chat_${sessionId}`); - removed, using user-specific keys now
 
       if (activeSessionId === sessionId) {
         setActiveSession(sessions[0].id);
@@ -712,7 +712,7 @@
         timestamp: new Date().toISOString()
       };
       chatHistory.push(message);
-      localStorage.setItem('mv_chat', JSON.stringify(chatHistory));
+      // OLD GHOST REMOVED: localStorage.setItem('mv_chat', ...) - this was saving to GLOBAL key!
 
       if (chatHistory.length === 1) {
         showChatMode();
