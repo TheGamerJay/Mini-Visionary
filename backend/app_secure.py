@@ -424,4 +424,11 @@ def health():
     return {"ok": True, "release": os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")}
 
 if __name__ == "__main__":
+    # Run library table migration on startup
+    try:
+        from create_library_table import create_library_table
+        create_library_table()
+    except Exception:
+        pass  # Silently fail if migration has issues
+
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8080")))
