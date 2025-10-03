@@ -1906,16 +1906,14 @@
                 timestamp: item.created_at
               };
 
-              // Add to both Recent Generations and Mini Library
+              // Add ONLY to Recent Generations (Mini Library loads from PostgreSQL library table)
               generatedImages.push(imageData);
-              miniLibrary.push(imageData);
+              // GHOST REMOVED: miniLibrary.push(imageData); - Mini Library now uses /api/library endpoint
             }
           }
 
-          // Save Mini Library with user-specific key
-          if (window.currentUserId) {
-            const key = `mv_mini_library_${window.currentUserId}`;
-            localStorage.setItem(key, JSON.stringify(miniLibrary));
+          // GHOST REMOVED: localStorage.setItem for miniLibrary - uses PostgreSQL now
+          if (false) {
           }
 
           // Update both displays
