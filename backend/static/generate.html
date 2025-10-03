@@ -487,10 +487,15 @@
           }
           // Clear the flag after checking
           sessionStorage.removeItem('data_cleared');
+
+          // Initialize sessions now that we have currentUserId
+          initSessions();
         }
       })
       .catch(err => {
         // Network errors, timeouts, etc - don't logout
+        // Still init sessions even on error (will create new session)
+        initSessions();
       });
     }
 
@@ -1973,7 +1978,7 @@
 
     // Initialize
     setupReferenceUpload();
-    initSessions();
+    // Don't init sessions yet - wait for /api/me to load user-specific sessions
     initInterface();
     initMiniPlusMenu();
     renderMiniLibrary();
