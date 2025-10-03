@@ -1042,21 +1042,7 @@
       }
     };
 
-    // Migrate old global images to current session (one-time migration)
-    function migrateOldImages() {
-      const oldImages = localStorage.getItem('mv_generated_images');
-      if (oldImages && activeSessionId && currentUserId) {
-        // Check if current session doesn't have images yet
-        const currentImages = localStorage.getItem(`mv_images_${currentUserId}_${activeSessionId}`);
-        if (!currentImages) {
-          // Migrate old images to current session
-          localStorage.setItem(`mv_images_${currentUserId}_${activeSessionId}`, oldImages);
-          generatedImages = JSON.parse(oldImages);
-        }
-        // Remove old global storage
-        localStorage.removeItem('mv_generated_images');
-      }
-    }
+    // OLD GHOST CODE ARCHIVED - no more localStorage migrations
 
     // Initialize sessions
     function initSessions() {
@@ -1068,7 +1054,6 @@
           saveCurrentSession();
         }
         switchToSession(activeSessionId);
-        migrateOldImages(); // Migrate old images after switching
       }
       renderSessions();
     }
@@ -1393,45 +1378,7 @@
       }
     };
 
-    // Save to library functionality
-    async function saveToLibrary(imageUrl, messageIndex) {
-      const saveBtn = event.target;
-      const originalText = saveBtn.innerHTML;
-
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = '⏳ Saving...';
-
-      try {
-        // Get the prompt from chat history
-        const prompt = chatHistory[messageIndex-1]?.content || 'Generated poster';
-
-        // Save to localStorage (mv_main_library)
-        const library = JSON.parse(localStorage.getItem('mv_main_library') || '[]');
-
-        const newItem = {
-          id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          url: imageUrl,
-          prompt: prompt,
-          timestamp: new Date().toISOString()
-        };
-
-        library.push(newItem);
-        localStorage.setItem('mv_main_library', JSON.stringify(library));
-
-        saveBtn.innerHTML = '✅ Saved';
-        setTimeout(() => {
-          saveBtn.innerHTML = originalText;
-          saveBtn.disabled = false;
-        }, 2000);
-
-      } catch (error) {
-        saveBtn.innerHTML = '❌ Error';
-        setTimeout(() => {
-          saveBtn.innerHTML = originalText;
-          saveBtn.disabled = false;
-        }, 2000);
-      }
-    }
+    // OLD GHOST CODE ARCHIVED - saveToLibrary used old localStorage
 
     // Event listeners for sidebar
     document.getElementById('new-chat-btn').addEventListener('click', createNewSession);
@@ -1826,27 +1773,7 @@
       addMessage('assistant', `📚 From Mini Library: "${prompt}"`, url);
     }
 
-    function saveToMainLibrary(imageId, event) {
-      event?.stopPropagation();
-
-      const img = miniLibrary.find(i => i.id == imageId);
-      if (!img) return;
-
-      // Save to main library (we'll store this in a separate localStorage key)
-      let mainLibrary = JSON.parse(localStorage.getItem('mv_main_library') || '[]');
-
-      // Check if already exists
-      const exists = mainLibrary.some(item => item.url === img.url);
-      if (exists) {
-        alert('This image is already in your Main Library!');
-        return;
-      }
-
-      mainLibrary.unshift(img);
-      localStorage.setItem('mv_main_library', JSON.stringify(mainLibrary));
-
-      alert('✅ Saved to Main Library!');
-    }
+    // OLD GHOST CODE ARCHIVED - saveToMainLibrary used old localStorage
 
     async function deleteFromMiniLibrary(imageId, event) {
       event?.stopPropagation();
