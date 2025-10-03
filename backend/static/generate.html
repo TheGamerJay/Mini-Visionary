@@ -1707,22 +1707,9 @@
 
     // Add generated images to the grid
     function addToImageGrid(imageUrl, prompt, jobId) {
-      generatedImages.unshift({
-        id: jobId || Date.now(),
-        image_job_id: jobId,
-        url: imageUrl,
-        prompt: prompt,
-        timestamp: new Date().toISOString()
-      });
-
-      // Keep only last 20 images
-      if (generatedImages.length > 20) {
-        generatedImages = generatedImages.slice(0, 20);
-      }
-
-      // Save to session-specific localStorage (temporary, for this session only)
-      if (currentUserId) localStorage.setItem(`mv_images_${currentUserId}_${activeSessionId}`, JSON.stringify(generatedImages));
-      updateImageGrid();
+      // DISABLED: Recent Generated removed - base64 images too big for localStorage quota
+      // Images display in chat and Mini Library (PostgreSQL) only
+      return;
     }
 
     function updateImageGrid() {
