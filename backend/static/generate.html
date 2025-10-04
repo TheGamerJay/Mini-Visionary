@@ -1953,7 +1953,39 @@
       addMessage('assistant', `📚 From Mini Library: "${prompt}"`, url);
     }
 
-    // OLD GHOST CODE ARCHIVED - saveToMainLibrary used old localStorage
+    async function saveToMainLibrary(libraryId, event) {
+      event?.stopPropagation();
+
+      // Get the library item to find its image_job_id
+      const libItem = miniLibrary.find(i => i.id == libraryId);
+      if (!libItem) {
+        alert('Image not found');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/library/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            image_job_id: libItem.image_job_id,
+            collection: 'main_library'
+          })
+        });
+
+        if (response.ok) {
+          alert('✅ Saved to Main Library!');
+        } else {
+          const data = await response.json().catch(() => ({}));
+          alert(data.error || 'Failed to save to main library');
+        }
+      } catch (error) {
+        alert('Error saving to main library');
+      }
+    }
 
     async function deleteFromMiniLibrary(imageId, event) {
       event?.stopPropagation();
