@@ -1942,11 +1942,11 @@
               <div class="full-library-item-meta">
                 <span>⏰ ${timeStr}</span>
               </div>
-              <div class="full-library-item-actions">
-                <button class="full-library-item-btn save" onclick="saveToMainLibrary('${img.id}', event)">
+              <div class="full-library-item-actions" style="display:flex !important; gap:8px !important;">
+                <button class="full-library-item-btn save" onclick="saveToMainLibrary('${img.id}', event)" style="display:block !important; background:linear-gradient(90deg, #22d3ee, #ec4899) !important; color:#081018 !important; padding:8px 12px !important; border:none !important; border-radius:6px !important; cursor:pointer !important;">
                   💾 Save to Library
                 </button>
-                <button class="full-library-item-btn delete" onclick="deleteFromMiniLibrary('${img.id}', event)">
+                <button class="full-library-item-btn delete" onclick="deleteFromMiniLibrary('${img.id}', event)" style="display:block !important; background:#0e1424 !important; color:#9aa4b2 !important; padding:8px 12px !important; border:1px solid rgba(148,163,184,.25) !important; border-radius:6px !important; cursor:pointer !important;">
                   🗑️
                 </button>
               </div>
