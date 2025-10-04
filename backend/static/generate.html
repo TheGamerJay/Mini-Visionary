@@ -1973,36 +1973,39 @@
 
         const info = document.createElement('div');
         info.className = 'full-library-item-info';
+        info.style.cssText = 'padding:12px !important; background:#0e1424 !important; display:block !important; min-height:150px !important;';
 
         const promptDiv = document.createElement('div');
         promptDiv.className = 'full-library-item-prompt';
         promptDiv.title = img.prompt || '';
         promptDiv.textContent = img.prompt || 'No prompt';
+        promptDiv.style.cssText = 'color:#e6eaf2 !important; margin-bottom:8px !important; font-size:13px !important;';
 
         const meta = document.createElement('div');
         meta.className = 'full-library-item-meta';
         meta.innerHTML = `<span>⏰ ${timeStr}</span>`;
+        meta.style.cssText = 'color:#9aa4b2 !important; margin-bottom:12px !important; font-size:11px !important;';
 
         const actions = document.createElement('div');
         actions.className = 'full-library-item-actions';
-        actions.style.cssText = 'display:flex !important; gap:8px !important;';
+        actions.style.cssText = 'display:flex !important; gap:8px !important; flex-wrap:wrap !important;';
 
         const previewBtn = document.createElement('button');
         previewBtn.className = 'full-library-item-btn preview';
         previewBtn.innerHTML = '👁️ Preview';
-        previewBtn.style.cssText = 'display:block !important; background:#1e293b !important; color:#22d3ee !important; padding:8px 12px !important; border:1px solid #22d3ee !important; border-radius:6px !important; cursor:pointer !important;';
+        previewBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; opacity:1 !important; flex:1 !important; background:#1e293b !important; color:#22d3ee !important; padding:10px 14px !important; border:2px solid #22d3ee !important; border-radius:6px !important; cursor:pointer !important; font-size:12px !important; font-weight:600 !important; min-width:80px !important;';
         previewBtn.onclick = (e) => { e.stopPropagation(); showImagePreview(img.url, img.prompt); };
 
         const saveBtn = document.createElement('button');
         saveBtn.className = 'full-library-item-btn save';
         saveBtn.innerHTML = '💾 Save';
-        saveBtn.style.cssText = 'display:block !important; background:linear-gradient(90deg, #22d3ee, #ec4899) !important; color:#081018 !important; padding:8px 12px !important; border:none !important; border-radius:6px !important; cursor:pointer !important;';
+        saveBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; opacity:1 !important; flex:1 !important; background:linear-gradient(90deg, #22d3ee, #ec4899) !important; color:#081018 !important; padding:10px 14px !important; border:none !important; border-radius:6px !important; cursor:pointer !important; font-size:12px !important; font-weight:600 !important; min-width:80px !important;';
         saveBtn.onclick = (e) => saveToMainLibrary(img.id, e);
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'full-library-item-btn delete';
         deleteBtn.innerHTML = '🗑️';
-        deleteBtn.style.cssText = 'display:block !important; background:#0e1424 !important; color:#9aa4b2 !important; padding:8px 12px !important; border:1px solid rgba(148,163,184,.25) !important; border-radius:6px !important; cursor:pointer !important;';
+        deleteBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; opacity:1 !important; flex:0 !important; background:#0e1424 !important; color:#9aa4b2 !important; padding:10px 14px !important; border:2px solid rgba(148,163,184,.25) !important; border-radius:6px !important; cursor:pointer !important; font-size:14px !important; min-width:50px !important;';
         deleteBtn.onclick = (e) => deleteFromMiniLibrary(img.id, e);
 
         actions.appendChild(previewBtn);
