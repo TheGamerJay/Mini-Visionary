@@ -1899,17 +1899,10 @@
 
     // Full Library Modal Functions
     function openFullLibrary() {
-      alert('DEBUG: openFullLibrary called!');
       const modal = document.getElementById('full-library-modal');
-      if (!modal) {
-        alert('ERROR: Modal element not found!');
-        return;
-      }
-      alert('DEBUG: Modal found, adding show class...');
+      if (!modal) return;
       modal.classList.add('show');
-      alert('DEBUG: Calling renderFullLibrary...');
       renderFullLibrary();
-      alert('DEBUG: renderFullLibrary completed!');
     }
 
     function closeFullLibrary() {
@@ -1927,12 +1920,7 @@
     function renderFullLibrary() {
       const grid = document.getElementById('full-library-grid');
 
-      if (!grid) {
-        alert('ERROR: Grid element not found! Please report this bug.');
-        return;
-      }
-
-      alert(`DEBUG: Rendering ${miniLibrary.length} items`);
+      if (!grid) return;
 
       if (miniLibrary.length === 0) {
         grid.innerHTML = `
@@ -1947,8 +1935,6 @@
 
       // Clear grid first
       grid.innerHTML = '';
-
-      alert('DEBUG: About to create items...');
 
       // Create each item using DOM manipulation (safer than template strings)
       miniLibrary.forEach((img, index) => {
@@ -2020,13 +2006,7 @@
         item.appendChild(info);
 
         grid.appendChild(item);
-
-        if (index === 0) {
-          alert(`DEBUG: First item created. Buttons appended: ${actions.children.length}`);
-        }
       });
-
-      alert(`DEBUG: All items added to grid. Grid children: ${grid.children.length}`);
     }
 
     function viewLibraryImageFull(url, prompt) {
