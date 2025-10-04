@@ -1919,6 +1919,13 @@
     function renderFullLibrary() {
       const grid = document.getElementById('full-library-grid');
 
+      if (!grid) {
+        alert('ERROR: Grid element not found! Please report this bug.');
+        return;
+      }
+
+      alert(`DEBUG: Rendering ${miniLibrary.length} items`);
+
       if (miniLibrary.length === 0) {
         grid.innerHTML = `
           <div class="full-library-empty">
@@ -1933,8 +1940,10 @@
       // Clear grid first
       grid.innerHTML = '';
 
+      alert('DEBUG: About to create items...');
+
       // Create each item using DOM manipulation (safer than template strings)
-      miniLibrary.forEach(img => {
+      miniLibrary.forEach((img, index) => {
         const date = new Date(img.timestamp);
         const timeStr = date.toLocaleString('en-US', {
           month: 'short',
@@ -2000,7 +2009,13 @@
         item.appendChild(info);
 
         grid.appendChild(item);
+
+        if (index === 0) {
+          alert(`DEBUG: First item created. Buttons appended: ${actions.children.length}`);
+        }
       });
+
+      alert(`DEBUG: All items added to grid. Grid children: ${grid.children.length}`);
     }
 
     function viewLibraryImageFull(url, prompt) {
