@@ -795,7 +795,6 @@
             ${(msg.jobId || msg.displayUrl) ? `<img id="msg-img-${msg.id}" alt="Generated poster" class="message-image" style="display:none;">` : ''}
             ${msg.jobId ? `<div class="message-actions">
               <button class="save-btn" onclick="saveToLibrary('${msg.jobId}', ${index})">💾 Save to Library</button>
-              <button class="edit-btn" onclick="startEdit('${msg.jobId}')">✏️ Edit (1 credit)</button>
             </div>` : ''}
           </div>
         </div>
@@ -1862,6 +1861,15 @@
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
+
+          // If edit failed due to content policy, fall back to generating new image
+          if (response.status === 500 && data.error && data.error.includes('safety')) {
+            addMessage('assistant', `⚠️ Edit blocked by safety filter. Generating new image instead... (10 credits)`);
+            // Just generate a new image instead
+            await generatePoster(prompt);
+            return;
+          }
+
           addMessage('assistant', `⚠️ Edit failed (${response.status}): ${data.error || 'Unknown error'}`);
           return;
         }
