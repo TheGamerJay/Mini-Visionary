@@ -1973,25 +1973,22 @@
         meta.style.cssText = 'color:#9aa4b2 !important; margin-bottom:12px !important; font-size:11px !important;';
 
         const actions = document.createElement('div');
-        actions.className = 'full-library-item-actions';
-        actions.style.cssText = 'display:flex !important; gap:8px !important; flex-wrap:wrap !important;';
+        actions.style.cssText = 'display:block !important; width:100% !important; margin-top:12px !important;';
 
+        // Create buttons with NO classes - pure inline styles only
         const previewBtn = document.createElement('button');
-        previewBtn.className = 'full-library-item-btn preview';
-        previewBtn.innerHTML = '👁️ Preview';
-        previewBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; opacity:1 !important; flex:1 !important; background:#1e293b !important; color:#22d3ee !important; padding:10px 14px !important; border:2px solid #22d3ee !important; border-radius:6px !important; cursor:pointer !important; font-size:12px !important; font-weight:600 !important; min-width:80px !important;';
+        previewBtn.textContent = 'PREVIEW';
+        previewBtn.style.cssText = 'display:block !important; width:100% !important; visibility:visible !important; opacity:1 !important; background:#1e293b !important; color:#22d3ee !important; padding:12px !important; border:3px solid #22d3ee !important; border-radius:6px !important; cursor:pointer !important; font-size:14px !important; font-weight:700 !important; margin-bottom:8px !important; text-align:center !important;';
         previewBtn.onclick = (e) => { e.stopPropagation(); showImagePreview(img.url, img.prompt); };
 
         const saveBtn = document.createElement('button');
-        saveBtn.className = 'full-library-item-btn save';
-        saveBtn.innerHTML = '💾 Save';
-        saveBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; opacity:1 !important; flex:1 !important; background:linear-gradient(90deg, #22d3ee, #ec4899) !important; color:#081018 !important; padding:10px 14px !important; border:none !important; border-radius:6px !important; cursor:pointer !important; font-size:12px !important; font-weight:600 !important; min-width:80px !important;';
+        saveBtn.textContent = 'SAVE TO LIBRARY';
+        saveBtn.style.cssText = 'display:block !important; width:100% !important; visibility:visible !important; opacity:1 !important; background:#22d3ee !important; color:#081018 !important; padding:12px !important; border:3px solid #ec4899 !important; border-radius:6px !important; cursor:pointer !important; font-size:14px !important; font-weight:700 !important; margin-bottom:8px !important; text-align:center !important;';
         saveBtn.onclick = (e) => saveToMainLibrary(img.id, e);
 
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'full-library-item-btn delete';
-        deleteBtn.innerHTML = '🗑️';
-        deleteBtn.style.cssText = 'display:inline-block !important; visibility:visible !important; opacity:1 !important; flex:0 !important; background:#0e1424 !important; color:#9aa4b2 !important; padding:10px 14px !important; border:2px solid rgba(148,163,184,.25) !important; border-radius:6px !important; cursor:pointer !important; font-size:14px !important; min-width:50px !important;';
+        deleteBtn.textContent = 'DELETE';
+        deleteBtn.style.cssText = 'display:block !important; width:100% !important; visibility:visible !important; opacity:1 !important; background:#ef4444 !important; color:white !important; padding:12px !important; border:3px solid #dc2626 !important; border-radius:6px !important; cursor:pointer !important; font-size:14px !important; font-weight:700 !important; text-align:center !important;';
         deleteBtn.onclick = (e) => deleteFromMiniLibrary(img.id, e);
 
         actions.appendChild(previewBtn);
