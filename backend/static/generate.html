@@ -792,7 +792,7 @@
           <div class="message-content">
             <div class="message-header">${msg.role === 'user' ? 'You' : 'Mini Visionary'} · ${new Date(msg.timestamp).toLocaleTimeString()}</div>
             <div class="message-text">${msg.content}</div>
-            ${msg.jobId ? `<img id="msg-img-${msg.jobId}" alt="Generated poster" class="message-image" style="display:none;">` : ''}
+            ${(msg.jobId || msg.displayUrl) ? `<img id="msg-img-${msg.id}" alt="Generated poster" class="message-image" style="display:none;">` : ''}
             ${msg.jobId ? `<div class="message-actions">
               <button class="save-btn" onclick="saveToLibrary('${msg.jobId}', ${index})">💾 Save to Library</button>
               <button class="edit-btn" onclick="startEdit('${msg.jobId}')">✏️ Edit (1 credit)</button>
@@ -806,15 +806,15 @@
 
       // Set image sources via JS (handles base64 and blob URLs properly)
       for (const msg of chatHistory) {
-        if (msg.jobId) {
-          const imgEl = document.getElementById(`msg-img-${msg.jobId}`);
+        if (msg.jobId || msg.displayUrl) {
+          const imgEl = document.getElementById(`msg-img-${msg.id}`);
           if (imgEl) {
             if (msg.displayUrl) {
               // Use cached displayUrl (base64 or blob URL)
               imgEl.src = msg.displayUrl;
               imgEl.style.display = 'block';
-            } else if (token) {
-              // Load from backend
+            } else if (msg.jobId && token) {
+              // Load from backend using job_id
               try {
                 const response = await fetch(`/api/history/${msg.jobId}/png`, {
                   headers: { 'Authorization': `Bearer ${token}` }
