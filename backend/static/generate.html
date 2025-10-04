@@ -1899,9 +1899,17 @@
 
     // Full Library Modal Functions
     function openFullLibrary() {
+      alert('DEBUG: openFullLibrary called!');
       const modal = document.getElementById('full-library-modal');
+      if (!modal) {
+        alert('ERROR: Modal element not found!');
+        return;
+      }
+      alert('DEBUG: Modal found, adding show class...');
       modal.classList.add('show');
+      alert('DEBUG: Calling renderFullLibrary...');
       renderFullLibrary();
+      alert('DEBUG: renderFullLibrary completed!');
     }
 
     function closeFullLibrary() {
