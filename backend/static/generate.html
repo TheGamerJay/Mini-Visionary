@@ -1909,6 +1909,13 @@
       modal.classList.remove('show');
     }
 
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     function renderFullLibrary() {
       const grid = document.getElementById('full-library-grid');
 
@@ -1923,7 +1930,11 @@
         return;
       }
 
-      grid.innerHTML = miniLibrary.map(img => {
+      // Clear grid first
+      grid.innerHTML = '';
+
+      // Create each item using DOM manipulation (safer than template strings)
+      miniLibrary.forEach(img => {
         const date = new Date(img.timestamp);
         const timeStr = date.toLocaleString('en-US', {
           month: 'short',
@@ -1934,26 +1945,55 @@
           hour12: true
         });
 
-        return `
-          <div class="full-library-item">
-            <img src="${img.url}" alt="${img.prompt}" class="full-library-item-image" onclick="viewLibraryImageFull('${img.url}', '${img.prompt.replace(/'/g, "\\'")}')">
-            <div class="full-library-item-info">
-              <div class="full-library-item-prompt" title="${img.prompt}">${img.prompt}</div>
-              <div class="full-library-item-meta">
-                <span>⏰ ${timeStr}</span>
-              </div>
-              <div class="full-library-item-actions" style="display:flex !important; gap:8px !important;">
-                <button class="full-library-item-btn save" onclick="saveToMainLibrary('${img.id}', event)" style="display:block !important; background:linear-gradient(90deg, #22d3ee, #ec4899) !important; color:#081018 !important; padding:8px 12px !important; border:none !important; border-radius:6px !important; cursor:pointer !important;">
-                  💾 Save to Library
-                </button>
-                <button class="full-library-item-btn delete" onclick="deleteFromMiniLibrary('${img.id}', event)" style="display:block !important; background:#0e1424 !important; color:#9aa4b2 !important; padding:8px 12px !important; border:1px solid rgba(148,163,184,.25) !important; border-radius:6px !important; cursor:pointer !important;">
-                  🗑️
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
+        const item = document.createElement('div');
+        item.className = 'full-library-item';
+
+        const imgEl = document.createElement('img');
+        imgEl.src = img.url;
+        imgEl.alt = img.prompt || '';
+        imgEl.className = 'full-library-item-image';
+        imgEl.onclick = () => viewLibraryImageFull(img.url, img.prompt);
+
+        const info = document.createElement('div');
+        info.className = 'full-library-item-info';
+
+        const promptDiv = document.createElement('div');
+        promptDiv.className = 'full-library-item-prompt';
+        promptDiv.title = img.prompt || '';
+        promptDiv.textContent = img.prompt || 'No prompt';
+
+        const meta = document.createElement('div');
+        meta.className = 'full-library-item-meta';
+        meta.innerHTML = `<span>⏰ ${timeStr}</span>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'full-library-item-actions';
+        actions.style.cssText = 'display:flex !important; gap:8px !important;';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'full-library-item-btn save';
+        saveBtn.innerHTML = '💾 Save to Library';
+        saveBtn.style.cssText = 'display:block !important; background:linear-gradient(90deg, #22d3ee, #ec4899) !important; color:#081018 !important; padding:8px 12px !important; border:none !important; border-radius:6px !important; cursor:pointer !important;';
+        saveBtn.onclick = (e) => saveToMainLibrary(img.id, e);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'full-library-item-btn delete';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.style.cssText = 'display:block !important; background:#0e1424 !important; color:#9aa4b2 !important; padding:8px 12px !important; border:1px solid rgba(148,163,184,.25) !important; border-radius:6px !important; cursor:pointer !important;';
+        deleteBtn.onclick = (e) => deleteFromMiniLibrary(img.id, e);
+
+        actions.appendChild(saveBtn);
+        actions.appendChild(deleteBtn);
+
+        info.appendChild(promptDiv);
+        info.appendChild(meta);
+        info.appendChild(actions);
+
+        item.appendChild(imgEl);
+        item.appendChild(info);
+
+        grid.appendChild(item);
+      });
     }
 
     function viewLibraryImageFull(url, prompt) {
