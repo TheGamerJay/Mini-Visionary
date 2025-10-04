@@ -768,8 +768,9 @@
         id: crypto.randomUUID(),
         role,
         content,
-        imageUrl: imageUrl && imageUrl.startsWith('data:') ? null : imageUrl, // Don't save base64, only save job_id
-        jobId: jobId, // Store job_id to load image from backend
+        imageUrl: imageUrl && imageUrl.startsWith('data:') ? null : imageUrl, // Don't save base64 to localStorage
+        displayUrl: imageUrl, // Keep for immediate display (not saved to localStorage)
+        jobId: jobId, // Store job_id to load image from backend on page reload
         timestamp: new Date().toISOString()
       };
       chatHistory.push(message);
@@ -785,13 +786,13 @@
     async function renderChatHistory() {
       const container = document.getElementById('chat-messages');
 
-      // First render with placeholders for images
+      // First render with images (use displayUrl if available, otherwise placeholder)
       container.innerHTML = chatHistory.map((msg, index) => `
         <div class="message ${msg.role}">
           <div class="message-content">
             <div class="message-header">${msg.role === 'user' ? 'You' : 'Mini Visionary'} · ${new Date(msg.timestamp).toLocaleTimeString()}</div>
             <div class="message-text">${msg.content}</div>
-            ${msg.jobId ? `<img id="msg-img-${msg.jobId}" src="" alt="Generated poster" class="message-image" style="display:none;">` : ''}
+            ${msg.jobId ? `<img id="msg-img-${msg.jobId}" src="${msg.displayUrl || ''}" alt="Generated poster" class="message-image" style="${msg.displayUrl ? '' : 'display:none;'}">` : ''}
             ${msg.jobId ? `<div class="message-actions">
               <button class="save-btn" onclick="saveToLibrary('${msg.jobId}', ${index})">💾 Save to Library</button>
               <button class="edit-btn" onclick="startEdit('${msg.jobId}')">✏️ Edit (1 credit)</button>
@@ -800,9 +801,9 @@
         </div>
       `).join('');
 
-      // Load images from backend using job_id
+      // Load images from backend for messages without displayUrl (from page reload)
       for (const msg of chatHistory) {
-        if (msg.jobId && token) {
+        if (msg.jobId && !msg.displayUrl && token) {
           try {
             const imgEl = document.getElementById(`msg-img-${msg.jobId}`);
             if (imgEl) {
@@ -815,6 +816,8 @@
                 const imageUrl = URL.createObjectURL(blob);
                 imgEl.src = imageUrl;
                 imgEl.style.display = 'block';
+                // Cache displayUrl in memory (not saved to localStorage)
+                msg.displayUrl = imageUrl;
               }
             }
           } catch (e) {
@@ -887,8 +890,8 @@
           let message = '✨ Here\'s your generated image!';
           message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
 
-          // Pass job_id instead of base64 imageUrl to avoid localStorage quota
-          addMessage('assistant', message, null, data.job_id);
+          // Pass imageUrl for immediate display, jobId for persistence (displayUrl not saved to localStorage)
+          addMessage('assistant', message, imageUrl, data.job_id);
           addToImageGrid(imageUrl, prompt, data.job_id);
           addToMiniLibrary(imageUrl, prompt, data.job_id);
         } else {
@@ -1856,6 +1859,9 @@
         const data = await response.json();
 
         if (data.ok && data.image_b64_png) {
+          // Convert base64 to data URL for immediate display
+          const imageUrl = `data:image/png;base64,${data.image_b64_png}`;
+
           // Update credits display
           const creditsEl = document.getElementById('user-credits');
           if (creditsEl) creditsEl.textContent = data.credits || 0;
@@ -1863,7 +1869,7 @@
           let message = '✏️ Image edited!';
           message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
 
-          addMessage('assistant', message, null, data.job_id);
+          addMessage('assistant', message, imageUrl, data.job_id);
           await loadMiniLibraryForUser();
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Edit failed'}`);
