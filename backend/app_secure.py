@@ -222,15 +222,23 @@ def poster_generate(db):
             return fail(err, 402)
 
         # OpenAI call
-        resp = client.images.generate(
-            model="dall-e-3",
-            prompt=prompt,
-            size=size,
-            n=1,
-            response_format="b64_json"
-        )
-        b64 = resp.data[0].b64_json
-        png = base64.b64decode(b64)
+        try:
+            resp = client.images.generate(
+                model="dall-e-3",
+                prompt=prompt,
+                size=size,
+                n=1,
+                response_format="b64_json"
+            )
+            b64 = resp.data[0].b64_json
+            png = base64.b64decode(b64)
+        except Exception as openai_err:
+            # Check if it's a content policy violation
+            error_str = str(openai_err)
+            if 'safety system' in error_str or 'content_policy_violation' in error_str:
+                return fail("🚫 Your prompt was blocked by OpenAI's safety system. Please try a different, safer prompt.", 400)
+            # Re-raise other errors
+            raise
 
         job = ImageJob(
             user_id=user.id,
@@ -304,16 +312,24 @@ def edit_poster(db):
         mask.save(mask_path)
 
         # OpenAI edit call
-        with open(tmp_path, "rb") as img_file, open(mask_path, "rb") as mask_file:
-            resp = client.images.edit(
-                model="dall-e-2",  # Only dall-e-2 supports edit
-                image=img_file,
-                mask=mask_file,
-                prompt=prompt,
-                n=1,
-                size="512x512",  # dall-e-2 only supports 256x256, 512x512, 1024x1024
-                response_format="b64_json"
-            )
+        try:
+            with open(tmp_path, "rb") as img_file, open(mask_path, "rb") as mask_file:
+                resp = client.images.edit(
+                    model="dall-e-2",  # Only dall-e-2 supports edit
+                    image=img_file,
+                    mask=mask_file,
+                    prompt=prompt,
+                    n=1,
+                    size="512x512",  # dall-e-2 only supports 256x256, 512x512, 1024x1024
+                    response_format="b64_json"
+                )
+        except Exception as openai_err:
+            # Check if it's a content policy violation
+            error_str = str(openai_err)
+            if 'safety system' in error_str or 'content_policy_violation' in error_str:
+                return fail("🚫 Edit blocked by OpenAI's safety system. DALL-E 2 edit is very strict - try generating a new image instead.", 400)
+            # Re-raise other errors
+            raise
 
         b64 = resp.data[0].b64_json
         png = base64.b64decode(b64)
