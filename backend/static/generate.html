@@ -763,7 +763,7 @@
       document.getElementById('bottom-input').style.display = 'block';
     }
 
-    function addMessage(role, content, imageUrl = null, jobId = null) {
+    async function addMessage(role, content, imageUrl = null, jobId = null) {
       const message = {
         id: crypto.randomUUID(),
         role,
@@ -779,7 +779,7 @@
       if (chatHistory.length === 1) {
         showChatMode();
       }
-      renderChatHistory();
+      await renderChatHistory();
       scrollToBottom();
     }
 
@@ -800,6 +800,9 @@
           </div>
         </div>
       `).join('');
+
+      // Wait for DOM to update before setting image sources
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Set image sources via JS (handles base64 and blob URLs properly)
       for (const msg of chatHistory) {
