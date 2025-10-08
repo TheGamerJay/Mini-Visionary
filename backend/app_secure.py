@@ -574,11 +574,12 @@ def create_checkout(db):
         success_url = body.get("success_url", "https://minivisionary.soulbridgeai.com/static/wallet.html?payment=success")
         cancel_url = body.get("cancel_url", "https://minivisionary.soulbridgeai.com/static/store.html?payment=canceled")
 
-        # Define credit packages (sku -> credits and price)
+        # Define credit packages (sku -> credits and price in cents)
         packages = {
-            "starter": {"credits": 50, "price": 500},      # $5.00
-            "pro": {"credits": 150, "price": 1200},        # $12.00
-            "ultimate": {"credits": 500, "price": 3500},   # $35.00
+            "starter": {"credits": 60, "price": 900},       # $9.00 - 60 credits (6 posters)
+            "standard": {"credits": 100, "price": 1500},    # $15.00 - 100 credits (10 posters)
+            "studio": {"credits": 400, "price": 4900},      # $49.00 - 400 credits (40 posters)
+            "adfree": {"credits": 0, "price": 499},         # $4.99/month - Ad-free subscription
         }
 
         if sku not in packages:
@@ -586,30 +587,48 @@ def create_checkout(db):
 
         package = packages[sku]
 
+        # Determine mode and line items based on SKU
+        if sku == "adfree":
+            # Subscription mode for ad-free
+            mode = "subscription"
+            product_name = "Ad-Free Subscription"
+            product_desc = "Remove ads and promotional banners"
+        else:
+            # One-time payment for credits
+            mode = "payment"
+            product_name = f"{package['credits']} Credits"
+            product_desc = f"Mini Visionary AI Credits - {sku.capitalize()} Pack"
+
         # Create Stripe checkout session
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{
+        session_params = {
+            "payment_method_types": ["card"],
+            "line_items": [{
                 "price_data": {
                     "currency": "usd",
                     "product_data": {
-                        "name": f"{package['credits']} Credits",
-                        "description": f"Mini Visionary AI Credits - {sku.capitalize()} Pack"
+                        "name": product_name,
+                        "description": product_desc
                     },
                     "unit_amount": package["price"],
                 },
                 "quantity": 1,
             }],
-            mode="payment",
-            success_url=success_url,
-            cancel_url=cancel_url,
-            client_reference_id=str(user.id),
-            metadata={
+            "mode": mode,
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+            "client_reference_id": str(user.id),
+            "metadata": {
                 "user_id": str(user.id),
                 "credits": str(package["credits"]),
                 "sku": sku
             }
-        )
+        }
+
+        # Add recurring interval for subscriptions
+        if mode == "subscription":
+            session_params["line_items"][0]["price_data"]["recurring"] = {"interval": "month"}
+
+        session = stripe.checkout.Session.create(**session_params)
 
         return jsonify({"ok": True, "url": session.url})
     except Exception as e:
