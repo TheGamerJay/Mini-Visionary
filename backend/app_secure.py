@@ -213,6 +213,62 @@ def me(db):
         }
     })
 
+@app.put("/api/profile/update")
+@jwt_required()
+@with_session
+def update_profile(db):
+    """Update user profile (display name)"""
+    uid = get_jwt_identity()
+    user = db.query(User).get(uid)
+
+    if not user:
+        return fail("User not found", 404)
+
+    data = request.get_json()
+    display_name = data.get("display_name", "").strip()
+
+    if not display_name:
+        return fail("Display name is required", 400)
+
+    if len(display_name) > 50:
+        return fail("Display name must be 50 characters or less", 400)
+
+    user.display_name = display_name
+    db.commit()
+
+    return jsonify({"ok": True, "display_name": display_name})
+
+@app.post("/api/profile/change-password")
+@jwt_required()
+@with_session
+def change_password(db):
+    """Change user password"""
+    uid = get_jwt_identity()
+    user = db.query(User).get(uid)
+
+    if not user:
+        return fail("User not found", 404)
+
+    data = request.get_json()
+    current_password = data.get("current_password", "")
+    new_password = data.get("new_password", "")
+
+    if not current_password or not new_password:
+        return fail("Current and new password are required", 400)
+
+    # Verify current password
+    if not bcrypt.checkpw(current_password.encode("utf-8"), user.password_hash.encode("utf-8")):
+        return fail("Current password is incorrect", 401)
+
+    if len(new_password) < 8:
+        return fail("New password must be at least 8 characters", 400)
+
+    # Hash and update new password
+    user.password_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    db.commit()
+
+    return jsonify({"ok": True, "message": "Password updated successfully"})
+
 # --- Credits ---
 def ensure_credits(user, needed):
     if user.credits < needed:
