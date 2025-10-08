@@ -337,7 +337,7 @@
     async function toggleReaction(id, type) {
       const item = galleryItems.find(i => i.id === id);
       if (!item) {
-        alert('Post not found!');
+        alert(`Post not found! ID: ${id}, Gallery has ${galleryItems.length} items`);
         return;
       }
 
