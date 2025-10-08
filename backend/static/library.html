@@ -326,7 +326,6 @@
       </div>
       <div class="toolbar-right">
         <input type="file" id="file-input" style="display:none;" accept="image/*" onchange="uploadFile()">
-        <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">📤 Upload</button>
         <button class="btn btn-primary" onclick="openNewFolderModal()">+ New Folder</button>
       </div>
     </div>
@@ -337,6 +336,7 @@
       <div class="empty-state-icon">📁</div>
       <h2>Your library is empty</h2>
       <p>Upload your first poster or create a folder to get started</p>
+      <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Upload Image</button>
     </div>
   </div>
 
