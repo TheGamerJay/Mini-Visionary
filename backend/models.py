@@ -252,6 +252,7 @@ class GalleryPost(Base):
     story: Mapped[Optional[str]] = mapped_column(Text)  # Optional story/description
     tags: Mapped[str] = mapped_column(Text)  # JSON array of tags
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)  # Demo posts cannot be deleted
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     user: Mapped["User"] = relationship("User")

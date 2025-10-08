@@ -326,7 +326,7 @@
                 <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
                   Total reactions: ${Object.values(item.reactions).reduce((a, b) => a + b, 0)}
                 </div>
-                ${item.id.startsWith('uploaded_') ? `<button class="btn-delete" onclick="deleteImage('${item.id}')">🗑️ Delete</button>` : ''}
+                ${!item.is_demo && item.user_id === currentUserId ? `<button class="btn-delete" onclick="deleteImage('${item.id}')">🗑️ Delete</button>` : ''}
               </div>
             </div>
           </div>

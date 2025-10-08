@@ -793,6 +793,7 @@ def get_gallery_posts(db):
                 "story": post.story,
                 "tags": json.loads(post.tags) if post.tags else [],
                 "reactions": reaction_counts,
+                "is_demo": post.is_demo,
                 "created_at": post.created_at.isoformat()
             })
 
