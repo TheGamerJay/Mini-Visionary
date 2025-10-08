@@ -238,3 +238,39 @@ class Library(Base):
 
 
 Index("ix_library_user_collection", Library.user_id, Library.collection_name)
+
+
+class GalleryPost(Base):
+    """Community gallery posts - users share their generated images"""
+    __tablename__ = "gallery_posts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    image_job_id: Mapped[Optional[int]] = mapped_column(ForeignKey("image_jobs.id", ondelete="SET NULL"), nullable=True)
+    image_url: Mapped[str] = mapped_column(Text)  # Can be base64 or external URL
+    prompt: Mapped[str] = mapped_column(Text)
+    story: Mapped[Optional[str]] = mapped_column(Text)  # Optional story/description
+    tags: Mapped[str] = mapped_column(Text)  # JSON array of tags
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    user: Mapped["User"] = relationship("User")
+    reactions: Mapped[list["Reaction"]] = relationship(back_populates="post", cascade="all, delete-orphan")
+
+
+class Reaction(Base):
+    """User reactions to gallery posts"""
+    __tablename__ = "reactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("gallery_posts.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    reaction_type: Mapped[str] = mapped_column(String(20))  # love, magic, peace, fire, gratitude, star, applause, support
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    post: Mapped["GalleryPost"] = relationship(back_populates="reactions")
+    user: Mapped["User"] = relationship("User")
+
+
+Index("ix_reactions_post", Reaction.post_id)
+Index("ix_reactions_user_post", Reaction.user_id, Reaction.post_id, unique=True)  # One reaction per user per post

@@ -12,7 +12,7 @@ from flask_limiter.util import get_remote_address
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Use existing Mini-Visionary models and session management
-from models import User, ImageJob, Library, get_session
+from models import User, ImageJob, Library, GalleryPost, Reaction, get_session
 
 # --- OpenAI new SDK ---
 from openai import OpenAI
@@ -735,14 +735,124 @@ def gallery_post(db):
         user.credits -= COST_GALLERY_POST
         db.commit()
 
+        # Create gallery post with image_url from request
+        import json
+        data = request.get_json() or {}
+        prompt = data.get("prompt", "").strip()
+        story = data.get("story", "").strip()
+        tags = data.get("tags", [])
+        image_url = data.get("image_url", "").strip()
+
+        if not prompt or not image_url:
+            return fail("Prompt and image required.", 400)
+
+        post = GalleryPost(
+            user_id=uid,
+            image_url=image_url,
+            prompt=prompt,
+            story=story or None,
+            tags=json.dumps(tags),
+            is_deleted=False
+        )
+        db.add(post)
+        db.commit()
+
         return jsonify({
             "ok": True,
             "credits": user.credits,
+            "post_id": post.id,
             "message": f"Posted to gallery! {COST_GALLERY_POST} credits deducted."
         })
     except Exception as e:
         traceback.print_exc()
         return fail(f"Gallery post failed: {str(e)}", 500)
+
+@app.get("/api/gallery/posts")
+@with_session
+def get_gallery_posts(db):
+    """Get all community gallery posts"""
+    import json
+    try:
+        posts = db.query(GalleryPost).filter_by(is_deleted=False).order_by(GalleryPost.created_at.desc()).all()
+
+        result = []
+        for post in posts:
+            reaction_counts = {
+                "love": 0, "magic": 0, "peace": 0, "fire": 0,
+                "gratitude": 0, "star": 0, "applause": 0, "support": 0
+            }
+            for reaction in post.reactions:
+                if reaction.reaction_type in reaction_counts:
+                    reaction_counts[reaction.reaction_type] += 1
+
+            result.append({
+                "id": post.id,
+                "user_id": post.user_id,
+                "url": post.image_url,
+                "prompt": post.prompt,
+                "story": post.story,
+                "tags": json.loads(post.tags) if post.tags else [],
+                "reactions": reaction_counts,
+                "created_at": post.created_at.isoformat()
+            })
+
+        return jsonify({"ok": True, "posts": result})
+    except Exception as e:
+        traceback.print_exc()
+        return fail(f"Failed to load gallery: {str(e)}", 500)
+
+@app.post("/api/gallery/<int:post_id>/react")
+@jwt_required()
+@with_session
+def toggle_reaction(db, post_id):
+    """Toggle a reaction on a gallery post"""
+    try:
+        uid = get_jwt_identity()
+        data = request.get_json() or {}
+        reaction_type = data.get("reaction_type")
+
+        if not reaction_type:
+            return fail("Reaction type required.", 400)
+
+        post = db.query(GalleryPost).filter_by(id=post_id, is_deleted=False).first()
+        if not post:
+            return fail("Post not found.", 404)
+
+        existing = db.query(Reaction).filter_by(post_id=post_id, user_id=uid).first()
+
+        if existing:
+            if existing.reaction_type == reaction_type:
+                db.delete(existing)
+                db.commit()
+                return jsonify({"ok": True, "action": "removed", "reaction_type": reaction_type})
+            else:
+                existing.reaction_type = reaction_type
+                db.commit()
+                return jsonify({"ok": True, "action": "changed", "reaction_type": reaction_type})
+        else:
+            reaction = Reaction(post_id=post_id, user_id=uid, reaction_type=reaction_type)
+            db.add(reaction)
+            db.commit()
+            return jsonify({"ok": True, "action": "added", "reaction_type": reaction_type})
+    except Exception as e:
+        traceback.print_exc()
+        return fail(f"Failed to react: {str(e)}", 500)
+
+@app.get("/api/gallery/<int:post_id>/my-reaction")
+@jwt_required()
+@with_session
+def get_my_reaction(db, post_id):
+    """Get current user's reaction to a post"""
+    try:
+        uid = get_jwt_identity()
+        reaction = db.query(Reaction).filter_by(post_id=post_id, user_id=uid).first()
+        if reaction:
+            return jsonify({"ok": True, "reaction_type": reaction.reaction_type})
+        else:
+            return jsonify({"ok": True, "reaction_type": None})
+    except Exception as e:
+        traceback.print_exc()
+        return fail(f"Failed to get reaction: {str(e)}", 500)
 
 @app.post("/api/payments/webhook")
 @with_session
