@@ -322,7 +322,7 @@
     }
 
     async function toggleReaction(id, type) {
-      const item = galleryItems.find(i => i.id === id);
+      const item = galleryItems.find(i => i.id == id);
       if (!item) {
         alert(`Post not found! ID: ${id}, Gallery has ${galleryItems.length} items`);
         return;
@@ -387,13 +387,13 @@
     function deleteImage(id) {
       if (!confirm('Delete this image from the gallery?')) return;
 
-      galleryItems = galleryItems.filter(i => i.id !== id);
+      galleryItems = galleryItems.filter(i => i.id != id);
       saveGallery();
       renderGallery();
     }
 
     function openModal(id) {
-      const item = galleryItems.find(i => i.id === id);
+      const item = galleryItems.find(i => i.id == id);
       if (!item) return;
 
       currentModal = item;
