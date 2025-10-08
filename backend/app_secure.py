@@ -17,6 +17,10 @@ from models import User, ImageJob, Library, get_session
 from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# --- Stripe ---
+import stripe
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 app = Flask(__name__)
 
 # Config
@@ -555,6 +559,62 @@ def add_credits_admin(db):
 
     return jsonify({"ok": True, "credits": user.credits, "message": "Added 100 credits"})
 
+
+# --- Payments ---
+@app.post("/api/payments/checkout")
+@jwt_required()
+@with_session
+def create_checkout(db):
+    try:
+        uid = get_jwt_identity()
+        user = db.query(User).get(uid)
+        body = request.get_json() or {}
+
+        sku = body.get("sku")
+        success_url = body.get("success_url", "https://minivisionary.soulbridgeai.com/static/wallet.html?payment=success")
+        cancel_url = body.get("cancel_url", "https://minivisionary.soulbridgeai.com/static/store.html?payment=canceled")
+
+        # Define credit packages (sku -> credits and price)
+        packages = {
+            "starter": {"credits": 50, "price": 500},      # $5.00
+            "pro": {"credits": 150, "price": 1200},        # $12.00
+            "ultimate": {"credits": 500, "price": 3500},   # $35.00
+        }
+
+        if sku not in packages:
+            return fail("Invalid package.", 400)
+
+        package = packages[sku]
+
+        # Create Stripe checkout session
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": f"{package['credits']} Credits",
+                        "description": f"Mini Visionary AI Credits - {sku.capitalize()} Pack"
+                    },
+                    "unit_amount": package["price"],
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            client_reference_id=str(user.id),
+            metadata={
+                "user_id": str(user.id),
+                "credits": str(package["credits"]),
+                "sku": sku
+            }
+        )
+
+        return jsonify({"ok": True, "url": session.url})
+    except Exception as e:
+        traceback.print_exc()
+        return fail(f"Checkout failed: {str(e)}", 500)
 
 # --- Health ---
 @app.get("/api/health")
