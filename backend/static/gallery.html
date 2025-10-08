@@ -575,6 +575,13 @@
             'Authorization': `Bearer ${token}`
           }
         });
+
+        if (response.status === 401) {
+          // Token expired or missing - redirect to login
+          window.location.href = '/login.html';
+          return;
+        }
+
         const data = await response.json();
         if (data.ok) {
           document.getElementById('user-credits').textContent = data.credits || 0;
