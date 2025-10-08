@@ -616,6 +616,37 @@ def create_checkout(db):
         traceback.print_exc()
         return fail(f"Checkout failed: {str(e)}", 500)
 
+@app.post("/api/payments/webhook")
+@with_session
+def stripe_webhook(db):
+    """Handle Stripe webhook events (payment completion)"""
+    payload = request.data
+    sig_header = request.headers.get("Stripe-Signature")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
+        )
+    except ValueError:
+        return fail("Invalid payload", 400)
+    except stripe.error.SignatureVerificationError:
+        return fail("Invalid signature", 400)
+
+    # Handle checkout.session.completed event
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        user_id = session.get("metadata", {}).get("user_id")
+        credits = session.get("metadata", {}).get("credits")
+
+        if user_id and credits:
+            user = db.query(User).get(int(user_id))
+            if user:
+                user.credits += int(credits)
+                db.commit()
+
+    return jsonify({"ok": True})
+
 # --- Health ---
 @app.get("/api/health")
 def health():
