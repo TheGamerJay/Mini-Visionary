@@ -552,7 +552,7 @@
           // Set currentUserId for reaction persistence
           currentUserId = data.user?.id || data.id || data.email;
           // Reload demo data to apply user reactions
-          loadDemoData();
+          await loadDemoData();
         } else {
           document.getElementById('user-credits').textContent = '0';
         }
@@ -562,7 +562,9 @@
     }
 
     // Initialize - load user first, then data
-    loadUserCredits();
+    (async () => {
+      await loadUserCredits();
+    })();
   </script>
 </body>
 </html>
