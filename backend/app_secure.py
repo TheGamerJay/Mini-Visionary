@@ -32,6 +32,7 @@ COST_GEN = int(os.getenv("CREDIT_COST_GENERATE", "10"))
 COST_EDIT = int(os.getenv("CREDIT_COST_EDIT", "1"))
 COST_VARIATION = int(os.getenv("CREDIT_COST_VARIATION", "5"))
 COST_REMIX = int(os.getenv("CREDIT_COST_REMIX", "15"))
+COST_GALLERY_POST = int(os.getenv("CREDIT_COST_GALLERY_POST", "3"))
 
 # Allowed image sizes
 ALLOWED_SIZES = {"1024x1024", "1024x1792", "1792x1024"}
@@ -625,6 +626,33 @@ def create_checkout(db):
     except Exception as e:
         traceback.print_exc()
         return fail(f"Checkout failed: {str(e)}", 500)
+
+# --- Gallery ---
+@app.post("/api/gallery/post")
+@jwt_required()
+@with_session
+def gallery_post(db):
+    """Deduct credits for posting to community gallery"""
+    try:
+        uid = get_jwt_identity()
+        user = db.query(User).get(uid)
+
+        # Check and deduct credits
+        ok, err = ensure_credits(user, COST_GALLERY_POST)
+        if not ok:
+            return fail(err, 402)
+
+        user.credits -= COST_GALLERY_POST
+        db.commit()
+
+        return jsonify({
+            "ok": True,
+            "credits": user.credits,
+            "message": f"Posted to gallery! {COST_GALLERY_POST} credits deducted."
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return fail(f"Gallery post failed: {str(e)}", 500)
 
 @app.post("/api/payments/webhook")
 @with_session
