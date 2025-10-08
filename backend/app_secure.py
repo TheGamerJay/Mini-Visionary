@@ -103,6 +103,94 @@ def login(db):
     token = create_access_token(identity=user.id)
     return jsonify({"ok": True, "token": token, "credits": user.credits})
 
+@app.post("/api/auth/forgot")
+@with_session
+def forgot_password(db):
+    """Send password reset email"""
+    try:
+        data = request.get_json() or {}
+        email = (data.get("email") or "").strip().lower()
+
+        if not email:
+            return fail("Email required.", 400)
+
+        user = db.query(User).filter_by(email=email).first()
+
+        # Always return success to prevent email enumeration
+        if not user:
+            return jsonify({"ok": True, "message": "If that email exists, a reset link has been sent."})
+
+        # Generate reset token (JWT with 1 hour expiration)
+        reset_token = create_access_token(identity=user.id, expires_delta=timedelta(hours=1))
+
+        # Send email
+        from mailer import send_email_post
+        reset_url = f"{FRONTEND_ORIGIN}/reset-password.html?token={reset_token}"
+
+        html = f"""
+        <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Reset Your Password</h2>
+            <p>Hi there,</p>
+            <p>You requested to reset your password for Mini-Visionary. Click the button below to reset it:</p>
+            <p style="margin: 30px 0;">
+                <a href="{reset_url}" style="background: linear-gradient(90deg, #22d3ee, #ec4899); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Reset Password</a>
+            </p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="color: #666; word-break: break-all;">{reset_url}</p>
+            <p><strong>This link expires in 1 hour.</strong></p>
+            <p>If you didn't request this, you can safely ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+            <p style="color: #999; font-size: 12px;">Mini-Visionary - You Envision it, We Generate it</p>
+        </div>
+        """
+
+        send_email_post(
+            to=email,
+            subject="Reset Your Password - Mini-Visionary",
+            html=html
+        )
+
+        return jsonify({"ok": True, "message": "If that email exists, a reset link has been sent."})
+    except Exception as e:
+        traceback.print_exc()
+        return fail("Failed to send reset email. Please try again later.", 500)
+
+@app.post("/api/auth/reset")
+@with_session
+def reset_password(db):
+    """Reset password with token"""
+    try:
+        data = request.get_json() or {}
+        token = data.get("token", "").strip()
+        new_password = data.get("password", "")
+
+        if not token or not new_password:
+            return fail("Token and password required.", 400)
+
+        if len(new_password) < 8:
+            return fail("Password must be at least 8 characters.", 400)
+
+        # Verify token
+        from flask_jwt_extended import decode_token
+        try:
+            payload = decode_token(token)
+            user_id = int(payload["sub"])
+        except Exception:
+            return fail("Invalid or expired reset token.", 401)
+
+        user = db.query(User).get(user_id)
+        if not user:
+            return fail("User not found.", 404)
+
+        # Update password
+        user.password_hash = generate_password_hash(new_password)
+        db.commit()
+
+        return jsonify({"ok": True, "message": "Password reset successfully. You can now login."})
+    except Exception as e:
+        traceback.print_exc()
+        return fail("Failed to reset password.", 500)
+
 @app.get("/api/me")
 @jwt_required()
 @with_session
