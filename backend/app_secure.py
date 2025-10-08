@@ -574,12 +574,28 @@ def create_checkout(db):
         success_url = body.get("success_url", "https://minivisionary.soulbridgeai.com/static/wallet.html?payment=success")
         cancel_url = body.get("cancel_url", "https://minivisionary.soulbridgeai.com/static/store.html?payment=canceled")
 
-        # Define credit packages (sku -> credits and price in cents)
+        # Define credit packages with Stripe Price IDs
         packages = {
-            "starter": {"credits": 60, "price": 900},       # $9.00 - 60 credits (6 posters)
-            "standard": {"credits": 100, "price": 1500},    # $15.00 - 100 credits (10 posters)
-            "studio": {"credits": 400, "price": 4900},      # $49.00 - 400 credits (40 posters)
-            "adfree": {"credits": 0, "price": 499},         # $4.99/month - Ad-free subscription
+            "starter": {
+                "credits": 60,
+                "price_id": os.getenv("STORE_PRICE_STARTER", "price_1SAx3wQhGNo4dMlWbpZ5h2uy"),
+                "mode": "payment"
+            },
+            "standard": {
+                "credits": 100,
+                "price_id": os.getenv("STORE_PRICE_STANDARD", "price_1SAx4eQhGNo4dMlWWq23PoHo"),
+                "mode": "payment"
+            },
+            "studio": {
+                "credits": 400,
+                "price_id": os.getenv("STORE_PRICE_STUDIO", "price_1SAx66QhGNo4dMlWRdR1m78Q"),
+                "mode": "payment"
+            },
+            "adfree": {
+                "credits": 0,
+                "price_id": os.getenv("STORE_PRICE_ADFREE", "price_1SB0j5QhGNo4dMlWyYwGJabi"),
+                "mode": "subscription"
+            }
         }
 
         if sku not in packages:
@@ -587,48 +603,23 @@ def create_checkout(db):
 
         package = packages[sku]
 
-        # Determine mode and line items based on SKU
-        if sku == "adfree":
-            # Subscription mode for ad-free
-            mode = "subscription"
-            product_name = "Ad-Free Subscription"
-            product_desc = "Remove ads and promotional banners"
-        else:
-            # One-time payment for credits
-            mode = "payment"
-            product_name = f"{package['credits']} Credits"
-            product_desc = f"Mini Visionary AI Credits - {sku.capitalize()} Pack"
-
-        # Create Stripe checkout session
-        session_params = {
-            "payment_method_types": ["card"],
-            "line_items": [{
-                "price_data": {
-                    "currency": "usd",
-                    "product_data": {
-                        "name": product_name,
-                        "description": product_desc
-                    },
-                    "unit_amount": package["price"],
-                },
+        # Create Stripe checkout session using Price ID
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price": package["price_id"],
                 "quantity": 1,
             }],
-            "mode": mode,
-            "success_url": success_url,
-            "cancel_url": cancel_url,
-            "client_reference_id": str(user.id),
-            "metadata": {
+            mode=package["mode"],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            client_reference_id=str(user.id),
+            metadata={
                 "user_id": str(user.id),
                 "credits": str(package["credits"]),
                 "sku": sku
             }
-        }
-
-        # Add recurring interval for subscriptions
-        if mode == "subscription":
-            session_params["line_items"][0]["price_data"]["recurring"] = {"interval": "month"}
-
-        session = stripe.checkout.Session.create(**session_params)
+        )
 
         return jsonify({"ok": True, "url": session.url})
     except Exception as e:
