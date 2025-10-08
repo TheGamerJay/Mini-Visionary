@@ -336,7 +336,10 @@
 
     async function toggleReaction(id, type) {
       const item = galleryItems.find(i => i.id === id);
-      if (!item) return;
+      if (!item) {
+        alert('Post not found!');
+        return;
+      }
 
       const reactionEmojis = {
         'love': '❤️',
@@ -373,6 +376,12 @@
           body: JSON.stringify({ reaction_type: type })
         });
 
+        if (response.status === 401) {
+          alert('Session expired. Please login again.');
+          window.location.href = '/auth.html#login';
+          return;
+        }
+
         const data = await response.json();
 
         if (data.ok) {
@@ -384,7 +393,7 @@
           alert(`Failed to add reaction: ${data.error || 'Unknown error'}`);
         }
       } catch (error) {
-        alert('Failed to add reaction. Please try again.');
+        alert(`Error: ${error.message}`);
       }
     }
 
