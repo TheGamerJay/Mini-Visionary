@@ -233,31 +233,18 @@
     // Load gallery posts from backend
     async function loadDemoData() {
       try {
-        // Fetch all gallery posts from backend
-        const response = await fetch('/api/gallery/posts');
+        // Fetch all gallery posts with user reactions in a single call
+        const response = await fetch('/api/gallery/posts', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await response.json();
 
         if (data.ok && data.posts) {
-          // Fetch user reactions for all posts
-          const postsWithUserReactions = await Promise.all(
-            data.posts.map(async (post) => {
-              try {
-                const reactionResponse = await fetch(`/api/gallery/${post.id}/my-reaction`, {
-                  headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const reactionData = await reactionResponse.json();
-                return {
-                  ...post,
-                  userReacted: reactionData.reaction_type || null,
-                  createdAt: post.created_at
-                };
-              } catch (e) {
-                return { ...post, userReacted: null, createdAt: post.created_at };
-              }
-            })
-          );
-
-          galleryItems = postsWithUserReactions;
+          galleryItems = data.posts.map(post => ({
+            ...post,
+            userReacted: post.user_reacted || null,
+            createdAt: post.created_at
+          }));
         } else {
           galleryItems = [];
         }

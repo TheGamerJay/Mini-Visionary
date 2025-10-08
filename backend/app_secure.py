@@ -770,9 +770,18 @@ def gallery_post(db):
 @app.get("/api/gallery/posts")
 @with_session
 def get_gallery_posts(db):
-    """Get all community gallery posts"""
+    """Get all community gallery posts with optional user reactions"""
     import json
+    from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
     try:
+        # Try to get current user (optional - endpoint works without auth)
+        current_user_id = None
+        try:
+            verify_jwt_in_request(optional=True)
+            current_user_id = get_jwt_identity()
+        except:
+            pass
+
         posts = db.query(GalleryPost).filter_by(is_deleted=False).order_by(GalleryPost.created_at.desc()).all()
 
         result = []
@@ -781,9 +790,14 @@ def get_gallery_posts(db):
                 "love": 0, "magic": 0, "peace": 0, "fire": 0,
                 "gratitude": 0, "star": 0, "applause": 0, "support": 0
             }
+            user_reaction = None
+
             for reaction in post.reactions:
                 if reaction.reaction_type in reaction_counts:
                     reaction_counts[reaction.reaction_type] += 1
+                # Check if this is the current user's reaction
+                if current_user_id and reaction.user_id == current_user_id:
+                    user_reaction = reaction.reaction_type
 
             result.append({
                 "id": post.id,
@@ -793,6 +807,7 @@ def get_gallery_posts(db):
                 "story": post.story,
                 "tags": json.loads(post.tags) if post.tags else [],
                 "reactions": reaction_counts,
+                "user_reacted": user_reaction,
                 "is_demo": post.is_demo,
                 "created_at": post.created_at.isoformat()
             })
