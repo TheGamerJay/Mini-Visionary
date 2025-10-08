@@ -870,6 +870,35 @@ def get_my_reaction(db, post_id):
         traceback.print_exc()
         return fail(f"Failed to get reaction: {str(e)}", 500)
 
+@app.delete("/api/gallery/<int:post_id>/delete")
+@jwt_required()
+@with_session
+def delete_gallery_post(db, post_id):
+    """Delete a gallery post (soft delete, only owner or demo posts cannot be deleted)"""
+    try:
+        uid = get_jwt_identity()
+        post = db.query(GalleryPost).filter_by(id=post_id).first()
+
+        if not post:
+            return fail("Post not found", 404)
+
+        # Check if user owns the post
+        if post.user_id != uid:
+            return fail("You can only delete your own posts", 403)
+
+        # Check if it's a demo post
+        if post.is_demo:
+            return fail("Demo posts cannot be deleted", 403)
+
+        # Soft delete
+        post.is_deleted = True
+        db.commit()
+
+        return jsonify({"ok": True, "message": "Post deleted successfully"})
+    except Exception as e:
+        traceback.print_exc()
+        return fail(f"Failed to delete post: {str(e)}", 500)
+
 @app.post("/api/payments/webhook")
 @with_session
 def stripe_webhook(db):

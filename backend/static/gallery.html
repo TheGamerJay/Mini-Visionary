@@ -384,12 +384,29 @@
       }
     }
 
-    function deleteImage(id) {
+    async function deleteImage(id) {
       if (!confirm('Delete this image from the gallery?')) return;
 
-      galleryItems = galleryItems.filter(i => i.id != id);
-      saveGallery();
-      renderGallery();
+      try {
+        const response = await fetch(`/api/gallery/${id}/delete`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          // Remove from local state
+          galleryItems = galleryItems.filter(i => i.id != id);
+          renderGallery();
+        } else {
+          alert(`Failed to delete: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
     }
 
     function openModal(id) {
@@ -507,11 +524,6 @@
         console.error('Upload error:', error);
         alert('Failed to post. Please try again.');
       }
-    }
-
-    function saveGallery() {
-      const userUploads = galleryItems.filter(i => i.id.startsWith('uploaded_'));
-      localStorage.setItem('mv_gallery_items', JSON.stringify(userUploads));
     }
 
     function scrollToTop() {
