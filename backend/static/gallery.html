@@ -149,7 +149,7 @@
           <button class="btn btn-clear" onclick="closeModal()">Close</button>
         </div>
       </div>
-      <img id="modal-img" class="modal-img" src="" alt="">
+      <img id="modal-img" class="modal-img" loading="lazy" src="" alt="">
       <div class="modal-footer">
         <div class="gallery-tags" id="modal-tags"></div>
         <div class="gallery-date" id="modal-date"></div>
@@ -336,7 +336,7 @@
         empty.style.display = 'none';
         grid.innerHTML = sorted.map(item => `
           <div class="gallery-item" data-id="${item.id}">
-            <img src="${item.url}" alt="${item.prompt}" onclick="openModal('${item.id}')">
+            <img loading="lazy" src="${item.url}" alt="${item.prompt}" onclick="openModal('${item.id}')">
             <div class="gallery-info">
               <div class="gallery-title" title="${item.prompt}">${item.prompt}</div>
               ${item.story ? `<div style="font-size:13px; color:var(--muted); margin:8px 0; line-height:1.4;">${item.story}</div>` : ''}
