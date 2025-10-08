@@ -1,6 +1,7 @@
 import os, base64, traceback
 from io import BytesIO
 from functools import wraps
+from datetime import timedelta
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -26,6 +27,7 @@ app = Flask(__name__)
 # Config
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change_me")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "change_me_jwt")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)  # 7 days instead of 15 minutes
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "https://minivisionary.soulbridgeai.com")
 CREDIT_START = int(os.getenv("CREDIT_START", "20"))
 COST_GEN = int(os.getenv("CREDIT_COST_GENERATE", "10"))
