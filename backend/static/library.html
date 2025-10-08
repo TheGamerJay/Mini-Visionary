@@ -668,7 +668,7 @@
       const image = library.find(item => item.id === id);
       if (!image || !image.url) return;
 
-      try:
+      try {
         // Get auth token
         const token = localStorage.getItem('jwt_token') || '';
 
