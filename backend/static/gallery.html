@@ -426,9 +426,34 @@
       currentModal = null;
     }
 
-    function saveImage() {
+    async function saveImage() {
       if (!currentModal) return;
-      alert('Image saved to your library! (Feature coming soon)');
+
+      try {
+        const response = await fetch('/api/library/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            image_url: currentModal.url,
+            prompt: currentModal.prompt,
+            tags: currentModal.tags
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          alert('✅ Image saved to your library!');
+          closeModal();
+        } else {
+          alert(`Failed to save: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
     }
 
     function openUploadModal() {

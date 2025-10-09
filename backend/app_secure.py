@@ -637,6 +637,49 @@ def add_to_library(db):
     return jsonify({"ok": True, "id": lib_item.id})
 
 
+@app.post("/api/library/save")
+@jwt_required()
+@with_session
+def save_to_library(db):
+    """Save an image (from gallery or elsewhere) to library"""
+    uid = get_jwt_identity()
+    data = request.get_json() or {}
+
+    image_url = data.get("image_url")
+    prompt = data.get("prompt", "Saved Image")
+
+    if not image_url:
+        return fail("image_url required", 400)
+
+    # For gallery images, we need to create a placeholder ImageJob
+    # or find an existing one with the same URL
+    job = db.query(ImageJob).filter_by(
+        user_id=uid,
+        result_image_url=image_url
+    ).first()
+
+    if not job:
+        # Create a placeholder job for this external image
+        job = ImageJob(
+            user_id=uid,
+            prompt=prompt,
+            status="completed",
+            result_image_url=image_url
+        )
+        db.add(job)
+        db.flush()  # Get the ID
+
+    # Add to library
+    lib_item = Library(
+        user_id=uid,
+        image_job_id=job.id,
+        collection_name="main_library"
+    )
+    db.add(lib_item)
+    db.commit()
+
+    return jsonify({"ok": True, "id": lib_item.id})
+
 @app.get("/api/library")
 @jwt_required()
 @with_session

@@ -516,28 +516,19 @@
 
     // Navigation function
     function navigateTo(page) {
-      // For now, show a message that these pages are coming soon
-      switch(page) {
-        case 'guide':
-          addMessage('assistant', '📚 Guide page is coming soon! For now, you can use the quick action chips below to get started.');
-          break;
-        case 'gallery':
-          addMessage('assistant', '🇺️ Gallery page is coming soon! Your generated images appear in the "Recent Generations" section below.');
-          break;
-        case 'library':
-          addMessage('assistant', '📁 Library page is coming soon! You can access your saved images through the + menu > "From Library".');
-          break;
-        case 'store':
-          addMessage('assistant', '💎 Store page is coming soon! Stay tuned for credit packages and premium features.');
-          break;
-        case 'wallet':
-          addMessage('assistant', '💰 Wallet page is coming soon! Your current credits are shown in the header.');
-          break;
-        case 'profile':
-          addMessage('assistant', '🧑 Profile page is coming soon! You can logout using the button in the top right.');
-          break;
-        default:
-          addMessage('assistant', '⚠️ Page not found.');
+      const routes = {
+        'guide': '/static/guide.html',
+        'gallery': '/static/gallery.html',
+        'library': '/static/library.html',
+        'store': '/static/store.html',
+        'wallet': '/static/wallet.html',
+        'profile': '/static/profile.html'
+      };
+
+      if (routes[page]) {
+        window.location.href = routes[page];
+      } else {
+        addMessage('assistant', '⚠️ Page not found.');
       }
     }
 

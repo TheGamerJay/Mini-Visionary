@@ -701,9 +701,21 @@
       }
     }
 
-    // Open folder (placeholder - can implement folder navigation later)
+    // Open folder - show folder info
     function openFolder(id) {
-      alert('Folder navigation coming soon! For now, folders are used to organize items.');
+      const folder = library.find(f => f.id === id && f.type === 'folder');
+      if (!folder) return;
+
+      const folderItems = library.filter(item =>
+        item.type === 'image' &&
+        item.folder_id === id
+      );
+
+      if (folderItems.length === 0) {
+        alert(`📁 ${folder.name}\n\nThis folder is empty. Add items by selecting them and choosing "Move to Folder".`);
+      } else {
+        alert(`📁 ${folder.name}\n\nContains ${folderItems.length} item${folderItems.length !== 1 ? 's' : ''}.\n\nUse the folder dropdown in each item to organize your library.`);
+      }
     }
 
     // Initialize
