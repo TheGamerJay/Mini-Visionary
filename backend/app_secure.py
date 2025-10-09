@@ -431,6 +431,9 @@ def poster_remix(db):
         uid = get_jwt_identity()
         user = db.query(User).get(uid)
 
+        if not user:
+            return fail("User not found", 404)
+
         # Get uploaded image file
         if 'image' not in request.files:
             return fail("No image file provided", 400)
