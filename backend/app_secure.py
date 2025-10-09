@@ -421,6 +421,105 @@ def poster_generate(db):
     except Exception as e:
         return fail("Image generation failed.", 500, e)
 
+@app.post("/api/poster/remix")
+@jwt_required()
+@limiter.limit("12/minute")
+@with_session
+def poster_remix(db):
+    """Generate a new image based on a reference image using DALL-E 2 variations"""
+    try:
+        uid = get_jwt_identity()
+        user = db.query(User).get(uid)
+
+        # Get uploaded image file
+        if 'image' not in request.files:
+            return fail("No image file provided", 400)
+
+        image_file = request.files['image']
+        prompt = request.form.get('prompt', '')
+        size = request.form.get('size', '1024x1024')
+
+        # DALL-E 2 variations only supports 256x256, 512x512, 1024x1024
+        if size not in ["256x256", "512x512", "1024x1024"]:
+            size = "1024x1024"
+
+        ok, err = ensure_credits(user, COST_GEN)
+        if not ok:
+            return fail(err, 402)
+
+        # Read image data
+        image_data = image_file.read()
+
+        # Save to temp file for OpenAI API
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp.write(image_data)
+            tmp_path = tmp.name
+
+        try:
+            # Use DALL-E 2 variations API
+            with open(tmp_path, "rb") as img_file:
+                resp = client.images.create_variation(
+                    model="dall-e-2",
+                    image=img_file,
+                    n=1,
+                    size=size,
+                    response_format="url"  # Use URL for variations
+                )
+
+            # Get the generated image URL
+            image_url = resp.data[0].url
+
+            # Download the image to store in database
+            import requests
+            img_response = requests.get(image_url)
+            png = img_response.content
+
+        except Exception as openai_err:
+            error_str = str(openai_err)
+            if 'safety system' in error_str or 'content_policy_violation' in error_str:
+                return fail("🚫 Image blocked by OpenAI's safety system. Try a different reference image.", 400)
+            raise
+        finally:
+            # Clean up temp file
+            import os
+            os.unlink(tmp_path)
+
+        # Store in database
+        job = ImageJob(
+            user_id=user.id,
+            kind="remix",
+            prompt=f"Remix: {prompt}" if prompt else "Remix (variation)",
+            size=size,
+            image_png=png,
+            credits_used=COST_GEN
+        )
+        db.add(job)
+        db.flush()
+
+        # Auto-add to Mini Library
+        lib_item = Library(
+            user_id=user.id,
+            image_job_id=job.id,
+            collection_name="mini_library"
+        )
+        db.add(lib_item)
+        db.commit()
+
+        # Return in items[] format expected by frontend
+        return jsonify({
+            "ok": True,
+            "job_id": job.id,
+            "credits": user.credits,
+            "mode": "remix",
+            "items": [{
+                "url": f"data:image/png;base64,{base64.b64encode(png).decode('utf-8')}"
+            }]
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return fail("Remix failed.", 500, e)
+
 # --- Image Edit ---
 @app.post("/api/poster/edit")
 @jwt_required()
