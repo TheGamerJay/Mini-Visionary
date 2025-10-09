@@ -460,13 +460,20 @@ def poster_remix(db):
                 image_data = base64.b64decode(b64_data)
         else:
             # Multipart form data
+            app.logger.info(f"Multipart - files: {list(request.files.keys())}, form: {list(request.form.keys())}")
+
             if 'image' not in request.files:
-                return fail("No image file provided", 400)
+                return fail(f"No image in request. Files: {list(request.files.keys())}, Form: {list(request.form.keys())}", 400)
 
             image_file = request.files['image']
             prompt = request.form.get('prompt', '').strip()
             size = request.form.get('size', '1024x1024')
+
+            if not image_file.filename:
+                return fail("Empty image file", 400)
+
             image_data = image_file.read()
+            app.logger.info(f"Read {len(image_data)} bytes from image file")
 
         if not prompt:
             return fail("Prompt required for image edits", 400)
