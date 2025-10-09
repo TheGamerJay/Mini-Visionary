@@ -856,46 +856,92 @@
           }
         } catch (e) {}
 
-        const response = await fetch('/api/poster/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            prompt,
-            size: '512x512',
-            quality: 'standard',
-            n: 1,
-            user_id: userId
-          })
-        });
+        let response, data;
+
+        // Check if user has a reference image
+        if (referenceImage) {
+          // Compress image on client-side before upload
+          const compressedImage = await compressImage(referenceImage, 1024, 0.85);
+
+          const formData = new FormData();
+          formData.append('image', compressedImage, 'reference.png');
+          formData.append('size', '1024x1024');
+          formData.append('prompt', prompt);
+          formData.append('n', '1');
+          if (userId) formData.append('user_id', userId);
+
+          // Use remix endpoint for reference images
+          response = await fetch('/api/poster/remix', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+        } else {
+          // No reference - use DALL-E 3 generate endpoint
+          response = await fetch('/api/poster/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              prompt,
+              size: '1024x1024',
+              quality: 'standard',
+              n: 1,
+              user_id: userId
+            })
+          });
+        }
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          addMessage('assistant', `⚠️ Server error (${response.status}): ${data.error || 'Unknown error'}`);
+          let suggestion = '';
+          if (referenceImage) {
+            suggestion = '\n\n💡 Tip: Try a smaller/simpler reference image, or generate without reference.';
+          }
+          addMessage('assistant', `⚠️ Server error (${response.status}): ${data.error || 'Unknown error'}${suggestion}`);
           return;
         }
 
-        const data = await response.json();
+        data = await response.json();
+
+        // Handle both response formats: base64 (generate) and items array (remix)
+        let imageUrl, jobId, message;
 
         if (data.ok && data.image_b64_png) {
-          // Convert base64 to data URL for immediate display
-          const imageUrl = `data:image/png;base64,${data.image_b64_png}`;
-
-          // Update credits display
-          const creditsEl = document.getElementById('user-credits');
-          if (creditsEl) creditsEl.textContent = data.credits || 0;
-
-          let message = '✨ Here\'s your generated image!';
-          message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
-
-          // Pass imageUrl for immediate display, jobId for persistence (displayUrl not saved to localStorage)
-          addMessage('assistant', message, imageUrl, data.job_id);
-          addToImageGrid(imageUrl, prompt, data.job_id);
-          addToMiniLibrary(imageUrl, prompt, data.job_id);
+          // DALL-E 3 generate response format
+          imageUrl = `data:image/png;base64,${data.image_b64_png}`;
+          jobId = data.job_id;
+          message = '✨ Here\'s your generated image!';
+        } else if (data.ok && data.items && data.items.length > 0) {
+          // Remix/variations response format
+          imageUrl = data.items[0].url;
+          jobId = data.job_id;
+          message = '🎨 Remix complete! Transformed your image';
+          if (data.original_description) {
+            message += `\n\n🔍 Vision analysis: ${data.original_description.substring(0, 150)}...`;
+          }
         } else {
           addMessage('assistant', `⚠️ ${data.error || 'Failed to generate image'}`);
+          return;
+        }
+
+        // Update credits display
+        const creditsEl = document.getElementById('user-credits');
+        if (creditsEl && data.credits !== undefined) creditsEl.textContent = data.credits;
+
+        message += `\n\n💎 Credits remaining: ${data.credits || 0}`;
+
+        addMessage('assistant', message, imageUrl, jobId);
+        addToImageGrid(imageUrl, prompt, jobId);
+        addToMiniLibrary(imageUrl, prompt, jobId);
+
+        // Clear reference image after successful generation
+        if (referenceImage) {
+          removeReference();
         }
       } catch (error) {
         addMessage('assistant', `⚠️ Network error: ${error.message}`);
