@@ -426,7 +426,7 @@ def poster_generate(db):
 @limiter.limit("12/minute")
 @with_session
 def poster_remix(db):
-    """Edit a reference image based on a prompt using DALL-E 2 image edits"""
+    """Edit a reference image using DALL-E 3 (gpt-image-1) via direct REST API"""
     try:
         uid = get_jwt_identity()
         user = db.query(User).get(uid)
@@ -456,52 +456,58 @@ def poster_remix(db):
         # Read image data and convert to PNG
         from PIL import Image
         import io
-        import tempfile
-        import os
+        import requests as req
 
         image_data = image_file.read()
         img = Image.open(io.BytesIO(image_data)).convert("RGBA")
 
-        # Save as PNG in memory
+        # Convert to PNG bytes
         png_io = io.BytesIO()
         img.save(png_io, format="PNG")
         png_io.seek(0)
         image_png_bytes = png_io.getvalue()
 
-        # Save to temp files for OpenAI API
-        tmp_path = None
-        mask_path = None
+        # Prepare multipart form for OpenAI REST API
+        files = {
+            "image": ("image.png", image_png_bytes, "image/png")
+        }
+
+        # Add strong preservation instruction to keep structure
+        preserve = "Keep the original subject, pose, proportions, and composition identical; only apply the requested changes."
+        form_data = {
+            "model": "gpt-image-1",
+            "prompt": f"{preserve} {prompt}",
+            "size": size
+        }
+
+        headers = {
+            "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"
+        }
+
+        # Call OpenAI Image Edits REST API directly
+        openai_url = "https://api.openai.com/v1/images/edits"
 
         try:
-            # Create temp image file
-            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-                tmp.write(image_png_bytes)
-                tmp_path = tmp.name
+            response = req.post(openai_url, headers=headers, files=files, data=form_data, timeout=120)
 
-            # Open and create mask
-            img_pil = Image.open(tmp_path)
+            if response.status_code != 200:
+                error_data = response.json() if response.headers.get('content-type') == 'application/json' else {"error": response.text}
+                return fail(f"OpenAI API error: {error_data}", response.status_code)
 
-            # Create fully transparent mask (means edit entire image)
-            mask = Image.new("RGBA", img_pil.size, (0, 0, 0, 0))
-            with tempfile.NamedTemporaryFile(suffix="_mask.png", delete=False) as mask_tmp:
-                mask.save(mask_tmp, format="PNG")
-                mask_path = mask_tmp.name
+            result = response.json()
+            item = (result.get("data") or [{}])[0]
 
-            # Call OpenAI API
-            with open(tmp_path, "rb") as img_file, open(mask_path, "rb") as mask_file:
-                resp = client.images.edit(
-                    model="dall-e-2",
-                    image=img_file,
-                    mask=mask_file,
-                    prompt=prompt,
-                    size=size,
-                    n=1,
-                    response_format="b64_json"
-                )
-
-            # Get base64 image
-            b64 = resp.data[0].b64_json
-            png = base64.b64decode(b64)
+            # Get image URL or base64
+            if "b64_json" in item:
+                b64 = item["b64_json"]
+                png = base64.b64decode(b64)
+            elif "url" in item:
+                # Download image from URL
+                img_response = req.get(item["url"])
+                png = img_response.content
+                b64 = base64.b64encode(png).decode('utf-8')
+            else:
+                return fail("Unexpected OpenAI response format", 502)
 
         except Exception as openai_err:
             error_str = str(openai_err)
@@ -509,12 +515,6 @@ def poster_remix(db):
                 return fail("🚫 Edit blocked by OpenAI's safety system. Try a different prompt or image.", 400)
             traceback.print_exc()
             raise
-        finally:
-            # Clean up temp files
-            if tmp_path and os.path.exists(tmp_path):
-                os.unlink(tmp_path)
-            if mask_path and os.path.exists(mask_path):
-                os.unlink(mask_path)
 
         # Store in database
         job = ImageJob(
@@ -543,7 +543,7 @@ def poster_remix(db):
             "job_id": job.id,
             "credits": user.credits,
             "mode": "remix",
-            "model": "dall-e-2",
+            "model": "gpt-image-1",
             "items": [{
                 "url": f"data:image/png;base64,{b64}"
             }]
