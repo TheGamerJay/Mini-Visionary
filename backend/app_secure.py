@@ -426,7 +426,12 @@ def poster_generate(db):
 @limiter.limit("12/minute")
 @with_session
 def poster_remix(db):
-    """Edit a reference image using DALL-E 3 (gpt-image-1) via direct REST API"""
+    """Edit a reference image using DALL-E 3 (gpt-image-1) via direct REST API
+
+    Accepts either:
+    - Multipart form: image file + prompt + size
+    - JSON: { "image": "data:image/png;base64,...", "prompt": "...", "size": "1024x1024" }
+    """
     try:
         uid = get_jwt_identity()
         user = db.query(User).get(uid)
@@ -434,16 +439,40 @@ def poster_remix(db):
         if not user:
             return fail("User not found", 404)
 
-        # Get uploaded image file
-        if 'image' not in request.files:
-            return fail("No image file provided", 400)
+        from PIL import Image
+        import io
+        import requests as req
 
-        image_file = request.files['image']
-        prompt = request.form.get('prompt', '').strip()
-        size = request.form.get('size', '1024x1024')
+        # Parse request (JSON or multipart)
+        image_data = None
+        prompt = None
+        size = "1024x1024"
+
+        if request.content_type and "application/json" in request.content_type:
+            # JSON body with data URL
+            body = request.get_json(silent=True) or {}
+            prompt = (body.get("prompt") or "").strip()
+            size = body.get("size") or "1024x1024"
+
+            image_durl = body.get("image")
+            if image_durl and "," in image_durl:
+                _, b64_data = image_durl.split(",", 1)
+                image_data = base64.b64decode(b64_data)
+        else:
+            # Multipart form data
+            if 'image' not in request.files:
+                return fail("No image file provided", 400)
+
+            image_file = request.files['image']
+            prompt = request.form.get('prompt', '').strip()
+            size = request.form.get('size', '1024x1024')
+            image_data = image_file.read()
 
         if not prompt:
             return fail("Prompt required for image edits", 400)
+
+        if not image_data:
+            return fail("No image data provided", 400)
 
         # DALL-E 3 edits supports 512x512 or 1024x1024
         if size not in ["512x512", "1024x1024"]:
@@ -453,12 +482,7 @@ def poster_remix(db):
         if not ok:
             return fail(err, 402)
 
-        # Read image data and convert to PNG
-        from PIL import Image
-        import io
-        import requests as req
-
-        image_data = image_file.read()
+        # Convert to PNG RGBA
         img = Image.open(io.BytesIO(image_data)).convert("RGBA")
 
         # Convert to PNG bytes
@@ -474,15 +498,21 @@ def poster_remix(db):
 
         # Add strong preservation instruction to keep structure
         preserve = "Keep the original subject, pose, proportions, and composition identical; only apply the requested changes."
+        full_prompt = f"{preserve} {prompt}"
+
         form_data = {
             "model": "gpt-image-1",
-            "prompt": f"{preserve} {prompt}",
-            "size": size
+            "prompt": full_prompt,
+            "size": size,
+            "response_format": "b64_json"  # Get base64 for immediate rendering
         }
 
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"
         }
+
+        # Log request (without API key or full image)
+        app.logger.info(f"Remix request - model: gpt-image-1, size: {size}, prompt: {full_prompt[:180]}...")
 
         # Call OpenAI Image Edits REST API directly
         openai_url = "https://api.openai.com/v1/images/edits"
@@ -497,12 +527,15 @@ def poster_remix(db):
             result = response.json()
             item = (result.get("data") or [{}])[0]
 
-            # Get image URL or base64
+            # Log response format
+            app.logger.info(f"Remix response - has_b64: {'b64_json' in item}, has_url: {'url' in item}")
+
+            # Get image (prefer base64)
             if "b64_json" in item:
                 b64 = item["b64_json"]
                 png = base64.b64decode(b64)
             elif "url" in item:
-                # Download image from URL
+                # Fallback: Download image from URL
                 img_response = req.get(item["url"])
                 png = img_response.content
                 b64 = base64.b64encode(png).decode('utf-8')
