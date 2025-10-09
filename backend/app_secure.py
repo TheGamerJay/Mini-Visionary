@@ -510,8 +510,8 @@ def poster_remix(db):
         form_data = {
             "model": "gpt-image-1",
             "prompt": full_prompt,
-            "size": size,
-            "response_format": "b64_json"  # Get base64 for immediate rendering
+            "size": size
+            # Note: response_format not supported by edits endpoint
         }
 
         headers = {
