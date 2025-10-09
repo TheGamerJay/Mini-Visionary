@@ -426,7 +426,9 @@ def poster_generate(db):
 @limiter.limit("12/minute")
 @with_session
 def poster_remix(db):
-    """Edit a reference image using DALL-E 3 (gpt-image-1) via direct REST API
+    """Edit a reference image using DALL-E 2 via direct REST API
+
+    Note: Using dall-e-2 because gpt-image-1 requires organization verification.
 
     Accepts either:
     - Multipart form: image file + prompt + size
@@ -508,7 +510,7 @@ def poster_remix(db):
         full_prompt = f"{preserve} {prompt}"
 
         form_data = {
-            "model": "gpt-image-1",
+            "model": "dall-e-2",  # Use dall-e-2 (gpt-image-1 requires org verification)
             "prompt": full_prompt,
             "size": size
             # Note: response_format not supported by edits endpoint
@@ -583,7 +585,7 @@ def poster_remix(db):
             "job_id": job.id,
             "credits": user.credits,
             "mode": "remix",
-            "model": "gpt-image-1",
+            "model": "dall-e-2",
             "items": [{
                 "url": f"data:image/png;base64,{b64}"
             }]
