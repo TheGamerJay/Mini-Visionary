@@ -426,7 +426,7 @@ def poster_generate(db):
 @limiter.limit("12/minute")
 @with_session
 def poster_remix(db):
-    """Generate a new image based on a reference image using DALL-E 2 variations"""
+    """Edit a reference image based on a prompt using DALL-E 3 image edits (gpt-image-1)"""
     try:
         uid = get_jwt_identity()
         user = db.query(User).get(uid)
@@ -436,49 +436,58 @@ def poster_remix(db):
             return fail("No image file provided", 400)
 
         image_file = request.files['image']
-        prompt = request.form.get('prompt', '')
+        prompt = request.form.get('prompt', '').strip()
         size = request.form.get('size', '1024x1024')
 
-        # DALL-E 2 variations only supports 256x256, 512x512, 1024x1024
-        if size not in ["256x256", "512x512", "1024x1024"]:
+        if not prompt:
+            return fail("Prompt required for image edits", 400)
+
+        # DALL-E 3 edits supports 512x512 or 1024x1024
+        if size not in ["512x512", "1024x1024"]:
             size = "1024x1024"
 
         ok, err = ensure_credits(user, COST_GEN)
         if not ok:
             return fail(err, 402)
 
-        # Read image data
+        # Read image data and convert to PNG
+        from PIL import Image
+        import io
         image_data = image_file.read()
+        img = Image.open(io.BytesIO(image_data)).convert("RGBA")
+
+        # Save as PNG in memory
+        png_io = io.BytesIO()
+        img.save(png_io, format="PNG")
+        png_io.seek(0)
+        image_png_bytes = png_io.getvalue()
 
         # Save to temp file for OpenAI API
         import tempfile
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            tmp.write(image_data)
+            tmp.write(image_png_bytes)
             tmp_path = tmp.name
 
         try:
-            # Use DALL-E 2 variations API
+            # Use DALL-E 3 image edits API (gpt-image-1)
             with open(tmp_path, "rb") as img_file:
-                resp = client.images.create_variation(
-                    model="dall-e-2",
+                resp = client.images.edit(
+                    model="gpt-image-1",
                     image=img_file,
-                    n=1,
+                    prompt=prompt,
                     size=size,
-                    response_format="url"  # Use URL for variations
+                    n=1,
+                    response_format="b64_json"
                 )
 
-            # Get the generated image URL
-            image_url = resp.data[0].url
-
-            # Download the image to store in database
-            import requests
-            img_response = requests.get(image_url)
-            png = img_response.content
+            # Get base64 image
+            b64 = resp.data[0].b64_json
+            png = base64.b64decode(b64)
 
         except Exception as openai_err:
             error_str = str(openai_err)
             if 'safety system' in error_str or 'content_policy_violation' in error_str:
-                return fail("🚫 Image blocked by OpenAI's safety system. Try a different reference image.", 400)
+                return fail("🚫 Edit blocked by OpenAI's safety system. Try a different prompt or image.", 400)
             raise
         finally:
             # Clean up temp file
@@ -489,7 +498,7 @@ def poster_remix(db):
         job = ImageJob(
             user_id=user.id,
             kind="remix",
-            prompt=f"Remix: {prompt}" if prompt else "Remix (variation)",
+            prompt=f"Edit: {prompt}",
             size=size,
             image_png=png,
             credits_used=COST_GEN
@@ -512,13 +521,14 @@ def poster_remix(db):
             "job_id": job.id,
             "credits": user.credits,
             "mode": "remix",
+            "model": "gpt-image-1",
             "items": [{
-                "url": f"data:image/png;base64,{base64.b64encode(png).decode('utf-8')}"
+                "url": f"data:image/png;base64,{b64}"
             }]
         })
     except Exception as e:
         traceback.print_exc()
-        return fail("Remix failed.", 500, e)
+        return fail("Image edit failed.", 500, e)
 
 # --- Image Edit ---
 @app.post("/api/poster/edit")
