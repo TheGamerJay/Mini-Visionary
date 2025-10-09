@@ -426,7 +426,7 @@ def poster_generate(db):
 @limiter.limit("12/minute")
 @with_session
 def poster_remix(db):
-    """Edit a reference image based on a prompt using DALL-E 3 image edits (gpt-image-1)"""
+    """Edit a reference image based on a prompt using DALL-E 2 image edits"""
     try:
         uid = get_jwt_identity()
         user = db.query(User).get(uid)
@@ -472,11 +472,21 @@ def poster_remix(db):
             tmp_path = tmp.name
 
         try:
-            # Use DALL-E 3 image edits API (gpt-image-1)
-            with open(tmp_path, "rb") as img_file:
+            # Use DALL-E 2 image edits API (most reliable for edits)
+            # Note: DALL-E 2 requires a mask, so we create a transparent one for full-image edit
+            from PIL import Image as PILImage
+            img_pil = PILImage.open(tmp_path)
+
+            # Create fully transparent mask (means edit entire image)
+            mask = PILImage.new("RGBA", img_pil.size, (0, 0, 0, 0))
+            mask_path = tmp_path.replace(".png", "_mask.png")
+            mask.save(mask_path)
+
+            with open(tmp_path, "rb") as img_file, open(mask_path, "rb") as mask_file:
                 resp = client.images.edit(
-                    model="gpt-image-1",
+                    model="dall-e-2",
                     image=img_file,
+                    mask=mask_file,
                     prompt=prompt,
                     size=size,
                     n=1,
@@ -486,6 +496,9 @@ def poster_remix(db):
             # Get base64 image
             b64 = resp.data[0].b64_json
             png = base64.b64decode(b64)
+
+            # Clean up mask file
+            os.unlink(mask_path)
 
         except Exception as openai_err:
             error_str = str(openai_err)
@@ -524,7 +537,7 @@ def poster_remix(db):
             "job_id": job.id,
             "credits": user.credits,
             "mode": "remix",
-            "model": "gpt-image-1",
+            "model": "dall-e-2",
             "items": [{
                 "url": f"data:image/png;base64,{b64}"
             }]
