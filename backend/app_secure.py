@@ -456,6 +456,9 @@ def poster_remix(db):
         # Read image data and convert to PNG
         from PIL import Image
         import io
+        import tempfile
+        import os
+
         image_data = image_file.read()
         img = Image.open(io.BytesIO(image_data)).convert("RGBA")
 
@@ -465,23 +468,26 @@ def poster_remix(db):
         png_io.seek(0)
         image_png_bytes = png_io.getvalue()
 
-        # Save to temp file for OpenAI API
-        import tempfile
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            tmp.write(image_png_bytes)
-            tmp_path = tmp.name
+        # Save to temp files for OpenAI API
+        tmp_path = None
+        mask_path = None
 
         try:
-            # Use DALL-E 2 image edits API (most reliable for edits)
-            # Note: DALL-E 2 requires a mask, so we create a transparent one for full-image edit
-            from PIL import Image as PILImage
-            img_pil = PILImage.open(tmp_path)
+            # Create temp image file
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                tmp.write(image_png_bytes)
+                tmp_path = tmp.name
+
+            # Open and create mask
+            img_pil = Image.open(tmp_path)
 
             # Create fully transparent mask (means edit entire image)
-            mask = PILImage.new("RGBA", img_pil.size, (0, 0, 0, 0))
-            mask_path = tmp_path.replace(".png", "_mask.png")
-            mask.save(mask_path)
+            mask = Image.new("RGBA", img_pil.size, (0, 0, 0, 0))
+            with tempfile.NamedTemporaryFile(suffix="_mask.png", delete=False) as mask_tmp:
+                mask.save(mask_tmp, format="PNG")
+                mask_path = mask_tmp.name
 
+            # Call OpenAI API
             with open(tmp_path, "rb") as img_file, open(mask_path, "rb") as mask_file:
                 resp = client.images.edit(
                     model="dall-e-2",
@@ -497,18 +503,18 @@ def poster_remix(db):
             b64 = resp.data[0].b64_json
             png = base64.b64decode(b64)
 
-            # Clean up mask file
-            os.unlink(mask_path)
-
         except Exception as openai_err:
             error_str = str(openai_err)
             if 'safety system' in error_str or 'content_policy_violation' in error_str:
                 return fail("🚫 Edit blocked by OpenAI's safety system. Try a different prompt or image.", 400)
+            traceback.print_exc()
             raise
         finally:
-            # Clean up temp file
-            import os
-            os.unlink(tmp_path)
+            # Clean up temp files
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+            if mask_path and os.path.exists(mask_path):
+                os.unlink(mask_path)
 
         # Store in database
         job = ImageJob(
